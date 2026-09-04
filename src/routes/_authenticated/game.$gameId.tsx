@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/hooks/useSession";
 import { displayNameOf, fetchGame, joinGame, saveState, type GameRow } from "@/lib/games";
-import { loadWordList } from "@/lib/words";
+import { isNaughtyWord, loadWordList } from "@/lib/words";
 import {
   LETTER_VALUES,
   RACK_SIZE,
