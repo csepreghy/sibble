@@ -3,8 +3,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/hooks/useSession";
-import { createGame, displayNameOf, fetchMyGames, isAdmin } from "@/lib/games";
+import { createGame, displayNameOf, fetchMyGames, isAdmin, type GameRow } from "@/lib/games";
 import { Button } from "@/components/ui/button";
+import { AppNav } from "@/components/AppNav";
 
 export const Route = createFileRoute("/_authenticated/lobby")({
   head: () => ({
