@@ -189,6 +189,7 @@ export function validateMove(
   board: Board,
   placements: Placement[],
   isDictionaryWord: (word: string) => boolean,
+  isNaughtyWord: (word: string) => boolean = () => false,
 ): MoveResult | ValidationError {
   if (placements.length === 0) return { error: "Place at least one tile." };
   const pending = new Map<number, Placement>();
