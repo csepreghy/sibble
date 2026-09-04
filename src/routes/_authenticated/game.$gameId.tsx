@@ -111,6 +111,9 @@ function GamePage() {
     state && activeSeat !== null && state.turn === activeSeat && game?.status === "active",
   );
 
+  // tiles can be tried out on the board at any time; only submitting needs your turn
+  const canPlace = Boolean(state && activeSeat !== null && game?.status === "active");
+
   const rack = state && activeSeat !== null ? (state.racks[activeSeat] ?? []) : [];
   const remainingRack = useMemo(() => {
     const copy = [...rack];
@@ -155,7 +158,7 @@ function GamePage() {
   };
 
   function beginDrag(event: React.PointerEvent, letter: string, blank: boolean, source: DragSource) {
-    if (!isMyTurn || exchangeMode || saving) return;
+    if (!canPlace || exchangeMode || saving) return;
     if (event.pointerType === "mouse" && event.button !== 0) return;
     dragStart.current = { x: event.clientX, y: event.clientY };
     movedRef.current = false;
@@ -256,7 +259,7 @@ function GamePage() {
   );
 
   function handleCellClick(index: number) {
-    if (!state || !isMyTurn) return;
+    if (!state || !canPlace) return;
     const existing = pending.find((placement) => placement.index === index);
     if (existing) {
       setPending(pending.filter((placement) => placement.index !== index));
@@ -540,7 +543,7 @@ function GamePage() {
             ) : (
               <>
                 <Button onClick={playMove} disabled={!isMyTurn || saving || !words}>
-                  Play word
+                  {isMyTurn ? "Play word" : "Waiting for your turn"}
                 </Button>
                 <Button variant="secondary" onClick={() => setPending([])} disabled={!pending.length}>
                   Recall tiles
