@@ -107,6 +107,23 @@ function GamePage() {
   }, [game, state, myIndex]);
 
   const [celebrate, setCelebrate] = useState(0);
+  const [birdSeen, setBirdSeen] = useState(false);
+  const seenHistoryRef = useRef<number | null>(null);
+
+  const historyLength = state?.history.length ?? 0;
+  useEffect(() => {
+    if (seenHistoryRef.current === null) {
+      seenHistoryRef.current = historyLength;
+      return;
+    }
+    if (historyLength > seenHistoryRef.current) {
+      seenHistoryRef.current = historyLength;
+      setBirdSeen(false);
+    }
+  }, [historyLength]);
+
+  const showBird = !birdSeen && seenHistoryRef.current !== null && historyLength > 0 &&
+    seenHistoryRef.current === historyLength && historyLength > 0 && birdJustPlayed(historyLength);
 
   const isMyTurn = Boolean(
     state && activeSeat !== null && state.turn === activeSeat && game?.status === "active",
