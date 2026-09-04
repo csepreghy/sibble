@@ -225,15 +225,19 @@ function GamePage() {
 
 
   const persist = useCallback(
-    async (next: GameState, status: string) => {
+    async (next: GameState, status: string, expectedVersion?: number | null) => {
       setSaving(true);
       try {
-        await saveState(gameId, next, status);
+        const saved = await saveState(gameId, next, status, expectedVersion);
         queryClient.setQueryData(["game", gameId], (old: GameRow | null | undefined) =>
-          old ? { ...old, state: next, status } : old,
+          old ? { ...old, state: saved, status } : old,
         );
-      } catch {
-        toast.error("Couldn't save that move. Please try again.");
+      } catch (error) {
+        if (error instanceof ConflictError) {
+          toast.error("The other player moved first — the board has been refreshed.");
+        } else {
+          toast.error("Couldn't save that move. Please try again.");
+        }
         gameQuery.refetch();
       } finally {
         setSaving(false);
