@@ -201,7 +201,7 @@ export function GameBoard({
           }}
         >
           <div
-            className="grid gap-px overflow-hidden rounded-md bg-board-line"
+            className="grid gap-[5px] overflow-hidden rounded-md bg-white p-[5px] dark:bg-white"
             style={{ gridTemplateColumns: `repeat(${SIZE}, minmax(0, 1fr))` }}
           >
             {board.map((tile, index) => {
@@ -222,9 +222,9 @@ export function GameBoard({
                     if (placed) onTilePointerDown?.(index, event);
                   }}
                   className={cn(
-                    "relative flex aspect-square items-center justify-center bg-board text-[0.5rem] font-bold leading-none transition-all duration-150 sm:text-[0.6rem]",
+                    "relative flex aspect-square items-center justify-center rounded-[10px] bg-board-cell text-[0.5rem] font-bold leading-none transition-all duration-150 sm:text-[0.6rem]",
                     premium && !content && PREMIUM_CLASS[premium],
-                    content && "tile-face rounded-[2px]",
+                    content && "tile-face",
                     placed && "z-10 scale-105 shadow-md ring-2 ring-primary",
                     tile && lastPlayed.includes(index) && "ring-1 ring-accent",
                     !content && hoverIndex === index && "scale-110 ring-2 ring-primary/70",
