@@ -21,7 +21,7 @@ export function Rack({
   onTilePointerDown,
 }: RackProps) {
   return (
-    <div className="flex flex-wrap items-center justify-center gap-1.5 rounded-xl border border-border bg-secondary/60 p-2.5">
+    <div className="flex w-full items-center justify-center gap-1 rounded-xl border border-border bg-secondary/60 p-1.5 sm:gap-1.5 sm:p-2.5">
       {tiles.length === 0 ? (
         <span className="px-2 py-3 text-sm text-muted-foreground">No tiles left</span>
       ) : (
@@ -34,14 +34,14 @@ export function Rack({
             onClick={() => onSelect(position)}
             onPointerDown={(event) => onTilePointerDown?.(position, event)}
             className={cn(
-              "tile-face relative flex h-12 w-12 items-center justify-center rounded-md text-xl font-bold transition-all duration-150 hover:-translate-y-1 hover:shadow-lg active:scale-95",
+              "tile-face relative flex aspect-square min-w-0 flex-1 basis-0 items-center justify-center rounded-md text-[clamp(0.95rem,4.2vw,1.25rem)] font-bold transition-all duration-150 hover:-translate-y-1 hover:shadow-lg active:scale-95 sm:max-w-12",
               selected === position && !exchangeMode && "-translate-y-1.5 ring-2 ring-primary",
               exchangeMode && exchangeSelection.includes(position) && "-translate-y-1.5 ring-2 ring-accent",
               draggingPosition === position && "opacity-30",
             )}
           >
             <span className="pointer-events-none">{letter === "?" ? "" : letter}</span>
-            <span className="pointer-events-none absolute bottom-0.5 right-1 text-[0.6rem] font-semibold opacity-70">
+            <span className="pointer-events-none absolute bottom-0 right-0.5 text-[0.55rem] font-semibold opacity-70 sm:bottom-0.5 sm:right-1 sm:text-[0.6rem]">
               {letter === "?" ? "" : LETTER_VALUES[letter]}
             </span>
           </button>
@@ -49,4 +49,5 @@ export function Rack({
       )}
     </div>
   );
+
 }

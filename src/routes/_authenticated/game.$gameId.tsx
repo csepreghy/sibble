@@ -23,6 +23,7 @@ import {
 } from "@/lib/scrabble";
 import { GameBoard } from "@/components/scrabble/Board";
 import { Rack } from "@/components/scrabble/Rack";
+import { Fireworks } from "@/components/scrabble/Fireworks";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/game/$gameId")({
@@ -103,6 +104,8 @@ function GamePage() {
     if (game.solo) return state.turn;
     return myIndex;
   }, [game, state, myIndex]);
+
+  const [celebrate, setCelebrate] = useState(0);
 
   const isMyTurn = Boolean(
     state && activeSeat !== null && state.turn === activeSeat && game?.status === "active",
@@ -372,6 +375,7 @@ function GamePage() {
     setPending([]);
     setSelected(null);
     await persist(finished.state, finished.status, state.version ?? null);
+    setCelebrate((n) => n + 1);
     const doubled = result.words.some((entry) => entry.naughty);
     toast.success(doubled ? `${result.score} points — double for a rude word!` : `${result.score} points`);
   }
@@ -493,6 +497,7 @@ function GamePage() {
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
         <div className="space-y-4">
+          <Fireworks trigger={celebrate} />
           <GameBoard
             board={state.board}
             pending={pending}
