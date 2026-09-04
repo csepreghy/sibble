@@ -4,11 +4,17 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/hooks/useSession";
-import { displayNameOf, fetchGame, joinGame, saveState, type GameRow } from "@/lib/games";
+import {
+  ConflictError,
+  displayNameOf,
+  fetchGame,
+  joinGame,
+  saveState,
+  type GameRow,
+} from "@/lib/games";
 import { isNaughtyWord, loadWordList } from "@/lib/words";
 import {
   LETTER_VALUES,
-  RACK_SIZE,
   draw,
   removeFromRack,
   validateMove,
@@ -225,15 +231,19 @@ function GamePage() {
 
 
   const persist = useCallback(
-    async (next: GameState, status: string) => {
+    async (next: GameState, status: string, expectedVersion?: number | null) => {
       setSaving(true);
       try {
-        await saveState(gameId, next, status);
+        const saved = await saveState(gameId, next, status, expectedVersion);
         queryClient.setQueryData(["game", gameId], (old: GameRow | null | undefined) =>
-          old ? { ...old, state: next, status } : old,
+          old ? { ...old, state: saved, status } : old,
         );
-      } catch {
-        toast.error("Couldn't save that move. Please try again.");
+      } catch (error) {
+        if (error instanceof ConflictError) {
+          toast.error("The other player moved first — the board has been refreshed.");
+        } else {
+          toast.error("Couldn't save that move. Please try again.");
+        }
         gameQuery.refetch();
       } finally {
         setSaving(false);
@@ -361,7 +371,7 @@ function GamePage() {
     const finished = finishIfDone(next, activeSeat);
     setPending([]);
     setSelected(null);
-    await persist(finished.state, finished.status);
+    await persist(finished.state, finished.status, state.version ?? null);
     const doubled = result.words.some((entry) => entry.naughty);
     toast.success(doubled ? `${result.score} points — double for a rude word!` : `${result.score} points`);
   }
@@ -377,7 +387,7 @@ function GamePage() {
       history: [...state.history, { player: activeSeat, description: "passed", score: 0 }],
     };
     setPending([]);
-    await persist(next, passes >= 4 ? "finished" : "active");
+    await persist(next, passes >= 4 ? "finished" : "active", state.version ?? null);
   }
 
   async function exchange() {
@@ -412,7 +422,7 @@ function GamePage() {
     setExchangeMode(false);
     setExchangeSelection([]);
     setPending([]);
-    await persist(next, "active");
+    await persist(next, "active", state.version ?? null);
   }
 
   async function join() {
@@ -463,6 +473,7 @@ function GamePage() {
   }
 
   const names: [string, string] = [game.player1_name, game.player2 ? game.player2_name : "Waiting…"];
+  const lastEntry = state.history[state.history.length - 1] ?? null;
   const waiting = game.status === "waiting";
 
   return (
@@ -580,7 +591,20 @@ function GamePage() {
             <p className="mt-1 text-xs text-muted-foreground">
               {state.bag.length} tiles left in the bag
             </p>
-            {remainingRack.length === RACK_SIZE ? null : null}
+            {lastEntry ? (
+              <div className="mt-4 rounded-lg border border-border bg-secondary/60 p-3">
+                <p className="text-[0.65rem] font-bold uppercase tracking-wide text-muted-foreground">
+                  Last score
+                </p>
+                <p className="mt-1 text-sm">
+                  <span className="font-semibold">{names[lastEntry.player]}</span>{" "}
+                  {lastEntry.description}
+                </p>
+                <p className="text-lg font-bold">
+                  {lastEntry.score} {lastEntry.score === 1 ? "point" : "points"}
+                </p>
+              </div>
+            ) : null}
           </div>
 
           <div className="rounded-xl border border-border bg-card p-4">

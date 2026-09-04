@@ -73,12 +73,135 @@ export async function joinGame(gameId: string, userId: string, name: string) {
   return data as unknown as GameRow | null;
 }
 
-export async function saveState(gameId: string, state: GameState, status: string) {
-  const { error } = await supabase
+export class ConflictError extends Error {
+  constructor() {
+    super("The board changed while you were playing.");
+    this.name = "ConflictError";
+  }
+}
+
+/**
+ * Saves a turn. `expectedVersion` guards against two clients writing at the
+ * same time and wiping each other's racks: the write only lands if the stored
+ * state is still the one this client started from.
+ */
+export async function saveState(
+  gameId: string,
+  state: GameState,
+  status: string,
+  expectedVersion?: number | null,
+) {
+  const next: GameState = { ...state, version: (expectedVersion ?? 0) + 1 };
+  let query = supabase
     .from("games")
-    .update({ state: state as never, status })
+    .update({ state: next as never, status })
     .eq("id", gameId);
+  if (typeof expectedVersion === "number") {
+    query = query.eq("state->>version", String(expectedVersion));
+  }
+  const { data, error } = await query.select("id").maybeSingle();
   if (error) throw error;
+  if (!data) throw new ConflictError();
+  return next;
+}
+
+export interface OpponentRecord {
+  name: string;
+  played: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  pointsFor: number;
+  pointsAgainst: number;
+}
+
+export interface PlayerStats {
+  played: number;
+  finished: number;
+  ongoing: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  pointsFor: number;
+  pointsAgainst: number;
+  bestScore: number;
+  bestWord: { word: string; score: number } | null;
+  opponents: OpponentRecord[];
+}
+
+export function computeStats(games: GameRow[], userId: string): PlayerStats {
+  const stats: PlayerStats = {
+    played: 0,
+    finished: 0,
+    ongoing: 0,
+    wins: 0,
+    losses: 0,
+    draws: 0,
+    pointsFor: 0,
+    pointsAgainst: 0,
+    bestScore: 0,
+    bestWord: null,
+    opponents: [],
+  };
+  const byOpponent = new Map<string, OpponentRecord>();
+
+  for (const game of games) {
+    if (game.solo) continue;
+    const seat: 0 | 1 = game.player1 === userId ? 0 : 1;
+    const other: 0 | 1 = seat === 0 ? 1 : 0;
+    const scores = game.state?.scores ?? [0, 0];
+    const mine = scores[seat] ?? 0;
+    const theirs = scores[other] ?? 0;
+    const opponentName = (other === 0 ? game.player1_name : game.player2_name) || "Waiting…";
+
+    stats.played += 1;
+    stats.pointsFor += mine;
+    stats.pointsAgainst += theirs;
+
+    for (const entry of game.state?.history ?? []) {
+      if (entry.player !== seat) continue;
+      if (entry.score > stats.bestScore) stats.bestScore = entry.score;
+      if (!stats.bestWord || entry.score > stats.bestWord.score) {
+        stats.bestWord = { word: entry.description, score: entry.score };
+      }
+    }
+
+    const done = game.status === "finished";
+    if (done) stats.finished += 1;
+    else stats.ongoing += 1;
+
+    const record =
+      byOpponent.get(opponentName) ??
+      {
+        name: opponentName,
+        played: 0,
+        wins: 0,
+        losses: 0,
+        draws: 0,
+        pointsFor: 0,
+        pointsAgainst: 0,
+      };
+    record.played += 1;
+    record.pointsFor += mine;
+    record.pointsAgainst += theirs;
+
+    if (done) {
+      if (mine > theirs) {
+        stats.wins += 1;
+        record.wins += 1;
+      } else if (mine < theirs) {
+        stats.losses += 1;
+        record.losses += 1;
+      } else {
+        stats.draws += 1;
+        record.draws += 1;
+      }
+    }
+    byOpponent.set(opponentName, record);
+  }
+
+  stats.opponents = [...byOpponent.values()].sort((a, b) => b.played - a.played);
+  return stats;
 }
 
 export async function isAdmin(userId: string) {

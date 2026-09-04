@@ -3,8 +3,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/hooks/useSession";
-import { createGame, displayNameOf, fetchMyGames, isAdmin } from "@/lib/games";
+import { createGame, displayNameOf, fetchMyGames, isAdmin, type GameRow } from "@/lib/games";
 import { Button } from "@/components/ui/button";
+import { AppNav } from "@/components/AppNav";
 
 export const Route = createFileRoute("/_authenticated/lobby")({
   head: () => ({
@@ -55,6 +56,9 @@ function Lobby() {
     navigate({ to: "/auth", replace: true });
   }
 
+  const ongoing = (games.data ?? []).filter((game) => game.status !== "finished");
+  const done = (games.data ?? []).filter((game) => game.status === "finished");
+
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
       <header className="flex flex-wrap items-center justify-between gap-3">
@@ -62,10 +66,14 @@ function Lobby() {
           <h1 className="text-3xl font-bold">Your games</h1>
           <p className="mt-1 text-sm text-muted-foreground">Signed in as {displayNameOf(user)}</p>
         </div>
-        <Button variant="ghost" onClick={signOut}>
-          Sign out
-        </Button>
+        <div className="flex items-center gap-2">
+          <AppNav />
+          <Button variant="ghost" onClick={signOut}>
+            Sign out
+          </Button>
+        </div>
       </header>
+
 
       <div className="mt-8 flex flex-wrap gap-3">
         <Button size="lg" disabled={start.isPending} onClick={() => start.mutate(false)}>
@@ -84,38 +92,69 @@ function Lobby() {
       </div>
 
       <section className="mt-10 space-y-3">
+        <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
+          Games in progress
+        </h2>
         {games.isLoading ? (
           <p className="text-sm text-muted-foreground">Loading…</p>
-        ) : (games.data?.length ?? 0) === 0 ? (
+        ) : ongoing.length === 0 ? (
           <p className="rounded-lg border border-border bg-card/60 p-6 text-sm text-muted-foreground">
-            No games yet. Start one above and send the link to your sister.
+            No games on the go. Start one above and send the link to whoever you want to play.
           </p>
         ) : (
-          games.data!.map((game) => (
-            <Link
-              key={game.id}
-              to="/game/$gameId"
-              params={{ gameId: game.id }}
-              className="flex items-center justify-between rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary"
-            >
-              <div>
-                <p className="font-semibold">
-                  {game.solo
-                    ? "Solo practice board"
-                    : `${game.player1_name} vs ${game.player2 ? game.player2_name : "waiting for a player"}`}
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {game.state?.scores
-                    ? `${game.state.scores[0]} – ${game.state.scores[1]}`
-                    : "0 – 0"}{" "}
-                  · {game.status === "finished" ? "finished" : game.status}
-                </p>
-              </div>
-              <span className="text-sm text-primary">Open</span>
-            </Link>
-          ))
+          ongoing.map((game) => <GameCard key={game.id} game={game} userId={userId} />)
         )}
       </section>
+
+      {done.length > 0 ? (
+        <section className="mt-10 space-y-3">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
+            Finished
+          </h2>
+          {done.map((game) => (
+            <GameCard key={game.id} game={game} userId={userId} />
+          ))}
+        </section>
+      ) : null}
     </main>
+  );
+}
+
+function GameCard({ game, userId }: { game: GameRow; userId: string }) {
+  const names: [string, string] = [
+    game.player1_name,
+    game.player2 ? game.player2_name : "waiting for a player",
+  ];
+  const scores = game.state?.scores ?? [0, 0];
+  const history = game.state?.history ?? [];
+  const last = history[history.length - 1] ?? null;
+  const seat: 0 | 1 = game.player1 === userId ? 0 : 1;
+  const yourTurn =
+    game.status === "active" && (game.solo || game.state?.turn === seat);
+
+  return (
+    <Link
+      to="/game/$gameId"
+      params={{ gameId: game.id }}
+      className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary"
+    >
+      <div className="min-w-0">
+        <p className="font-semibold">
+          {game.solo ? "Solo practice board" : `${names[0]} vs ${names[1]}`}
+        </p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {scores[0]} – {scores[1]} ·{" "}
+          {game.status === "finished" ? "finished" : game.status}
+        </p>
+        <p className="mt-1 truncate text-xs text-muted-foreground">
+          {last
+            ? `Last move: ${names[last.player]} — ${last.description} (${last.score} points)`
+            : "No moves yet"}
+        </p>
+      </div>
+      <span className="shrink-0 text-sm font-semibold text-primary">
+        {game.status === "finished" ? "View" : yourTurn ? "Your move" : "Open"}
+      </span>
+    </Link>
   );
 }

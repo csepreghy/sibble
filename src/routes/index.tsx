@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { useSession } from "@/hooks/useSession";
+import { fetchMyGames } from "@/lib/games";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
@@ -32,6 +34,14 @@ const LETTERS = [
 
 function Index() {
   const { user, loading } = useSession();
+  const userId = user?.id ?? "";
+
+  const games = useQuery({
+    queryKey: ["games", userId],
+    queryFn: () => fetchMyGames(userId),
+    enabled: Boolean(userId),
+  });
+  const ongoing = (games.data ?? []).filter((game) => game.status !== "finished").slice(0, 5);
 
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center px-6 py-16 text-center">
@@ -66,6 +76,44 @@ function Index() {
           </Button>
         )}
       </div>
+
+      {user && ongoing.length > 0 ? (
+        <section className="mt-12 w-full max-w-md text-left">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
+            Pick up where you left off
+          </h2>
+          <div className="mt-3 space-y-2">
+            {ongoing.map((game) => {
+              const history = game.state?.history ?? [];
+              const last = history[history.length - 1] ?? null;
+              const names: [string, string] = [
+                game.player1_name,
+                game.player2 ? game.player2_name : "waiting for a player",
+              ];
+              const scores = game.state?.scores ?? [0, 0];
+              return (
+                <Link
+                  key={game.id}
+                  to="/game/$gameId"
+                  params={{ gameId: game.id }}
+                  className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold">
+                      {game.solo ? "Solo practice board" : `${names[0]} vs ${names[1]}`}
+                    </p>
+                    <p className="mt-1 truncate text-xs text-muted-foreground">
+                      {scores[0]} – {scores[1]}
+                      {last ? ` · last move ${last.description} (${last.score})` : ""}
+                    </p>
+                  </div>
+                  <span className="shrink-0 text-sm text-primary">Continue</span>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
 
       <ul className="mt-12 grid gap-3 text-left text-sm text-muted-foreground sm:grid-cols-3">
         <li className="rounded-lg border border-border bg-card/60 p-4">
