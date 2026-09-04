@@ -61,7 +61,7 @@ export interface GameState {
   finished: boolean;
   lastPlayed: number[];
   /** seat that gave up, when the game ended by resignation */
-  resignedBy?: 0 | 1;
+  resignedBy?: 0 | 1 | undefined;
   /** bumped on every saved turn so two clients can't overwrite each other */
   version?: number;
 }
