@@ -40,6 +40,7 @@
   --color-ring-offset-background: var(--background);
   --color-board: var(--board);
   --color-board-line: var(--board-line);
+  --color-board-cell: var(--board-cell);
   --color-tile: var(--tile);
   --color-tile-foreground: var(--tile-foreground);
   --color-tile-edge: var(--tile-edge);
@@ -90,6 +91,7 @@
 
   --board: oklch(0.94 0.018 95);
   --board-line: oklch(0.86 0.02 95);
+  --board-cell: oklch(0.78 0.04 110);
   --tile: oklch(0.9 0.055 82);
   --tile-foreground: oklch(0.28 0.05 60);
   --tile-edge: oklch(0.78 0.06 75);

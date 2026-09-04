@@ -107,6 +107,20 @@ function GamePage() {
   }, [game, state, myIndex]);
 
   const [celebrate, setCelebrate] = useState(0);
+  const [birdVisible, setBirdVisible] = useState(false);
+  const seenHistoryRef = useRef<number | null>(null);
+
+  const historyLength = state?.history.length ?? 0;
+  useEffect(() => {
+    if (seenHistoryRef.current === null) {
+      seenHistoryRef.current = historyLength;
+      return;
+    }
+    if (historyLength > seenHistoryRef.current) {
+      seenHistoryRef.current = historyLength;
+      setBirdVisible(true);
+    }
+  }, [historyLength]);
 
   const isMyTurn = Boolean(
     state && activeSeat !== null && state.turn === activeSeat && game?.status === "active",
@@ -520,6 +534,26 @@ function GamePage() {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
         <div className="space-y-4">
           <Fireworks trigger={celebrate} />
+          {birdVisible ? (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 backdrop-blur-sm"
+              role="dialog"
+              aria-label="A round was played"
+              onClick={() => setBirdVisible(false)}
+            >
+              <div
+                className="animate-in zoom-in duration-200 relative flex flex-col items-center gap-4 rounded-2xl bg-card p-8 shadow-panel"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <span className="text-[7rem] leading-none" aria-hidden>
+                  🖕
+                </span>
+                <Button variant="secondary" onClick={() => setBirdVisible(false)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          ) : null}
           <GameBoard
             board={state.board}
             pending={pending}
