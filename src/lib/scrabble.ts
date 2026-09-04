@@ -39,6 +39,7 @@ export interface Tile {
   letter: string; // the letter shown on the board (A-Z)
   blank: boolean; // true when played from a blank tile (scores 0)
   player: 0 | 1;
+  naughty?: boolean; // part of a rude word — scored double, outlined in pink
 }
 
 export type Board = (Tile | null)[];
