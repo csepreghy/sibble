@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { useSession } from "@/hooks/useSession";
+import { fetchMyGames } from "@/lib/games";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
