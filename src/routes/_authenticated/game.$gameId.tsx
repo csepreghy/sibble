@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -594,7 +594,7 @@ function GamePage() {
           className="pointer-events-none fixed z-50"
           style={{ left: drag.x, top: drag.y, transform: "translate(-50%, -50%)" }}
         >
-          <div className="tile-face flex h-12 w-12 rotate-[-6deg] scale-125 items-center justify-center rounded-md text-xl font-bold shadow-2xl transition-transform">
+          <div className="tile-face relative flex h-12 w-12 rotate-[-6deg] scale-125 items-center justify-center rounded-md text-xl font-bold shadow-2xl transition-transform">
             {drag.letter === "?" ? "" : drag.letter}
             <span className="absolute bottom-0.5 right-1 text-[0.6rem] font-semibold opacity-70">
               {drag.blank ? "" : LETTER_VALUES[drag.letter]}
