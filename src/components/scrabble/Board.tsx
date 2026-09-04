@@ -190,6 +190,7 @@ export function GameBoard({
               const premium = premiumAt(index);
               const content = tile ?? (placed ? { letter: placed.letter, blank: placed.blank } : null);
               const isDragged = draggingIndex === index;
+              const isNaughty = Boolean(content) && (naughtySet.has(index) || tile?.naughty);
 
               return (
                 <button
@@ -209,6 +210,7 @@ export function GameBoard({
                     tile && lastPlayed.includes(index) && "ring-1 ring-accent",
                     !content && hoverIndex === index && "scale-110 ring-2 ring-primary/70",
                     !content && "hover:brightness-95",
+                    isNaughty && "z-10 ring-2 ring-naughty",
                     isDragged && "opacity-30",
                   )}
                   aria-label={
