@@ -60,6 +60,8 @@ export interface GameState {
   consecutivePasses: number;
   finished: boolean;
   lastPlayed: number[];
+  /** seat that gave up, when the game ended by resignation */
+  resignedBy?: 0 | 1;
   /** bumped on every saved turn so two clients can't overwrite each other */
   version?: number;
 }

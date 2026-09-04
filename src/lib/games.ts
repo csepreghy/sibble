@@ -186,7 +186,16 @@ export function computeStats(games: GameRow[], userId: string): PlayerStats {
     record.pointsAgainst += theirs;
 
     if (done) {
-      if (mine > theirs) {
+      const resignedBy = game.state?.resignedBy;
+      if (resignedBy !== undefined && resignedBy !== null) {
+        if (resignedBy === seat) {
+          stats.losses += 1;
+          record.losses += 1;
+        } else {
+          stats.wins += 1;
+          record.wins += 1;
+        }
+      } else if (mine > theirs) {
         stats.wins += 1;
         record.wins += 1;
       } else if (mine < theirs) {

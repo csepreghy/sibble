@@ -465,6 +465,30 @@ function GamePage() {
     await persist(next, game?.status ?? "active", state.version ?? null);
   }
 
+  async function resign() {
+    if (!state || !game || activeSeat === null || saving) return;
+    if (game.status !== "active") return;
+    const message = game.solo
+      ? "End this practice game? It will be marked as finished."
+      : "Give up this game? It will count as a loss for you.";
+    if (!window.confirm(message)) return;
+    const next: GameState = {
+      ...state,
+      finished: true,
+      resignedBy: game.solo ? undefined : activeSeat,
+      history: [
+        ...state.history,
+        {
+          player: activeSeat,
+          description: game.solo ? "ended the game" : "gave up 🏳️",
+          score: 0,
+        },
+      ],
+    };
+    setPending([]);
+    await persist(next, "finished", state.version ?? null);
+  }
+
   async function join() {
     if (!user) return;
     const joined = await joinGame(gameId, user.id, displayNameOf(user));
@@ -620,6 +644,14 @@ function GamePage() {
                   <Shuffle className="h-4 w-4" />
                   Shuffle
                 </Button>
+                <Button
+                  variant="ghost"
+                  onClick={resign}
+                  disabled={saving}
+                  className="text-destructive hover:text-destructive"
+                >
+                  {game.solo ? "End game" : "Give up"}
+                </Button>
               </>
             )}
           </div>
@@ -649,7 +681,9 @@ function GamePage() {
             ))}
             <p className="mt-3 text-xs text-muted-foreground">
               {game.status === "finished"
-                ? "Game over."
+                ? state.resignedBy !== undefined
+                  ? `${names[state.resignedBy]} gave up — game over.`
+                  : "Game over."
                 : waiting
                   ? "Waiting for the other player to open your link."
                   : game.solo
