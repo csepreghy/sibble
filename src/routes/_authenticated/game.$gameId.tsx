@@ -303,7 +303,7 @@ function GamePage() {
       toast.message("Place some tiles on the board first.");
       return;
     }
-    const result = validateMove(state.board, pending, (word) => words.has(word));
+    const result = validateMove(state.board, pending, (word) => words.has(word), isNaughtyWord);
     if ("error" in result) {
       toast.error(result.error);
       return;
@@ -314,13 +314,20 @@ function GamePage() {
       return;
     }
 
+    const naughtyIndices = new Set(result.naughtyIndices);
     const board = [...state.board];
     for (const placement of pending) {
       board[placement.index] = {
         letter: placement.letter,
         blank: placement.blank,
         player: activeSeat,
+        ...(naughtyIndices.has(placement.index) ? { naughty: true } : {}),
       };
+    }
+    // existing tiles that became part of a rude word keep the pink outline too
+    for (const index of naughtyIndices) {
+      const tile = board[index];
+      if (tile && !tile.naughty) board[index] = { ...tile, naughty: true };
     }
     const refilled = draw(state.bag, nextRack);
     const racks: [string[], string[]] = [...state.racks] as [string[], string[]];
@@ -343,7 +350,9 @@ function GamePage() {
         {
           player: activeSeat,
           description:
-            result.words.map((entry) => entry.word).join(", ") + (result.bingo ? " (bingo!)" : ""),
+            result.words
+              .map((entry) => (entry.naughty ? `${entry.word} (2×)` : entry.word))
+              .join(", ") + (result.bingo ? " (bingo!)" : ""),
           score: result.score,
         },
       ],
@@ -353,7 +362,8 @@ function GamePage() {
     setPending([]);
     setSelected(null);
     await persist(finished.state, finished.status);
-    toast.success(`${result.score} points`);
+    const doubled = result.words.some((entry) => entry.naughty);
+    toast.success(doubled ? `${result.score} points — double for a rude word!` : `${result.score} points`);
   }
 
   async function pass() {
