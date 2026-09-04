@@ -443,6 +443,14 @@ function GamePage() {
     await persist(next, "active", state.version ?? null);
   }
 
+  async function handleShuffle() {
+    if (!state || activeSeat === null || saving) return;
+    const racks: [string[], string[]] = [...state.racks] as [string[], string[]];
+    racks[activeSeat] = shuffleTiles(racks[activeSeat]);
+    const next: GameState = { ...state, racks };
+    await persist(next, game?.status ?? "active", state.version ?? null);
+  }
+
   async function join() {
     if (!user) return;
     const joined = await joinGame(gameId, user.id, displayNameOf(user));
