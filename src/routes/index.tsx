@@ -32,6 +32,14 @@ const LETTERS = [
 
 function Index() {
   const { user, loading } = useSession();
+  const userId = user?.id ?? "";
+
+  const games = useQuery({
+    queryKey: ["games", userId],
+    queryFn: () => fetchMyGames(userId),
+    enabled: Boolean(userId),
+  });
+  const ongoing = (games.data ?? []).filter((game) => game.status !== "finished").slice(0, 5);
 
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center px-6 py-16 text-center">
