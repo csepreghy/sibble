@@ -591,7 +591,20 @@ function GamePage() {
             <p className="mt-1 text-xs text-muted-foreground">
               {state.bag.length} tiles left in the bag
             </p>
-            {remainingRack.length === RACK_SIZE ? null : null}
+            {lastEntry ? (
+              <div className="mt-4 rounded-lg border border-border bg-secondary/60 p-3">
+                <p className="text-[0.65rem] font-bold uppercase tracking-wide text-muted-foreground">
+                  Last score
+                </p>
+                <p className="mt-1 text-sm">
+                  <span className="font-semibold">{names[lastEntry.player]}</span>{" "}
+                  {lastEntry.description}
+                </p>
+                <p className="text-lg font-bold">
+                  {lastEntry.score} {lastEntry.score === 1 ? "point" : "points"}
+                </p>
+              </div>
+            ) : null}
           </div>
 
           <div className="rounded-xl border border-border bg-card p-4">
