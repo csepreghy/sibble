@@ -1,24 +1,83 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useSession } from "@/hooks/useSession";
+import { Button } from "@/components/ui/button";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "Tile Table — Play Scrabble online with no ads" },
+      {
+        name: "description",
+        content:
+          "Play a proper game of Scrabble with someone you like. Sign in with Google or Apple, share a link and start playing — no ads, no clutter.",
+      },
+      { property: "og:title", content: "Tile Table — Play Scrabble online with no ads" },
+      {
+        property: "og:description",
+        content: "Sign in, send a link, play a full game of Scrabble with the official word list.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
+const LETTERS = [
+  { letter: "T", value: 1 },
+  { letter: "I", value: 1 },
+  { letter: "L", value: 1 },
+  { letter: "E", value: 1 },
+];
+
 function Index() {
+  const { user, loading } = useSession();
+
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <main className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center px-6 py-16 text-center">
+      <div className="mb-8 flex gap-2">
+        {LETTERS.map((tile) => (
+          <span
+            key={tile.letter}
+            className="tile-face relative flex h-16 w-16 items-center justify-center rounded-lg text-3xl font-bold"
+          >
+            {tile.letter}
+            <span className="absolute bottom-1 right-1.5 text-[0.65rem] font-semibold opacity-70">
+              {tile.value}
+            </span>
+          </span>
+        ))}
+      </div>
+
+      <h1 className="text-4xl font-bold sm:text-5xl">Tile Table</h1>
+      <p className="mt-4 max-w-md text-base text-muted-foreground">
+        A quiet place to play Scrabble with one other person. The full board, the official word
+        list, and absolutely no adverts.
+      </p>
+
+      <div className="mt-8 flex flex-wrap justify-center gap-3">
+        {loading ? null : user ? (
+          <Button asChild size="lg">
+            <Link to="/lobby">Go to your games</Link>
+          </Button>
+        ) : (
+          <Button asChild size="lg">
+            <Link to="/auth">Sign in to play</Link>
+          </Button>
+        )}
+      </div>
+
+      <ul className="mt-12 grid gap-3 text-left text-sm text-muted-foreground sm:grid-cols-3">
+        <li className="rounded-lg border border-border bg-card/60 p-4">
+          Start a game and send the link to whoever you want to play.
+        </li>
+        <li className="rounded-lg border border-border bg-card/60 p-4">
+          Every word is checked against the tournament English word list.
+        </li>
+        <li className="rounded-lg border border-border bg-card/60 p-4">
+          Moves appear on the other person's board straight away.
+        </li>
+      </ul>
+    </main>
   );
 }
