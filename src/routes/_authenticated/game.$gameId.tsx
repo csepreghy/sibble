@@ -113,6 +113,111 @@ function GamePage() {
     return copy;
   }, [rack, pending]);
 
+  const preview = useMemo(() => {
+    if (!state || pending.length === 0 || !words) return null;
+    const result = validateMove(state.board, pending, (word) => words.has(word));
+    const anchor = pending[pending.length - 1]!.index;
+    return "error" in result
+      ? { valid: false, score: 0, anchor }
+      : { valid: true, score: result.score, anchor };
+  }, [state, pending, words]);
+
+  // --- drag and drop -------------------------------------------------------
+  type DragSource = { type: "rack"; position: number } | { type: "board"; index: number };
+  const [drag, setDrag] = useState<
+    { letter: string; blank: boolean; source: DragSource; x: number; y: number } | null
+  >(null);
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const dragStart = useRef<{ x: number; y: number } | null>(null);
+  const movedRef = useRef(false);
+
+  const cellUnder = (x: number, y: number) => {
+    const element = document.elementFromPoint(x, y) as HTMLElement | null;
+    const cell = element?.closest("[data-cell-index]") as HTMLElement | null;
+    if (!cell) return null;
+    const value = Number(cell.dataset.cellIndex);
+    return Number.isNaN(value) ? null : value;
+  };
+
+  function beginDrag(event: React.PointerEvent, letter: string, blank: boolean, source: DragSource) {
+    if (!isMyTurn || exchangeMode || saving) return;
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    dragStart.current = { x: event.clientX, y: event.clientY };
+    movedRef.current = false;
+
+    const onMove = (moveEvent: PointerEvent) => {
+      const origin = dragStart.current;
+      if (!origin) return;
+      if (!movedRef.current) {
+        if (Math.hypot(moveEvent.clientX - origin.x, moveEvent.clientY - origin.y) < 6) return;
+        movedRef.current = true;
+      }
+      moveEvent.preventDefault();
+      setDrag({ letter, blank, source, x: moveEvent.clientX, y: moveEvent.clientY });
+      setHoverIndex(cellUnder(moveEvent.clientX, moveEvent.clientY));
+    };
+
+    const onUp = (upEvent: PointerEvent) => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+      const wasDragging = movedRef.current;
+      dragStart.current = null;
+      movedRef.current = false;
+      setDrag(null);
+      setHoverIndex(null);
+      if (wasDragging) dropTile(letter, blank, source, upEvent.clientX, upEvent.clientY);
+    };
+
+    window.addEventListener("pointermove", onMove, { passive: false });
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+  }
+
+  function dropTile(letter: string, blank: boolean, source: DragSource, x: number, y: number) {
+    if (!state) return;
+    const target = cellUnder(x, y);
+    const withoutSource =
+      source.type === "board" ? pending.filter((item) => item.index !== source.index) : pending;
+
+    if (target === null) {
+      if (source.type === "board") setPending(withoutSource);
+      return;
+    }
+    if (state.board[target] || withoutSource.some((item) => item.index === target)) return;
+
+    if (source.type === "board") {
+      setPending([...withoutSource, { index: target, letter, blank }]);
+      setSelected(null);
+      return;
+    }
+
+    if (letter === "?") {
+      const input = window.prompt("Which letter should this blank tile be?")?.trim().toUpperCase();
+      if (!input || !/^[A-Z]$/.test(input)) return;
+      setPending([...pending, { index: target, letter: input, blank: true }]);
+    } else {
+      setPending([...pending, { index: target, letter, blank: false }]);
+    }
+    setSelected(null);
+  }
+
+  function handleRackPointerDown(position: number, event: React.PointerEvent) {
+    const letter = (exchangeMode ? rack : remainingRack)[position];
+    if (!letter) return;
+    beginDrag(event, letter, letter === "?", { type: "rack", position });
+  }
+
+  function handleBoardTilePointerDown(index: number, event: React.PointerEvent) {
+    const placement = pending.find((item) => item.index === index);
+    if (!placement) return;
+    beginDrag(event, placement.letter, placement.blank, { type: "board", index });
+  }
+
+  const draggingRackPosition = drag?.source.type === "rack" ? drag.source.position : null;
+  const draggingBoardIndex = drag?.source.type === "board" ? drag.source.index : null;
+
+
   const persist = useCallback(
     async (next: GameState, status: string) => {
       setSaving(true);
