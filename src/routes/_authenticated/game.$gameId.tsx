@@ -135,7 +135,7 @@ function GamePage() {
     const element = document.elementFromPoint(x, y) as HTMLElement | null;
     const cell = element?.closest("[data-cell-index]") as HTMLElement | null;
     if (!cell) return null;
-    const value = Number(cell.dataset.cellIndex);
+    const value = Number(cell.dataset['cellIndex']);
     return Number.isNaN(value) ? null : value;
   };
 
