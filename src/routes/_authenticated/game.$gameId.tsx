@@ -15,7 +15,6 @@ import {
 import { isNaughtyWord, loadWordList } from "@/lib/words";
 import {
   LETTER_VALUES,
-  RACK_SIZE,
   draw,
   removeFromRack,
   validateMove,
@@ -474,6 +473,7 @@ function GamePage() {
   }
 
   const names: [string, string] = [game.player1_name, game.player2 ? game.player2_name : "Waiting…"];
+  const lastEntry = state.history[state.history.length - 1] ?? null;
   const waiting = game.status === "waiting";
 
   return (
