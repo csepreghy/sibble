@@ -26,6 +26,7 @@ export interface BoardPreview {
   valid: boolean;
   score: number;
   anchor: number;
+  naughty?: boolean;
 }
 
 interface BoardProps {
@@ -35,6 +36,7 @@ interface BoardProps {
   preview?: BoardPreview | null;
   hoverIndex?: number | null;
   draggingIndex?: number | null;
+  naughtyIndices?: number[];
   onCellClick: (index: number) => void;
   onTilePointerDown?: (index: number, event: React.PointerEvent) => void;
 }
@@ -46,10 +48,13 @@ export function GameBoard({
   preview,
   hoverIndex,
   draggingIndex,
+  naughtyIndices,
   onCellClick,
   onTilePointerDown,
 }: BoardProps) {
   const pendingMap = new Map(pending.map((placement) => [placement.index, placement]));
+  const naughtySet = new Set(naughtyIndices ?? []);
+
 
   const viewportRef = useRef<HTMLDivElement>(null);
   const [zoom, setZoom] = useState(1);
@@ -185,6 +190,7 @@ export function GameBoard({
               const premium = premiumAt(index);
               const content = tile ?? (placed ? { letter: placed.letter, blank: placed.blank } : null);
               const isDragged = draggingIndex === index;
+              const isNaughty = Boolean(content) && (naughtySet.has(index) || tile?.naughty);
 
               return (
                 <button
@@ -204,6 +210,7 @@ export function GameBoard({
                     tile && lastPlayed.includes(index) && "ring-1 ring-accent",
                     !content && hoverIndex === index && "scale-110 ring-2 ring-primary/70",
                     !content && "hover:brightness-95",
+                    isNaughty && "z-10 ring-2 ring-naughty",
                     isDragged && "opacity-30",
                   )}
                   aria-label={
@@ -247,15 +254,18 @@ export function GameBoard({
               <span
                 className={cn(
                   "flex animate-in items-center gap-1 rounded-full px-2 py-0.5 text-[0.6rem] font-bold shadow-panel zoom-in duration-200",
-                  preview.valid
-                    ? "bg-emerald-600 text-white"
-                    : "bg-destructive text-destructive-foreground",
+                  !preview.valid
+                    ? "bg-destructive text-destructive-foreground"
+                    : preview.naughty
+                      ? "bg-naughty text-naughty-foreground"
+                      : "bg-emerald-600 text-white",
                 )}
               >
                 {preview.valid ? (
                   <>
                     <Check className="h-3 w-3" strokeWidth={3} />
                     {preview.score}
+                    {preview.naughty ? <span className="opacity-90">2×</span> : null}
                   </>
                 ) : (
                   <X className="h-3 w-3" strokeWidth={3} />

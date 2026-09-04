@@ -39,6 +39,7 @@ export interface Tile {
   letter: string; // the letter shown on the board (A-Z)
   blank: boolean; // true when played from a blank tile (scores 0)
   player: 0 | 1;
+  naughty?: boolean; // part of a rude word — scored double, outlined in pink
 }
 
 export type Board = (Tile | null)[];
@@ -119,12 +120,14 @@ export interface WordResult {
   word: string;
   score: number;
   indices: number[];
+  naughty?: boolean;
 }
 
 export interface MoveResult {
   words: WordResult[];
   score: number;
   bingo: boolean;
+  naughtyIndices: number[];
 }
 
 function tileAt(board: Board, pending: Map<number, Placement>, index: number): Tile | null {
@@ -186,6 +189,7 @@ export function validateMove(
   board: Board,
   placements: Placement[],
   isDictionaryWord: (word: string) => boolean,
+  isNaughtyWord: (word: string) => boolean = () => false,
 ): MoveResult | ValidationError {
   if (placements.length === 0) return { error: "Place at least one tile." };
   const pending = new Map<number, Placement>();
@@ -238,8 +242,16 @@ export function validateMove(
   if (invalid) return { error: `${invalid.word} is not in the word list.` };
 
   const bingo = placements.length === RACK_SIZE;
+  const naughtyIndices = new Set<number>();
+  for (const entry of words) {
+    if (isNaughtyWord(entry.word)) {
+      entry.naughty = true;
+      entry.score *= 2;
+      for (const index of entry.indices) naughtyIndices.add(index);
+    }
+  }
   const score = words.reduce((sum, entry) => sum + entry.score, 0) + (bingo ? 50 : 0);
-  return { words, score, bingo };
+  return { words, score, bingo, naughtyIndices: [...naughtyIndices] };
 }
 
 export function removeFromRack(rack: string[], placements: Placement[]): string[] | null {
