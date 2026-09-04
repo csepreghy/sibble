@@ -119,13 +119,18 @@ function Stats() {
                 const scores = game.state?.scores ?? [0, 0];
                 const opponentName = other === 0 ? game.player1_name : game.player2_name;
                 const finished = game.status === "finished";
+                const resignedBy = game.state?.resignedBy;
                 const result = !finished
                   ? "in progress"
-                  : scores[seat]! > scores[other]!
-                    ? "won"
-                    : scores[seat]! < scores[other]!
-                      ? "lost"
-                      : "drew";
+                  : resignedBy === seat
+                    ? "gave up"
+                    : resignedBy === other
+                      ? "won — opponent gave up"
+                      : scores[seat]! > scores[other]!
+                        ? "won"
+                        : scores[seat]! < scores[other]!
+                          ? "lost"
+                          : "drew";
                 return (
                   <div
                     key={game.id}
