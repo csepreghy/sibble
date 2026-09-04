@@ -470,7 +470,11 @@ function GamePage() {
             board={state.board}
             pending={pending}
             lastPlayed={state.lastPlayed ?? []}
+            preview={preview}
+            hoverIndex={hoverIndex}
+            draggingIndex={draggingBoardIndex}
             onCellClick={handleCellClick}
+            onTilePointerDown={handleBoardTilePointerDown}
           />
 
           <Rack
@@ -478,8 +482,11 @@ function GamePage() {
             selected={selected}
             exchangeSelection={exchangeSelection}
             exchangeMode={exchangeMode}
+            draggingPosition={draggingRackPosition}
             onSelect={handleRackSelect}
+            onTilePointerDown={handleRackPointerDown}
           />
+
 
           <div className="flex flex-wrap gap-2">
             {exchangeMode ? (
