@@ -577,6 +577,15 @@ function GamePage() {
                 >
                   Swap tiles
                 </Button>
+                <Button
+                  variant="ghost"
+                  onClick={handleShuffle}
+                  disabled={saving || exchangeMode}
+                  className="gap-1.5"
+                >
+                  <Shuffle className="h-4 w-4" />
+                  Shuffle
+                </Button>
               </>
             )}
           </div>
