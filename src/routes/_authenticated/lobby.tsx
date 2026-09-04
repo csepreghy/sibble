@@ -55,6 +55,9 @@ function Lobby() {
     navigate({ to: "/auth", replace: true });
   }
 
+  const ongoing = (games.data ?? []).filter((game) => game.status !== "finished");
+  const done = (games.data ?? []).filter((game) => game.status === "finished");
+
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
       <header className="flex flex-wrap items-center justify-between gap-3">
@@ -62,10 +65,14 @@ function Lobby() {
           <h1 className="text-3xl font-bold">Your games</h1>
           <p className="mt-1 text-sm text-muted-foreground">Signed in as {displayNameOf(user)}</p>
         </div>
-        <Button variant="ghost" onClick={signOut}>
-          Sign out
-        </Button>
+        <div className="flex items-center gap-2">
+          <AppNav />
+          <Button variant="ghost" onClick={signOut}>
+            Sign out
+          </Button>
+        </div>
       </header>
+
 
       <div className="mt-8 flex flex-wrap gap-3">
         <Button size="lg" disabled={start.isPending} onClick={() => start.mutate(false)}>
