@@ -1,0 +1,481 @@
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useSession } from "@/hooks/useSession";
+import { displayNameOf, fetchGame, joinGame, saveState, type GameRow } from "@/lib/games";
+import { loadWordList } from "@/lib/words";
+import {
+  LETTER_VALUES,
+  RACK_SIZE,
+  draw,
+  removeFromRack,
+  validateMove,
+  type GameState,
+  type Placement,
+} from "@/lib/scrabble";
+import { GameBoard } from "@/components/scrabble/Board";
+import { Rack } from "@/components/scrabble/Rack";
+import { Button } from "@/components/ui/button";
+
+export const Route = createFileRoute("/_authenticated/game/$gameId")({
+  head: () => ({
+    meta: [
+      { title: "Game — Tile Table" },
+      { name: "description", content: "A game of Scrabble in progress on Tile Table." },
+      { property: "og:title", content: "Game — Tile Table" },
+      { property: "og:description", content: "A game of Scrabble in progress." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: GamePage,
+});
+
+function shuffleTiles(tiles: string[]) {
+  const copy = [...tiles];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j]!, copy[i]!];
+  }
+  return copy;
+}
+
+function GamePage() {
+  const { gameId } = useParams({ from: "/_authenticated/game/$gameId" });
+  const { user } = useSession();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const [pending, setPending] = useState<Placement[]>([]);
+  const [selected, setSelected] = useState<number | null>(null);
+  const [exchangeMode, setExchangeMode] = useState(false);
+  const [exchangeSelection, setExchangeSelection] = useState<number[]>([]);
+  const [words, setWords] = useState<Set<string> | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const gameQuery = useQuery({
+    queryKey: ["game", gameId],
+    queryFn: () => fetchGame(gameId),
+  });
+  const game = gameQuery.data ?? null;
+
+  useEffect(() => {
+    loadWordList()
+      .then(setWords)
+      .catch(() => toast.error("Couldn't load the word list. Refresh to try again."));
+  }, []);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel(`game-${gameId}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "games", filter: `id=eq.${gameId}` },
+        (payload) => {
+          queryClient.setQueryData(["game", gameId], payload.new as unknown as GameRow);
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [gameId, queryClient]);
+
+  const state = game?.state ?? null;
+  const myIndex: 0 | 1 | null = !game || !user
+    ? null
+    : game.player1 === user.id
+      ? 0
+      : game.player2 === user.id
+        ? 1
+        : null;
+
+  const activeSeat: 0 | 1 | null = useMemo(() => {
+    if (!game || !state || myIndex === null) return null;
+    if (game.solo) return state.turn;
+    return myIndex;
+  }, [game, state, myIndex]);
+
+  const isMyTurn = Boolean(
+    state && activeSeat !== null && state.turn === activeSeat && game?.status === "active",
+  );
+
+  const rack = state && activeSeat !== null ? (state.racks[activeSeat] ?? []) : [];
+  const remainingRack = useMemo(() => {
+    const copy = [...rack];
+    for (const placement of pending) {
+      const wanted = placement.blank ? "?" : placement.letter;
+      const at = copy.indexOf(wanted);
+      if (at !== -1) copy.splice(at, 1);
+    }
+    return copy;
+  }, [rack, pending]);
+
+  const persist = useCallback(
+    async (next: GameState, status: string) => {
+      setSaving(true);
+      try {
+        await saveState(gameId, next, status);
+        queryClient.setQueryData(["game", gameId], (old: GameRow | null | undefined) =>
+          old ? { ...old, state: next, status } : old,
+        );
+      } catch {
+        toast.error("Couldn't save that move. Please try again.");
+        gameQuery.refetch();
+      } finally {
+        setSaving(false);
+      }
+    },
+    [gameId, queryClient, gameQuery],
+  );
+
+  function handleCellClick(index: number) {
+    if (!state || !isMyTurn) return;
+    const existing = pending.find((placement) => placement.index === index);
+    if (existing) {
+      setPending(pending.filter((placement) => placement.index !== index));
+      return;
+    }
+    if (state.board[index]) return;
+    if (selected === null) {
+      toast.message("Pick a tile from your rack first.");
+      return;
+    }
+    const letter = remainingRack[selected];
+    if (!letter) return;
+    if (letter === "?") {
+      const input = window.prompt("Which letter should this blank tile be?")?.trim().toUpperCase();
+      if (!input || !/^[A-Z]$/.test(input)) return;
+      setPending([...pending, { index, letter: input, blank: true }]);
+    } else {
+      setPending([...pending, { index, letter, blank: false }]);
+    }
+    setSelected(null);
+  }
+
+  function handleRackSelect(position: number) {
+    if (exchangeMode) {
+      setExchangeSelection((current) =>
+        current.includes(position)
+          ? current.filter((value) => value !== position)
+          : [...current, position],
+      );
+      return;
+    }
+    setSelected((current) => (current === position ? null : position));
+  }
+
+  function finishIfDone(next: GameState, seat: 0 | 1): { state: GameState; status: string } {
+    if (next.bag.length === 0 && next.racks[seat].length === 0) {
+      const other = seat === 0 ? 1 : 0;
+      const leftover = next.racks[other].reduce(
+        (sum, letter) => sum + (LETTER_VALUES[letter] ?? 0),
+        0,
+      );
+      next.scores[seat] += leftover;
+      next.scores[other] -= leftover;
+      next.finished = true;
+      next.history = [
+        ...next.history,
+        { player: seat, description: "played out — leftover tiles counted", score: leftover },
+      ];
+      return { state: next, status: "finished" };
+    }
+    return { state: next, status: "active" };
+  }
+
+  async function playMove() {
+    if (!state || !game || activeSeat === null || !words) return;
+    if (pending.length === 0) {
+      toast.message("Place some tiles on the board first.");
+      return;
+    }
+    const result = validateMove(state.board, pending, (word) => words.has(word));
+    if ("error" in result) {
+      toast.error(result.error);
+      return;
+    }
+    const nextRack = removeFromRack(state.racks[activeSeat], pending);
+    if (!nextRack) {
+      toast.error("Those tiles aren't on your rack.");
+      return;
+    }
+
+    const board = [...state.board];
+    for (const placement of pending) {
+      board[placement.index] = {
+        letter: placement.letter,
+        blank: placement.blank,
+        player: activeSeat,
+      };
+    }
+    const refilled = draw(state.bag, nextRack);
+    const racks: [string[], string[]] = [...state.racks] as [string[], string[]];
+    racks[activeSeat] = refilled.rack;
+
+    const scores: [number, number] = [...state.scores] as [number, number];
+    scores[activeSeat] += result.score;
+
+    const next: GameState = {
+      ...state,
+      board,
+      bag: refilled.bag,
+      racks,
+      scores,
+      turn: activeSeat === 0 ? 1 : 0,
+      consecutivePasses: 0,
+      lastPlayed: pending.map((placement) => placement.index),
+      history: [
+        ...state.history,
+        {
+          player: activeSeat,
+          description:
+            result.words.map((entry) => entry.word).join(", ") + (result.bingo ? " (bingo!)" : ""),
+          score: result.score,
+        },
+      ],
+    };
+
+    const finished = finishIfDone(next, activeSeat);
+    setPending([]);
+    setSelected(null);
+    await persist(finished.state, finished.status);
+    toast.success(`${result.score} points`);
+  }
+
+  async function pass() {
+    if (!state || activeSeat === null) return;
+    const passes = state.consecutivePasses + 1;
+    const next: GameState = {
+      ...state,
+      turn: activeSeat === 0 ? 1 : 0,
+      consecutivePasses: passes,
+      finished: passes >= 4,
+      history: [...state.history, { player: activeSeat, description: "passed", score: 0 }],
+    };
+    setPending([]);
+    await persist(next, passes >= 4 ? "finished" : "active");
+  }
+
+  async function exchange() {
+    if (!state || activeSeat === null) return;
+    if (exchangeSelection.length === 0) {
+      toast.message("Tap the tiles you want to swap.");
+      return;
+    }
+    if (state.bag.length < exchangeSelection.length) {
+      toast.error("Not enough tiles left in the bag to swap.");
+      return;
+    }
+    const current = state.racks[activeSeat];
+    const kept = current.filter((_, position) => !exchangeSelection.includes(position));
+    const returned = current.filter((_, position) => exchangeSelection.includes(position));
+    const bag = shuffleTiles([...state.bag, ...returned]);
+    const refilled = draw(bag, kept);
+    const racks: [string[], string[]] = [...state.racks] as [string[], string[]];
+    racks[activeSeat] = refilled.rack;
+
+    const next: GameState = {
+      ...state,
+      bag: refilled.bag,
+      racks,
+      turn: activeSeat === 0 ? 1 : 0,
+      consecutivePasses: state.consecutivePasses + 1,
+      history: [
+        ...state.history,
+        { player: activeSeat, description: `swapped ${returned.length} tiles`, score: 0 },
+      ],
+    };
+    setExchangeMode(false);
+    setExchangeSelection([]);
+    setPending([]);
+    await persist(next, "active");
+  }
+
+  async function join() {
+    if (!user) return;
+    const joined = await joinGame(gameId, user.id, displayNameOf(user));
+    if (!joined) {
+      toast.error("Someone already joined this game.");
+      return;
+    }
+    queryClient.setQueryData(["game", gameId], joined);
+    toast.success("You're in — good luck!");
+  }
+
+  function copyLink() {
+    const url = `${window.location.origin}/game/${gameId}`;
+    navigator.clipboard
+      .writeText(url)
+      .then(() => toast.success("Invite link copied"))
+      .catch(() => toast.error("Couldn't copy the link."));
+  }
+
+  if (gameQuery.isLoading) {
+    return <main className="p-10 text-center text-sm text-muted-foreground">Loading game…</main>;
+  }
+
+  if (!game || !state) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
+        <h1 className="text-2xl font-bold">This game isn't available</h1>
+        <p className="text-sm text-muted-foreground">
+          The link may be wrong, or the game already has two players.
+        </p>
+        <Button onClick={() => navigate({ to: "/lobby" })}>Back to your games</Button>
+      </main>
+    );
+  }
+
+  if (myIndex === null) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
+        <h1 className="text-2xl font-bold">{game.player1_name} invited you to play</h1>
+        <p className="text-sm text-muted-foreground">Join and the board is yours.</p>
+        <Button size="lg" onClick={join}>
+          Join this game
+        </Button>
+      </main>
+    );
+  }
+
+  const names: [string, string] = [game.player1_name, game.player2 ? game.player2_name : "Waiting…"];
+  const waiting = game.status === "waiting";
+
+  return (
+    <main className="mx-auto max-w-5xl px-4 py-6">
+      <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <Link to="/lobby" className="text-sm text-muted-foreground hover:text-foreground">
+          ← Your games
+        </Link>
+        <div className="flex flex-wrap gap-2">
+          {!game.solo ? (
+            <Button variant="secondary" size="sm" onClick={copyLink}>
+              Copy invite link
+            </Button>
+          ) : null}
+        </div>
+      </header>
+
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
+        <div className="space-y-4">
+          <GameBoard
+            board={state.board}
+            pending={pending}
+            lastPlayed={state.lastPlayed ?? []}
+            onCellClick={handleCellClick}
+          />
+
+          <Rack
+            tiles={exchangeMode ? rack : remainingRack}
+            selected={selected}
+            exchangeSelection={exchangeSelection}
+            exchangeMode={exchangeMode}
+            onSelect={handleRackSelect}
+          />
+
+          <div className="flex flex-wrap gap-2">
+            {exchangeMode ? (
+              <>
+                <Button onClick={exchange} disabled={saving}>
+                  Swap {exchangeSelection.length} tiles
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setExchangeMode(false);
+                    setExchangeSelection([]);
+                  }}
+                >
+                  Cancel
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button onClick={playMove} disabled={!isMyTurn || saving || !words}>
+                  Play word
+                </Button>
+                <Button variant="secondary" onClick={() => setPending([])} disabled={!pending.length}>
+                  Recall tiles
+                </Button>
+                <Button variant="secondary" onClick={pass} disabled={!isMyTurn || saving}>
+                  Pass
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => setExchangeMode(true)}
+                  disabled={!isMyTurn || saving}
+                >
+                  Swap tiles
+                </Button>
+              </>
+            )}
+          </div>
+
+          {!words ? (
+            <p className="text-xs text-muted-foreground">Loading the word list…</p>
+          ) : null}
+        </div>
+
+        <aside className="space-y-4">
+          <div className="rounded-xl border border-border bg-card p-4">
+            <h2 className="text-lg font-bold">
+              {game.solo ? "Solo practice" : "Score"}
+            </h2>
+            {[0, 1].map((seat) => (
+              <div
+                key={seat}
+                className={`mt-3 flex items-center justify-between rounded-lg px-3 py-2 ${
+                  state.turn === seat && game.status === "active"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary"
+                }`}
+              >
+                <span className="text-sm font-semibold">{names[seat]}</span>
+                <span className="text-lg font-bold">{state.scores[seat]}</span>
+              </div>
+            ))}
+            <p className="mt-3 text-xs text-muted-foreground">
+              {game.status === "finished"
+                ? "Game over."
+                : waiting
+                  ? "Waiting for the other player to open your link."
+                  : game.solo
+                    ? `${names[state.turn]}'s move — you play both sides.`
+                    : isMyTurn
+                      ? "Your move."
+                      : `Waiting for ${names[state.turn]}.`}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {state.bag.length} tiles left in the bag
+            </p>
+            {remainingRack.length === RACK_SIZE ? null : null}
+          </div>
+
+          <div className="rounded-xl border border-border bg-card p-4">
+            <h3 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
+              Moves
+            </h3>
+            <ol className="mt-3 space-y-2 text-sm">
+              {state.history.length === 0 ? (
+                <li className="text-muted-foreground">No moves yet.</li>
+              ) : (
+                [...state.history].reverse().map((entry, position) => (
+                  <li key={position} className="flex justify-between gap-3">
+                    <span className="truncate">
+                      <span className="text-muted-foreground">{names[entry.player]}:</span>{" "}
+                      {entry.description}
+                    </span>
+                    <span className="font-semibold">{entry.score}</span>
+                  </li>
+                ))
+              )}
+            </ol>
+          </div>
+        </aside>
+      </div>
+    </main>
+  );
+}
