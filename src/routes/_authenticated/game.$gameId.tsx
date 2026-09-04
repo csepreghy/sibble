@@ -115,11 +115,17 @@ function GamePage() {
 
   const preview = useMemo(() => {
     if (!state || pending.length === 0 || !words) return null;
-    const result = validateMove(state.board, pending, (word) => words.has(word));
+    const result = validateMove(state.board, pending, (word) => words.has(word), isNaughtyWord);
     const anchor = pending[pending.length - 1]!.index;
     return "error" in result
-      ? { valid: false, score: 0, anchor }
-      : { valid: true, score: result.score, anchor };
+      ? { valid: false, score: 0, anchor, naughty: false, indices: [] as number[] }
+      : {
+          valid: true,
+          score: result.score,
+          anchor,
+          naughty: result.naughtyIndices.length > 0,
+          indices: result.naughtyIndices,
+        };
   }, [state, pending, words]);
 
   // --- drag and drop -------------------------------------------------------
