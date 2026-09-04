@@ -120,12 +120,14 @@ export interface WordResult {
   word: string;
   score: number;
   indices: number[];
+  naughty?: boolean;
 }
 
 export interface MoveResult {
   words: WordResult[];
   score: number;
   bingo: boolean;
+  naughtyIndices: number[];
 }
 
 function tileAt(board: Board, pending: Map<number, Placement>, index: number): Tile | null {
