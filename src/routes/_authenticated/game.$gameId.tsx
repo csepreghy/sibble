@@ -489,6 +489,7 @@ function GamePage() {
             preview={preview}
             hoverIndex={hoverIndex}
             draggingIndex={draggingBoardIndex}
+            naughtyIndices={preview?.indices ?? []}
             onCellClick={handleCellClick}
             onTilePointerDown={handleBoardTilePointerDown}
           />
