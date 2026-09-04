@@ -47,6 +47,8 @@
   --color-dw: var(--dw);
   --color-tl: var(--tl);
   --color-dl: var(--dl);
+  --color-naughty: var(--naughty);
+  --color-naughty-foreground: var(--naughty-foreground);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
