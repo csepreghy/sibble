@@ -60,6 +60,8 @@ export interface GameState {
   consecutivePasses: number;
   finished: boolean;
   lastPlayed: number[];
+  /** bumped on every saved turn so two clients can't overwrite each other */
+  version?: number;
 }
 
 export interface Placement {
