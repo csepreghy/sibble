@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Shuffle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/hooks/useSession";
@@ -442,6 +443,14 @@ function GamePage() {
     await persist(next, "active", state.version ?? null);
   }
 
+  async function handleShuffle() {
+    if (!state || activeSeat === null || saving) return;
+    const racks: [string[], string[]] = [...state.racks] as [string[], string[]];
+    racks[activeSeat] = shuffleTiles(racks[activeSeat]);
+    const next: GameState = { ...state, racks };
+    await persist(next, game?.status ?? "active", state.version ?? null);
+  }
+
   async function join() {
     if (!user) return;
     const joined = await joinGame(gameId, user.id, displayNameOf(user));
@@ -567,6 +576,15 @@ function GamePage() {
                   disabled={!isMyTurn || saving}
                 >
                   Swap tiles
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={handleShuffle}
+                  disabled={saving || exchangeMode}
+                  className="gap-1.5"
+                >
+                  <Shuffle className="h-4 w-4" />
+                  Shuffle
                 </Button>
               </>
             )}
