@@ -225,11 +225,11 @@ export function GameBoard({
                     "relative flex aspect-square items-center justify-center rounded-[10px] bg-board-cell text-[0.5rem] font-bold leading-none transition-all duration-150 sm:text-[0.6rem]",
                     premium && !content && PREMIUM_CLASS[premium],
                     content && "tile-face",
-                    placed && "z-10 scale-105 shadow-md ring-2 ring-primary",
-                    tile && lastPlayed.includes(index) && "ring-1 ring-accent",
-                    !content && hoverIndex === index && "scale-110 ring-2 ring-primary/70",
+                    placed && "z-10 scale-105 shadow-md ring-4 ring-primary",
+                    tile && lastPlayed.includes(index) && "ring-3 ring-accent",
+                    !content && hoverIndex === index && "scale-110 ring-4 ring-primary/70",
                     !content && "hover:brightness-95",
-                    isNaughty && "z-10 ring-2 ring-naughty",
+                    isNaughty && "z-10 ring-4 ring-naughty",
                     isDragged && "opacity-30",
                   )}
                   aria-label={
@@ -245,7 +245,7 @@ export function GameBoard({
                       <span className="pointer-events-none text-[0.65rem] font-bold sm:text-sm">
                         {content.letter}
                       </span>
-                      <span className="pointer-events-none absolute bottom-0 right-0.5 text-[0.4rem] font-semibold opacity-70 sm:text-[0.5rem]">
+                      <span className="pointer-events-none absolute bottom-[5px] right-[5px] text-[0.4rem] font-semibold opacity-70 sm:text-[0.5rem]">
                         {content.blank ? "" : LETTER_VALUES[content.letter]}
                       </span>
                     </>
