@@ -140,6 +140,16 @@ function GamePage() {
         };
   }, [state, pending, words]);
 
+  // if the other player takes a square you were trying out, drop that trial tile
+  useEffect(() => {
+    if (!state || pending.length === 0) return;
+    const clashes = pending.filter((placement) => state.board[placement.index]);
+    if (clashes.length === 0) return;
+    setPending((current) => current.filter((placement) => !state.board[placement.index]));
+    toast.message("Some of your practice tiles were on squares the other player just used.");
+  }, [state, pending]);
+
+
   // --- drag and drop -------------------------------------------------------
   type DragSource = { type: "rack"; position: number } | { type: "board"; index: number };
   const [drag, setDrag] = useState<
