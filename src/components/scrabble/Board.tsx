@@ -22,6 +22,25 @@ const MAX_ZOOM = 3.5;
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
+function badgePosition(anchorIndex: number) {
+  const col = colOf(anchorIndex);
+  const row = rowOf(anchorIndex);
+  const nearRight = col >= SIZE - 2;
+  const nearTop = row <= 1;
+
+  return {
+    left: nearRight ? `${(col / SIZE) * 100}%` : `${((col + 1) / SIZE) * 100}%`,
+    top: nearTop ? `${((row + 1) / SIZE) * 100}%` : `${(row / SIZE) * 100}%`,
+    transform: nearRight
+      ? nearTop
+        ? "translate(-60%, 20%)"
+        : "translate(-60%, -70%)"
+      : nearTop
+        ? "translate(-40%, 20%)"
+        : "translate(-40%, -70%)",
+  };
+}
+
 export interface BoardPreview {
   valid: boolean;
   score: number;
@@ -245,11 +264,7 @@ export function GameBoard({
           {preview && anchorIndex !== null ? (
             <div
               className="pointer-events-none absolute z-20"
-              style={{
-                left: `${((colOf(anchorIndex) + 1) / SIZE) * 100}%`,
-                top: `${(rowOf(anchorIndex) / SIZE) * 100}%`,
-                transform: "translate(-40%, -70%)",
-              }}
+              style={badgePosition(anchorIndex)}
             >
               <span
                 className={cn(
