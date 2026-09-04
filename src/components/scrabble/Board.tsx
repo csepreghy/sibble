@@ -26,6 +26,7 @@ export interface BoardPreview {
   valid: boolean;
   score: number;
   anchor: number;
+  naughty?: boolean;
 }
 
 interface BoardProps {
@@ -35,6 +36,7 @@ interface BoardProps {
   preview?: BoardPreview | null;
   hoverIndex?: number | null;
   draggingIndex?: number | null;
+  naughtyIndices?: number[];
   onCellClick: (index: number) => void;
   onTilePointerDown?: (index: number, event: React.PointerEvent) => void;
 }
@@ -46,10 +48,13 @@ export function GameBoard({
   preview,
   hoverIndex,
   draggingIndex,
+  naughtyIndices,
   onCellClick,
   onTilePointerDown,
 }: BoardProps) {
   const pendingMap = new Map(pending.map((placement) => [placement.index, placement]));
+  const naughtySet = new Set(naughtyIndices ?? []);
+
 
   const viewportRef = useRef<HTMLDivElement>(null);
   const [zoom, setZoom] = useState(1);
