@@ -242,8 +242,16 @@ export function validateMove(
   if (invalid) return { error: `${invalid.word} is not in the word list.` };
 
   const bingo = placements.length === RACK_SIZE;
+  const naughtyIndices = new Set<number>();
+  for (const entry of words) {
+    if (isNaughtyWord(entry.word)) {
+      entry.naughty = true;
+      entry.score *= 2;
+      for (const index of entry.indices) naughtyIndices.add(index);
+    }
+  }
   const score = words.reduce((sum, entry) => sum + entry.score, 0) + (bingo ? 50 : 0);
-  return { words, score, bingo };
+  return { words, score, bingo, naughtyIndices: [...naughtyIndices] };
 }
 
 export function removeFromRack(rack: string[], placements: Placement[]): string[] | null {
