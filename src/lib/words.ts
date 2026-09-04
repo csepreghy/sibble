@@ -19,11 +19,17 @@ async function fetchList(path: string): Promise<Set<string>> {
 export function loadWordList(): Promise<Set<string>> {
   if (cache) return Promise.resolve(cache);
   if (pending) return pending;
-  pending = Promise.all([fetchList("/words.txt"), fetchList("/naughty-words.txt")])
-    .then(([dictionary, naughty]) => {
+  pending = Promise.all([
+    fetchList("/words.txt"),
+    fetchList("/naughty-words.txt"),
+    fetchList("/acronyms.txt"),
+  ])
+    .then(([dictionary, naughty, acronyms]) => {
       naughtyCache = naughty;
       // A handful of rude words are missing from the tournament list; they stay playable.
       for (const word of naughty) dictionary.add(word);
+      // Common acronyms (TV, MRI, ...) are playable too, scored normally.
+      for (const word of acronyms) dictionary.add(word);
       cache = dictionary;
       return cache;
     })
