@@ -112,6 +112,7 @@ export function createGameState(): GameState {
     consecutivePasses: 0,
     finished: false,
     lastPlayed: [],
+    version: 0,
   };
 }
 
