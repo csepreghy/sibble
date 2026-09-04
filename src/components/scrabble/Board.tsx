@@ -245,11 +245,7 @@ export function GameBoard({
           {preview && anchorIndex !== null ? (
             <div
               className="pointer-events-none absolute z-20"
-              style={{
-                left: `${((colOf(anchorIndex) + 1) / SIZE) * 100}%`,
-                top: `${(rowOf(anchorIndex) / SIZE) * 100}%`,
-                transform: "translate(-40%, -70%)",
-              }}
+              style={badgePosition(anchorIndex)}
             >
               <span
                 className={cn(
