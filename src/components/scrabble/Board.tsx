@@ -222,7 +222,7 @@ export function GameBoard({
                     if (placed) onTilePointerDown?.(index, event);
                   }}
                   className={cn(
-                    "relative flex aspect-square items-center justify-center rounded-[10px] bg-board-cell text-[0.5rem] font-bold leading-none transition-all duration-150 sm:text-[0.6rem]",
+                    "relative flex aspect-square items-center justify-center rounded-md bg-board-cell text-[0.5rem] font-bold leading-none transition-all duration-150 sm:text-[0.6rem]",
                     premium && !content && PREMIUM_CLASS[premium],
                     content && "tile-face",
                     placed && "z-10 scale-105 shadow-md ring-4 ring-primary",
