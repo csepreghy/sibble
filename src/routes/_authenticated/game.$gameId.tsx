@@ -540,6 +540,7 @@ function GamePage() {
       ...state,
       finished: true,
       resignedBy: game.solo ? undefined : activeSeat,
+      hiddenFor: [...(state.hiddenFor ?? []), activeSeat],
       history: [
         ...state.history,
         {
@@ -551,6 +552,7 @@ function GamePage() {
     };
     setPending([]);
     await persist(next, "finished", state.version ?? null);
+    navigate({ to: "/lobby" });
   }
 
   async function undoLastWord() {
