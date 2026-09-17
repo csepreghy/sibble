@@ -245,7 +245,7 @@ export function GameBoard({
                       <span className="pointer-events-none text-[clamp(0.6rem,2.9vw,1.15rem)] font-bold leading-none sm:text-lg">
                         {content.letter}
                       </span>
-                      <span className="pointer-events-none absolute bottom-[2px] right-[2px] text-[clamp(0.36rem,1.5vw,0.6rem)] font-semibold leading-none opacity-70">
+                      <span className="pointer-events-none absolute bottom-[2px] right-[2px] text-[clamp(0.32rem,1.35vw,0.55rem)] font-semibold leading-none opacity-70">
                         {content.blank ? "" : LETTER_VALUES[content.letter]}
                       </span>
                     </>
