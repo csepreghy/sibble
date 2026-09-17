@@ -758,7 +758,11 @@ function GamePage() {
                   : "Game over."
                 : waiting
                   ? "Waiting for the other player to open your link."
-                  : game.solo
+                  : pickPhase
+                    ? myPick
+                      ? "Choose a letter from the pool."
+                      : `${names[pickPhase.seat]} is choosing a letter.`
+                    : game.solo
                     ? `${names[state.turn]}'s move — you play both sides.`
                     : isMyTurn
                       ? "Your move."
