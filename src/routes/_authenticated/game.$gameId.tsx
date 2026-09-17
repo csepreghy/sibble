@@ -781,6 +781,17 @@ function GamePage() {
                 >
                   {game.solo ? "End game" : "Give up"}
                 </Button>
+                {admin ? (
+                  <Button
+                    variant="ghost"
+                    onClick={undoLastWord}
+                    disabled={saving || !(state.lastPlayed ?? []).length}
+                    className="gap-1.5"
+                  >
+                    <Undo2 className="h-4 w-4" />
+                    Undo last word
+                  </Button>
+                ) : null}
               </>
             )}
           </div>
