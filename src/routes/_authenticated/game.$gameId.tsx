@@ -118,6 +118,7 @@ function GamePage() {
 
   const [celebrate, setCelebrate] = useState(0);
   const [birdVisible, setBirdVisible] = useState(false);
+  const [resignNoticeClosed, setResignNoticeClosed] = useState(false);
   const seenHistoryRef = useRef<number | null>(null);
 
   const historyLength = state?.history.length ?? 0;
