@@ -76,6 +76,8 @@ export interface GameState {
   pick?: PickPhase | null;
   /** seat that gave up, when the game ended by resignation */
   resignedBy?: 0 | 1 | undefined;
+  /** seats for whom this game is hidden from their game list */
+  hiddenFor?: (0 | 1)[];
   /** bumped on every saved turn so two clients can't overwrite each other */
   version?: number;
 }

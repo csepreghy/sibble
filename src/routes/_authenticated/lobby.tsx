@@ -57,8 +57,11 @@ function Lobby() {
     navigate({ to: "/auth", replace: true });
   }
 
-  const ongoing = (games.data ?? []).filter((game) => game.status !== "finished");
-  const done = (games.data ?? []).filter((game) => game.status === "finished");
+  const visible = (games.data ?? []).filter(
+    (game) => !game.state?.hiddenFor?.includes(game.player1 === userId ? 0 : 1),
+  );
+  const ongoing = visible.filter((game) => game.status !== "finished");
+  const done = visible.filter((game) => game.status === "finished");
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">

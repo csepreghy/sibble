@@ -118,6 +118,7 @@ function GamePage() {
 
   const [celebrate, setCelebrate] = useState(0);
   const [birdVisible, setBirdVisible] = useState(false);
+  const [resignNoticeClosed, setResignNoticeClosed] = useState(false);
   const seenHistoryRef = useRef<number | null>(null);
 
   const historyLength = state?.history.length ?? 0;
@@ -540,6 +541,7 @@ function GamePage() {
       ...state,
       finished: true,
       resignedBy: game.solo ? undefined : activeSeat,
+      hiddenFor: [...(state.hiddenFor ?? []), activeSeat],
       history: [
         ...state.history,
         {
@@ -551,6 +553,7 @@ function GamePage() {
     };
     setPending([]);
     await persist(next, "finished", state.version ?? null);
+    navigate({ to: "/lobby" });
   }
 
   async function undoLastWord() {
@@ -687,6 +690,34 @@ function GamePage() {
                 </span>
                 <Button variant="secondary" onClick={() => setBirdVisible(false)}>
                   Close
+                </Button>
+              </div>
+            </div>
+          ) : null}
+          {!game.solo &&
+          state.resignedBy !== undefined &&
+          state.resignedBy !== null &&
+          state.resignedBy !== activeSeat &&
+          !resignNoticeClosed ? (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 backdrop-blur-sm"
+              role="dialog"
+              aria-label="Your opponent gave up"
+              onClick={() => setResignNoticeClosed(true)}
+            >
+              <div
+                className="animate-in zoom-in duration-200 relative flex max-w-sm flex-col items-center gap-4 rounded-2xl bg-card p-8 text-center shadow-panel"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <span className="text-5xl leading-none" aria-hidden>
+                  🏳️
+                </span>
+                <p className="text-lg font-bold">{names[state.resignedBy]} gave up</p>
+                <p className="text-sm text-muted-foreground">
+                  The game is over — you win this one.
+                </p>
+                <Button variant="secondary" onClick={() => setResignNoticeClosed(true)}>
+                  OK
                 </Button>
               </div>
             </div>
