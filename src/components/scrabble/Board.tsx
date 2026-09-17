@@ -201,7 +201,7 @@ export function GameBoard({
           }}
         >
           <div
-            className="grid gap-[3px] overflow-hidden rounded-md bg-white p-[3px] dark:bg-white"
+            className="grid gap-[3px] overflow-hidden rounded-[4px] bg-white p-[3px] dark:bg-white sm:rounded-md"
             style={{ gridTemplateColumns: `repeat(${SIZE}, minmax(0, 1fr))` }}
           >
             {board.map((tile, index) => {
@@ -222,14 +222,14 @@ export function GameBoard({
                     if (placed) onTilePointerDown?.(index, event);
                   }}
                   className={cn(
-                    "relative flex aspect-square items-center justify-center rounded-md bg-board-cell text-[0.5rem] font-bold leading-none transition-all duration-150 sm:text-[0.6rem]",
+                    "relative flex aspect-square items-center justify-center rounded-[4px] bg-board-cell text-[0.5rem] font-bold leading-none transition-all duration-150 sm:rounded-md sm:text-[0.6rem]",
                     premium && !content && PREMIUM_CLASS[premium],
                     content && "tile-face",
-                    placed && "z-10 shadow-md ring-[0.5px] ring-primary",
-                    tile && lastPlayed.includes(index) && "ring-[0.5px] ring-accent",
-                    !content && hoverIndex === index && "ring-[0.5px] ring-primary/70",
+                    placed && "z-10 shadow-md ring-[1.5px] ring-primary",
+                    tile && lastPlayed.includes(index) && "ring-[1.5px] ring-accent",
+                    !content && hoverIndex === index && "ring-[1.5px] ring-primary/70",
                     !content && "hover:brightness-95",
-                    isNaughty && "z-10 ring-[0.5px] ring-naughty",
+                    isNaughty && "z-10 ring-[1.5px] ring-naughty",
                     isDragged && "opacity-30",
                   )}
                   aria-label={
