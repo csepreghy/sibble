@@ -242,15 +242,15 @@ export function GameBoard({
                 >
                   {content ? (
                     <>
-                      <span className="pointer-events-none text-[0.85rem] font-bold sm:text-lg">
+                      <span className="pointer-events-none text-[clamp(0.6rem,2.9vw,1.15rem)] font-bold leading-none sm:text-lg">
                         {content.letter}
                       </span>
-                      <span className="pointer-events-none absolute bottom-[4px] right-[4px] text-[0.55rem] font-semibold opacity-70 sm:text-[0.7rem]">
+                      <span className="pointer-events-none absolute bottom-[2px] right-[2px] text-[clamp(0.42rem,1.9vw,0.7rem)] font-semibold leading-none opacity-70">
                         {content.blank ? "" : LETTER_VALUES[content.letter]}
                       </span>
                     </>
                   ) : index === CENTER ? (
-                    <span className="text-base">★</span>
+                    <span className="text-[0.65rem] leading-none sm:text-base">★</span>
                   ) : premium ? (
                     <span className="px-0.5 text-center text-[0.45rem] uppercase tracking-tight sm:text-[0.6rem]">
                       {PREMIUM_LABEL[premium]}
