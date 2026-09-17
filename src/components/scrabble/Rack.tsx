@@ -35,8 +35,8 @@ export function Rack({
             onPointerDown={(event) => onTilePointerDown?.(position, event)}
             className={cn(
               "tile-face relative flex aspect-square min-w-0 flex-1 basis-0 items-center justify-center rounded-md text-[clamp(1.15rem,5vw,1.6rem)] font-bold transition-all duration-150 hover:-translate-y-1 hover:shadow-lg active:scale-95 sm:max-w-12",
-              selected === position && !exchangeMode && "-translate-y-1.5 ring-2 ring-primary",
-              exchangeMode && exchangeSelection.includes(position) && "-translate-y-1.5 ring-2 ring-accent",
+              selected === position && !exchangeMode && "-translate-y-1.5 ring-1 sm:ring-2 ring-primary",
+              exchangeMode && exchangeSelection.includes(position) && "-translate-y-1.5 ring-1 sm:ring-2 ring-accent",
               draggingPosition === position && "opacity-30",
             )}
           >
