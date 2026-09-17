@@ -43,7 +43,7 @@ export async function createGame(opts: {
   name: string;
   solo: boolean;
 }): Promise<GameRow> {
-  const state = createGameState();
+  const state = createGameState({ draft: !opts.solo });
   const { data, error } = await supabase
     .from("games")
     .insert({
