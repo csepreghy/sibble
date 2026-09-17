@@ -225,11 +225,11 @@ export function GameBoard({
                     "relative flex aspect-square items-center justify-center rounded-md bg-board-cell text-[0.5rem] font-bold leading-none transition-all duration-150 sm:text-[0.6rem]",
                     premium && !content && PREMIUM_CLASS[premium],
                     content && "tile-face",
-                    placed && "z-10 scale-105 shadow-md ring-4 ring-primary",
-                    tile && lastPlayed.includes(index) && "ring-1 sm:ring-3 ring-accent",
-                    !content && hoverIndex === index && "scale-110 ring-4 ring-primary/70",
+                    placed && "z-10 shadow-md ring-2 ring-primary",
+                    tile && lastPlayed.includes(index) && "ring-1 sm:ring-2 ring-accent",
+                    !content && hoverIndex === index && "ring-2 ring-primary/70",
                     !content && "hover:brightness-95",
-                    isNaughty && "z-10 ring-4 ring-naughty",
+                    isNaughty && "z-10 ring-2 ring-naughty",
                     isDragged && "opacity-30",
                   )}
                   aria-label={
