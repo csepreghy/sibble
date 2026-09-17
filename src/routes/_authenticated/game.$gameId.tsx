@@ -72,6 +72,13 @@ function GamePage() {
   });
   const game = gameQuery.data ?? null;
 
+  const adminQuery = useQuery({
+    queryKey: ["admin", user?.id],
+    queryFn: () => isAdmin(user!.id),
+    enabled: Boolean(user?.id),
+  });
+  const admin = adminQuery.data === true;
+
   useEffect(() => {
     loadWordList()
       .then(setWords)
