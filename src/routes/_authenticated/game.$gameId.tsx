@@ -634,6 +634,22 @@ function GamePage() {
               </div>
             </div>
           ) : null}
+          {pickPhase && game.status === "active" ? (
+            <LetterPool
+              bag={state.bag}
+              canPick={myPick}
+              disabled={saving}
+              title={pickPhase.kind === "draft" ? "Choose your tiles" : "Bonus pick"}
+              subtitle={
+                myPick
+                  ? pickPhase.kind === "draft"
+                    ? `Your pick — tap a letter (${state.racks[activeSeat ?? 0]?.length ?? 0} of ${RACK_SIZE}).`
+                    : "You played three or more tiles — choose one letter, the rest come at random."
+                  : `Waiting for ${names[pickPhase.seat]} to choose a letter.`
+              }
+              onPick={pickLetter}
+            />
+          ) : null}
           <GameBoard
             board={state.board}
             pending={pending}
