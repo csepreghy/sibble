@@ -16,6 +16,7 @@ import {
 import { isNaughtyWord, loadWordList } from "@/lib/words";
 import {
   LETTER_VALUES,
+  RACK_SIZE,
   draw,
   removeFromRack,
   validateMove,
@@ -23,6 +24,7 @@ import {
   type Placement,
 } from "@/lib/scrabble";
 import { GameBoard } from "@/components/scrabble/Board";
+import { LetterPool } from "@/components/scrabble/LetterPool";
 import { Rack } from "@/components/scrabble/Rack";
 import { Fireworks } from "@/components/scrabble/Fireworks";
 import { Button } from "@/components/ui/button";
