@@ -768,9 +768,6 @@ function GamePage() {
                       ? "Your move."
                       : `Waiting for ${names[state.turn]}.`}
             </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {state.bag.length} tiles left in the bag
-            </p>
             {lastEntry ? (
               <div className="mt-4 rounded-lg border border-border bg-secondary/60 p-3">
                 <p className="text-[0.65rem] font-bold uppercase tracking-wide text-muted-foreground">
@@ -786,6 +783,9 @@ function GamePage() {
               </div>
             ) : null}
           </div>
+          <p className="text-sm font-bold text-foreground">
+            {state.bag.length} tiles left in the bag
+          </p>
 
           <div className="rounded-xl border border-border bg-card p-4">
             <h3 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
