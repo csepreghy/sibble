@@ -201,7 +201,7 @@ export function GameBoard({
           }}
         >
           <div
-            className="grid gap-[5px] overflow-hidden rounded-md bg-white p-[5px] dark:bg-white"
+            className="grid gap-[3px] overflow-hidden rounded-md bg-white p-[3px] dark:bg-white"
             style={{ gridTemplateColumns: `repeat(${SIZE}, minmax(0, 1fr))` }}
           >
             {board.map((tile, index) => {
