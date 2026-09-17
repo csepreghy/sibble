@@ -242,17 +242,17 @@ export function GameBoard({
                 >
                   {content ? (
                     <>
-                      <span className="pointer-events-none text-[0.65rem] font-bold sm:text-sm">
+                      <span className="pointer-events-none text-[0.85rem] font-bold sm:text-lg">
                         {content.letter}
                       </span>
-                      <span className="pointer-events-none absolute bottom-[5px] right-[5px] text-[0.4rem] font-semibold opacity-70 sm:text-[0.5rem]">
+                      <span className="pointer-events-none absolute bottom-[4px] right-[4px] text-[0.55rem] font-semibold opacity-70 sm:text-[0.7rem]">
                         {content.blank ? "" : LETTER_VALUES[content.letter]}
                       </span>
                     </>
                   ) : index === CENTER ? (
-                    <span className="text-sm">★</span>
+                    <span className="text-base">★</span>
                   ) : premium ? (
-                    <span className="px-0.5 text-center text-[0.35rem] uppercase tracking-tight sm:text-[0.45rem]">
+                    <span className="px-0.5 text-center text-[0.45rem] uppercase tracking-tight sm:text-[0.6rem]">
                       {PREMIUM_LABEL[premium]}
                     </span>
                   ) : null}
@@ -268,7 +268,7 @@ export function GameBoard({
             >
               <span
                 className={cn(
-                  "flex animate-in items-center gap-1 rounded-full px-2 py-0.5 text-[0.6rem] font-bold shadow-panel zoom-in duration-200",
+                  "flex animate-in items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold shadow-panel zoom-in duration-200",
                   !preview.valid
                     ? "bg-destructive text-destructive-foreground"
                     : preview.naughty

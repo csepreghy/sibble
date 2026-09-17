@@ -34,14 +34,14 @@ export function Rack({
             onClick={() => onSelect(position)}
             onPointerDown={(event) => onTilePointerDown?.(position, event)}
             className={cn(
-              "tile-face relative flex aspect-square min-w-0 flex-1 basis-0 items-center justify-center rounded-md text-[clamp(0.95rem,4.2vw,1.25rem)] font-bold transition-all duration-150 hover:-translate-y-1 hover:shadow-lg active:scale-95 sm:max-w-12",
+              "tile-face relative flex aspect-square min-w-0 flex-1 basis-0 items-center justify-center rounded-md text-[clamp(1.15rem,5vw,1.6rem)] font-bold transition-all duration-150 hover:-translate-y-1 hover:shadow-lg active:scale-95 sm:max-w-12",
               selected === position && !exchangeMode && "-translate-y-1.5 ring-4 ring-primary",
               exchangeMode && exchangeSelection.includes(position) && "-translate-y-1.5 ring-4 ring-accent",
               draggingPosition === position && "opacity-30",
             )}
           >
             <span className="pointer-events-none">{letter === "?" ? "" : letter}</span>
-            <span className="pointer-events-none absolute bottom-[5px] right-[5px] text-[0.55rem] font-semibold opacity-70 sm:text-[0.6rem]">
+            <span className="pointer-events-none absolute bottom-[4px] right-[4px] text-[0.65rem] font-semibold opacity-70 sm:text-[0.75rem]">
               {letter === "?" ? "" : LETTER_VALUES[letter]}
             </span>
           </button>
