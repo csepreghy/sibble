@@ -691,7 +691,7 @@ function GamePage() {
               </div>
             </div>
           ) : null}
-          {pickPhase && game.status === "active" ? (
+          {pickPhase && game.status === "active" && (pickPhase.kind === "draft" || myPick) ? (
             <LetterPool
               bag={state.bag}
               canPick={myPick}
