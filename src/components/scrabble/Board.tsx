@@ -226,7 +226,7 @@ export function GameBoard({
                     premium && !content && PREMIUM_CLASS[premium],
                     content && "tile-face",
                     placed && "z-10 scale-105 shadow-md ring-4 ring-primary",
-                    tile && lastPlayed.includes(index) && "ring-3 ring-accent",
+                    tile && lastPlayed.includes(index) && "ring-1 sm:ring-3 ring-accent",
                     !content && hoverIndex === index && "scale-110 ring-4 ring-primary/70",
                     !content && "hover:brightness-95",
                     isNaughty && "z-10 ring-4 ring-naughty",
@@ -245,7 +245,7 @@ export function GameBoard({
                       <span className="pointer-events-none text-[clamp(0.6rem,2.9vw,1.15rem)] font-bold leading-none sm:text-lg">
                         {content.letter}
                       </span>
-                      <span className="pointer-events-none absolute bottom-[2px] right-[2px] text-[clamp(0.42rem,1.9vw,0.7rem)] font-semibold leading-none opacity-70">
+                      <span className="pointer-events-none absolute bottom-[2px] right-[2px] text-[clamp(0.36rem,1.5vw,0.6rem)] font-semibold leading-none opacity-70">
                         {content.blank ? "" : LETTER_VALUES[content.letter]}
                       </span>
                     </>
