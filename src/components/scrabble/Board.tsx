@@ -4,10 +4,10 @@ import { CENTER, LETTER_VALUES, SIZE, colOf, premiumAt, rowOf, type Board, type 
 import { cn } from "@/lib/utils";
 
 const PREMIUM_LABEL: Record<string, string> = {
-  TW: "TRIPLE WORD",
-  DW: "DOUBLE WORD",
-  TL: "TRIPLE LETTER",
-  DL: "DOUBLE LETTER",
+  TW: "TW",
+  DW: "DW",
+  TL: "TL",
+  DL: "DL",
 };
 
 const PREMIUM_CLASS: Record<string, string> = {
