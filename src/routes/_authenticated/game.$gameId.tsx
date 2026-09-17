@@ -481,6 +481,46 @@ function GamePage() {
     await persist(next, game?.status ?? "active", state.version ?? null);
   }
 
+  async function pickLetter(letter: string) {
+    if (!state || !game || activeSeat === null || saving) return;
+    const phase = state.pick;
+    if (!phase || phase.seat !== activeSeat || game.status !== "active") return;
+
+    const bag = [...state.bag];
+    const at = bag.indexOf(letter);
+    if (at === -1) return;
+    bag.splice(at, 1);
+    const racks: [string[], string[]] = [...state.racks] as [string[], string[]];
+    racks[phase.seat] = [...racks[phase.seat], letter];
+
+    let next: GameState;
+    if (phase.kind === "draft") {
+      const other: 0 | 1 = phase.seat === 0 ? 1 : 0;
+      const done = racks[0].length >= RACK_SIZE && racks[1].length >= RACK_SIZE;
+      const nextSeat: 0 | 1 = racks[other].length < RACK_SIZE ? other : phase.seat;
+      const first: 0 | 1 = phase.first ?? 0;
+      next = {
+        ...state,
+        bag,
+        racks,
+        pick: done ? null : { ...phase, seat: nextSeat },
+        turn: done ? first : state.turn,
+      };
+    } else {
+      // the free pick lands first, then the rack tops up at random as usual
+      const refilled = draw(bag, racks[phase.seat]);
+      racks[phase.seat] = refilled.rack;
+      next = {
+        ...state,
+        bag: refilled.bag,
+        racks,
+        pick: null,
+        turn: phase.seat === 0 ? 1 : 0,
+      };
+    }
+    await persist(next, game.status, state.version ?? null);
+  }
+
   async function resign() {
     if (!state || !game || activeSeat === null || saving) return;
     if (game.status !== "active") return;
