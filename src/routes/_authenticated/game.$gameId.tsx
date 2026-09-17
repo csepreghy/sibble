@@ -620,7 +620,7 @@ function GamePage() {
             ) : (
               <>
                 <Button onClick={playMove} disabled={!isMyTurn || saving || !words}>
-                  {isMyTurn ? "Play word" : "Waiting for your turn"}
+                  {isMyTurn ? "Play word" : "Your turn"}
                 </Button>
                 <Button variant="secondary" onClick={() => setPending([])} disabled={!pending.length}>
                   Recall tiles
