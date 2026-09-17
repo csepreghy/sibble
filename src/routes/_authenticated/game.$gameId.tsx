@@ -124,12 +124,23 @@ function GamePage() {
     }
   }, [historyLength]);
 
+  const pickPhase = state?.pick ?? null;
+  const myPick = Boolean(
+    pickPhase && activeSeat !== null && pickPhase.seat === activeSeat && game?.status === "active",
+  );
+
   const isMyTurn = Boolean(
-    state && activeSeat !== null && state.turn === activeSeat && game?.status === "active",
+    state &&
+      !pickPhase &&
+      activeSeat !== null &&
+      state.turn === activeSeat &&
+      game?.status === "active",
   );
 
   // tiles can be tried out on the board at any time; only submitting needs your turn
-  const canPlace = Boolean(state && activeSeat !== null && game?.status === "active");
+  const canPlace = Boolean(
+    state && !pickPhase && activeSeat !== null && game?.status === "active",
+  );
 
   const rack = state && activeSeat !== null ? (state.racks[activeSeat] ?? []) : [];
   const remainingRack = useMemo(() => {
