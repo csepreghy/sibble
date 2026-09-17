@@ -61,6 +61,11 @@ export async function createGame(opts: {
   return data as unknown as GameRow;
 }
 
+export async function deleteGame(gameId: string) {
+  const { error } = await supabase.from("games").delete().eq("id", gameId);
+  if (error) throw error;
+}
+
 export async function joinGame(gameId: string, userId: string, name: string) {
   const { data, error } = await supabase
     .from("games")
