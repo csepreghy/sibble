@@ -123,22 +123,36 @@ export function draw(bag: string[], rack: string[]): { bag: string[]; rack: stri
   return { bag: nextBag, rack: nextRack };
 }
 
-export function createGameState(): GameState {
+export function createGameState(opts: { draft?: boolean } = {}): GameState {
   let bag = createBag();
-  const first = draw(bag, []);
-  bag = first.bag;
-  const second = draw(bag, []);
-  bag = second.bag;
+  let racks: [string[], string[]] = [[], []];
+  let pick: PickPhase | null = null;
+  let turn: 0 | 1 = 0;
+
+  if (opts.draft) {
+    // nobody is dealt anything: a coin toss decides who picks (and plays) first
+    const first: 0 | 1 = Math.random() < 0.5 ? 0 : 1;
+    pick = { kind: "draft", seat: first, first };
+    turn = first;
+  } else {
+    const one = draw(bag, []);
+    bag = one.bag;
+    const two = draw(bag, []);
+    bag = two.bag;
+    racks = [one.rack, two.rack];
+  }
+
   return {
     board: Array<Tile | null>(SIZE * SIZE).fill(null),
     bag,
-    racks: [first.rack, second.rack],
+    racks,
     scores: [0, 0],
-    turn: 0,
+    turn,
     history: [],
     consecutivePasses: 0,
     finished: false,
     lastPlayed: [],
+    pick,
     version: 0,
   };
 }
