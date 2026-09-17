@@ -229,7 +229,7 @@ export function GameBoard({
                     tile && lastPlayed.includes(index) && "ring-1 ring-accent",
                     !content && hoverIndex === index && "ring-1 ring-primary/70",
                     !content && "hover:brightness-95",
-                    isNaughty && "z-10 ring-2 ring-naughty",
+                    isNaughty && "z-10 ring-1 ring-naughty",
                     isDragged && "opacity-30",
                   )}
                   aria-label={
