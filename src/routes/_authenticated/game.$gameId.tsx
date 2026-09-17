@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Shuffle } from "lucide-react";
+import { Shuffle, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/hooks/useSession";
@@ -9,6 +9,7 @@ import {
   ConflictError,
   displayNameOf,
   fetchGame,
+  isAdmin,
   joinGame,
   saveState,
   type GameRow,
@@ -70,6 +71,13 @@ function GamePage() {
     queryFn: () => fetchGame(gameId),
   });
   const game = gameQuery.data ?? null;
+
+  const adminQuery = useQuery({
+    queryKey: ["admin", user?.id],
+    queryFn: () => isAdmin(user!.id),
+    enabled: Boolean(user?.id),
+  });
+  const admin = adminQuery.data === true;
 
   useEffect(() => {
     loadWordList()
@@ -545,6 +553,55 @@ function GamePage() {
     await persist(next, "finished", state.version ?? null);
   }
 
+  async function undoLastWord() {
+    if (!state || !game || saving) return;
+    const indices = (state.lastPlayed ?? []).filter((index) => state.board[index]);
+    const entry = state.history[state.history.length - 1] ?? null;
+    if (indices.length === 0 || !entry) {
+      toast.message("There's no played word to take back.");
+      return;
+    }
+    const seat = state.board[indices[0]!]!.player;
+    if (!window.confirm(`Take back ${names[seat]}'s last word (${entry.description})?`)) return;
+
+    const board = [...state.board];
+    const returned: string[] = [];
+    for (const index of indices) {
+      const tile = board[index]!;
+      returned.push(tile.blank ? "?" : tile.letter);
+      board[index] = null;
+    }
+
+    // the mover's rack was topped up after the move: put those draws back in the
+    // bag so the rack ends up the size it was before the word was played
+    const rack = [...state.racks[seat]];
+    const drawnBack = rack.splice(Math.max(0, rack.length - returned.length), returned.length);
+    const racks: [string[], string[]] = [...state.racks] as [string[], string[]];
+    racks[seat] = [...returned, ...rack];
+
+    const scores: [number, number] = [...state.scores] as [number, number];
+    scores[seat] -= entry.score;
+
+    const next: GameState = {
+      ...state,
+      board,
+      bag: shuffleTiles([...state.bag, ...drawnBack]),
+      racks,
+      scores,
+      turn: seat,
+      pick: null,
+      finished: false,
+      resignedBy: undefined,
+      consecutivePasses: 0,
+      lastPlayed: [],
+      history: state.history.slice(0, -1),
+    };
+    setPending([]);
+    setSelected(null);
+    await persist(next, "active", state.version ?? null);
+    toast.success("Last word taken back.");
+  }
+
   async function join() {
     if (!user) return;
     const joined = await joinGame(gameId, user.id, displayNameOf(user));
@@ -724,6 +781,17 @@ function GamePage() {
                 >
                   {game.solo ? "End game" : "Give up"}
                 </Button>
+                {admin ? (
+                  <Button
+                    variant="ghost"
+                    onClick={undoLastWord}
+                    disabled={saving || !(state.lastPlayed ?? []).length}
+                    className="gap-1.5"
+                  >
+                    <Undo2 className="h-4 w-4" />
+                    Undo last word
+                  </Button>
+                ) : null}
               </>
             )}
           </div>
