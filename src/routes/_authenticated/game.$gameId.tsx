@@ -383,7 +383,9 @@ function GamePage() {
       const tile = board[index];
       if (tile && !tile.naughty) board[index] = { ...tile, naughty: true };
     }
-    const refilled = draw(state.bag, nextRack);
+    // three tiles or more earns one free choice from the pool before the rest refill
+    const earnsPick = !game.solo && pending.length >= 3 && state.bag.length > 0;
+    const refilled = earnsPick ? { bag: state.bag, rack: nextRack } : draw(state.bag, nextRack);
     const racks: [string[], string[]] = [...state.racks] as [string[], string[]];
     racks[activeSeat] = refilled.rack;
 
@@ -396,7 +398,8 @@ function GamePage() {
       bag: refilled.bag,
       racks,
       scores,
-      turn: activeSeat === 0 ? 1 : 0,
+      turn: earnsPick ? activeSeat : activeSeat === 0 ? 1 : 0,
+      pick: earnsPick ? { kind: "bonus", seat: activeSeat } : null,
       consecutivePasses: 0,
       lastPlayed: pending.map((placement) => placement.index),
       history: [
