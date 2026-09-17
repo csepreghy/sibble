@@ -50,6 +50,18 @@ export interface HistoryEntry {
   score: number;
 }
 
+/**
+ * An open pick: players choose letters from the visible pool instead of being
+ * dealt at random. "draft" is the opening alternating pick, "bonus" is the
+ * single free choice a player earns by playing three or more tiles.
+ */
+export interface PickPhase {
+  kind: "draft" | "bonus";
+  seat: 0 | 1;
+  /** draft only: the seat that picked first and therefore plays first */
+  first?: 0 | 1;
+}
+
 export interface GameState {
   board: Board;
   bag: string[];
@@ -60,10 +72,23 @@ export interface GameState {
   consecutivePasses: number;
   finished: boolean;
   lastPlayed: number[];
+  /** set while somebody is choosing a letter from the pool */
+  pick?: PickPhase | null;
   /** seat that gave up, when the game ended by resignation */
   resignedBy?: 0 | 1 | undefined;
   /** bumped on every saved turn so two clients can't overwrite each other */
   version?: number;
+}
+
+/** how many of each letter are still in the bag, sorted A-Z with blanks last */
+export function bagCounts(bag: string[]): { letter: string; count: number }[] {
+  const counts = new Map<string, number>();
+  for (const letter of bag) counts.set(letter, (counts.get(letter) ?? 0) + 1);
+  return [...counts.entries()]
+    .map(([letter, count]) => ({ letter, count }))
+    .sort((a, b) =>
+      a.letter === "?" ? 1 : b.letter === "?" ? -1 : a.letter.localeCompare(b.letter),
+    );
 }
 
 export interface Placement {
@@ -98,22 +123,36 @@ export function draw(bag: string[], rack: string[]): { bag: string[]; rack: stri
   return { bag: nextBag, rack: nextRack };
 }
 
-export function createGameState(): GameState {
+export function createGameState(opts: { draft?: boolean } = {}): GameState {
   let bag = createBag();
-  const first = draw(bag, []);
-  bag = first.bag;
-  const second = draw(bag, []);
-  bag = second.bag;
+  let racks: [string[], string[]] = [[], []];
+  let pick: PickPhase | null = null;
+  let turn: 0 | 1 = 0;
+
+  if (opts.draft) {
+    // nobody is dealt anything: a coin toss decides who picks (and plays) first
+    const first: 0 | 1 = Math.random() < 0.5 ? 0 : 1;
+    pick = { kind: "draft", seat: first, first };
+    turn = first;
+  } else {
+    const one = draw(bag, []);
+    bag = one.bag;
+    const two = draw(bag, []);
+    bag = two.bag;
+    racks = [one.rack, two.rack];
+  }
+
   return {
     board: Array<Tile | null>(SIZE * SIZE).fill(null),
     bag,
-    racks: [first.rack, second.rack],
+    racks,
     scores: [0, 0],
-    turn: 0,
+    turn,
     history: [],
     consecutivePasses: 0,
     finished: false,
     lastPlayed: [],
+    pick,
     version: 0,
   };
 }

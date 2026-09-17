@@ -16,6 +16,7 @@ import {
 import { isNaughtyWord, loadWordList } from "@/lib/words";
 import {
   LETTER_VALUES,
+  RACK_SIZE,
   draw,
   removeFromRack,
   validateMove,
@@ -23,6 +24,7 @@ import {
   type Placement,
 } from "@/lib/scrabble";
 import { GameBoard } from "@/components/scrabble/Board";
+import { LetterPool } from "@/components/scrabble/LetterPool";
 import { Rack } from "@/components/scrabble/Rack";
 import { Fireworks } from "@/components/scrabble/Fireworks";
 import { Button } from "@/components/ui/button";
@@ -122,12 +124,23 @@ function GamePage() {
     }
   }, [historyLength]);
 
+  const pickPhase = state?.pick ?? null;
+  const myPick = Boolean(
+    pickPhase && activeSeat !== null && pickPhase.seat === activeSeat && game?.status === "active",
+  );
+
   const isMyTurn = Boolean(
-    state && activeSeat !== null && state.turn === activeSeat && game?.status === "active",
+    state &&
+      !pickPhase &&
+      activeSeat !== null &&
+      state.turn === activeSeat &&
+      game?.status === "active",
   );
 
   // tiles can be tried out on the board at any time; only submitting needs your turn
-  const canPlace = Boolean(state && activeSeat !== null && game?.status === "active");
+  const canPlace = Boolean(
+    state && !pickPhase && activeSeat !== null && game?.status === "active",
+  );
 
   const rack = state && activeSeat !== null ? (state.racks[activeSeat] ?? []) : [];
   const remainingRack = useMemo(() => {
@@ -370,7 +383,9 @@ function GamePage() {
       const tile = board[index];
       if (tile && !tile.naughty) board[index] = { ...tile, naughty: true };
     }
-    const refilled = draw(state.bag, nextRack);
+    // three tiles or more earns one free choice from the pool before the rest refill
+    const earnsPick = !game.solo && pending.length >= 3 && state.bag.length > 0;
+    const refilled = earnsPick ? { bag: state.bag, rack: nextRack } : draw(state.bag, nextRack);
     const racks: [string[], string[]] = [...state.racks] as [string[], string[]];
     racks[activeSeat] = refilled.rack;
 
@@ -383,7 +398,8 @@ function GamePage() {
       bag: refilled.bag,
       racks,
       scores,
-      turn: activeSeat === 0 ? 1 : 0,
+      turn: earnsPick ? activeSeat : activeSeat === 0 ? 1 : 0,
+      pick: earnsPick ? { kind: "bonus", seat: activeSeat } : null,
       consecutivePasses: 0,
       lastPlayed: pending.map((placement) => placement.index),
       history: [
@@ -463,6 +479,46 @@ function GamePage() {
     racks[activeSeat] = shuffleTiles(racks[activeSeat]);
     const next: GameState = { ...state, racks };
     await persist(next, game?.status ?? "active", state.version ?? null);
+  }
+
+  async function pickLetter(letter: string) {
+    if (!state || !game || activeSeat === null || saving) return;
+    const phase = state.pick;
+    if (!phase || phase.seat !== activeSeat || game.status !== "active") return;
+
+    const bag = [...state.bag];
+    const at = bag.indexOf(letter);
+    if (at === -1) return;
+    bag.splice(at, 1);
+    const racks: [string[], string[]] = [...state.racks] as [string[], string[]];
+    racks[phase.seat] = [...racks[phase.seat], letter];
+
+    let next: GameState;
+    if (phase.kind === "draft") {
+      const other: 0 | 1 = phase.seat === 0 ? 1 : 0;
+      const done = racks[0].length >= RACK_SIZE && racks[1].length >= RACK_SIZE;
+      const nextSeat: 0 | 1 = racks[other].length < RACK_SIZE ? other : phase.seat;
+      const first: 0 | 1 = phase.first ?? 0;
+      next = {
+        ...state,
+        bag,
+        racks,
+        pick: done ? null : { ...phase, seat: nextSeat },
+        turn: done ? first : state.turn,
+      };
+    } else {
+      // the free pick lands first, then the rack tops up at random as usual
+      const refilled = draw(bag, racks[phase.seat]);
+      racks[phase.seat] = refilled.rack;
+      next = {
+        ...state,
+        bag: refilled.bag,
+        racks,
+        pick: null,
+        turn: phase.seat === 0 ? 1 : 0,
+      };
+    }
+    await persist(next, game.status, state.version ?? null);
   }
 
   async function resign() {
@@ -578,6 +634,22 @@ function GamePage() {
               </div>
             </div>
           ) : null}
+          {pickPhase && game.status === "active" ? (
+            <LetterPool
+              bag={state.bag}
+              canPick={myPick}
+              disabled={saving}
+              title={pickPhase.kind === "draft" ? "Choose your tiles" : "Bonus pick"}
+              subtitle={
+                myPick
+                  ? pickPhase.kind === "draft"
+                    ? `Your pick — tap a letter (${state.racks[activeSeat ?? 0]?.length ?? 0} of ${RACK_SIZE}).`
+                    : "You played three or more tiles — choose one letter, the rest come at random."
+                  : `Waiting for ${names[pickPhase.seat]} to choose a letter.`
+              }
+              onPick={pickLetter}
+            />
+          ) : null}
           <GameBoard
             board={state.board}
             pending={pending}
@@ -686,7 +758,11 @@ function GamePage() {
                   : "Game over."
                 : waiting
                   ? "Waiting for the other player to open your link."
-                  : game.solo
+                  : pickPhase
+                    ? myPick
+                      ? "Choose a letter from the pool."
+                      : `${names[pickPhase.seat]} is choosing a letter.`
+                    : game.solo
                     ? `${names[state.turn]}'s move — you play both sides.`
                     : isMyTurn
                       ? "Your move."
