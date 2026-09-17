@@ -694,6 +694,34 @@ function GamePage() {
               </div>
             </div>
           ) : null}
+          {!game.solo &&
+          state.resignedBy !== undefined &&
+          state.resignedBy !== null &&
+          state.resignedBy !== activeSeat &&
+          !resignNoticeClosed ? (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 backdrop-blur-sm"
+              role="dialog"
+              aria-label="Your opponent gave up"
+              onClick={() => setResignNoticeClosed(true)}
+            >
+              <div
+                className="animate-in zoom-in duration-200 relative flex max-w-sm flex-col items-center gap-4 rounded-2xl bg-card p-8 text-center shadow-panel"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <span className="text-5xl leading-none" aria-hidden>
+                  🏳️
+                </span>
+                <p className="text-lg font-bold">{names[state.resignedBy]} gave up</p>
+                <p className="text-sm text-muted-foreground">
+                  The game is over — you win this one.
+                </p>
+                <Button variant="secondary" onClick={() => setResignNoticeClosed(true)}>
+                  OK
+                </Button>
+              </div>
+            </div>
+          ) : null}
           {pickPhase && game.status === "active" && (pickPhase.kind === "draft" || myPick) ? (
             <LetterPool
               bag={state.bag}
