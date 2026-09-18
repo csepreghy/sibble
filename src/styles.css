@@ -231,7 +231,10 @@
 @utility tile-pink-fill {
   background: linear-gradient(180deg, var(--naughty) 0%, var(--naughty-deep) 100%);
   color: var(--naughty-foreground);
-  box-shadow: var(--shadow-tile);
+  box-shadow:
+    var(--shadow-tile),
+    0 0 10px color-mix(in oklab, var(--naughty) 70%, transparent),
+    0 0 24px color-mix(in oklab, var(--naughty) 35%, transparent);
 }
 
 /* ============================================================
