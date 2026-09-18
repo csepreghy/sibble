@@ -104,6 +104,7 @@
   --accent-deep: oklch(0.45 0.1 200);
   --naughty-deep: oklch(0.55 0.2 350);
   --glow: oklch(0.34 0.05 160);
+  --placing: oklch(0.92 0.2 125);
 
 
 
@@ -212,6 +213,16 @@
     var(--shadow-tile),
     0 0 10px color-mix(in oklab, var(--accent) 70%, transparent),
     0 0 24px color-mix(in oklab, var(--accent) 35%, transparent);
+}
+
+/* Tiles the player is currently placing: a distinct bright outline,
+   never the same hue as the last-played highlight. */
+@utility tile-placing {
+  outline: 1.5px solid var(--placing);
+  outline-offset: -1.5px;
+  box-shadow:
+    var(--shadow-tile),
+    0 0 8px color-mix(in oklab, var(--placing) 55%, transparent);
 }
 
 @utility tile-pink-fill {
