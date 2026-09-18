@@ -11,20 +11,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useSession } from "@/hooks/useSession";
-import { isAdmin } from "@/lib/games";
 import { DEFAULT_THEME, fetchTheme, saveTheme, THEMES, themeName } from "@/lib/theme";
 
-/** Admin-only picker. The chosen palette applies to everyone, live. */
+/** Anyone can pick. The chosen palette applies to everyone, live. */
 export function ThemeSelector() {
   const { user } = useSession();
   const userId = user?.id ?? "";
   const queryClient = useQueryClient();
-
-  const admin = useQuery({
-    queryKey: ["admin", userId],
-    queryFn: () => isAdmin(userId),
-    enabled: Boolean(userId),
-  });
 
   const active = useQuery({
     queryKey: ["app-theme"],
@@ -41,7 +34,6 @@ export function ThemeSelector() {
     onError: () => toast.error("Couldn't change the theme. Please try again."),
   });
 
-  if (admin.data !== true) return null;
 
   return (
     <DropdownMenu>
