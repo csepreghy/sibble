@@ -138,9 +138,14 @@ function GamePage() {
     pickPhase && activeSeat !== null && pickPhase.seat === activeSeat && game?.status === "active",
   );
 
+  // a bonus pick only blocks the picker; the opponent can carry on with their turn
+  const blockedByPick = Boolean(
+    pickPhase && (pickPhase.kind === "draft" || pickPhase.seat === activeSeat),
+  );
+
   const isMyTurn = Boolean(
     state &&
-      !pickPhase &&
+      !blockedByPick &&
       activeSeat !== null &&
       state.turn === activeSeat &&
       game?.status === "active",
@@ -148,7 +153,7 @@ function GamePage() {
 
   // tiles can be tried out on the board at any time; only submitting needs your turn
   const canPlace = Boolean(
-    state && !pickPhase && activeSeat !== null && game?.status === "active",
+    state && !blockedByPick && activeSeat !== null && game?.status === "active",
   );
 
   const rack = state && activeSeat !== null ? (state.racks[activeSeat] ?? []) : [];
@@ -407,7 +412,7 @@ function GamePage() {
       bag: refilled.bag,
       racks,
       scores,
-      turn: earnsPick ? activeSeat : activeSeat === 0 ? 1 : 0,
+      turn: activeSeat === 0 ? 1 : 0,
       pick: earnsPick ? { kind: "bonus", seat: activeSeat } : null,
       consecutivePasses: 0,
       lastPlayed: pending.map((placement) => placement.index),
@@ -524,7 +529,6 @@ function GamePage() {
         bag: refilled.bag,
         racks,
         pick: null,
-        turn: phase.seat === 0 ? 1 : 0,
       };
     }
     await persist(next, game.status, state.version ?? null);
@@ -857,10 +861,10 @@ function GamePage() {
                   : "Game over."
                 : waiting
                   ? "Waiting for the other player to open your link."
-                  : pickPhase
+                  : blockedByPick
                     ? myPick
                       ? "Choose a letter from the pool."
-                      : `${names[pickPhase.seat]} is choosing a letter.`
+                      : `${names[pickPhase!.seat]} is choosing a letter.`
                     : game.solo
                     ? `${names[state.turn]}'s move — you play both sides.`
                     : isMyTurn
