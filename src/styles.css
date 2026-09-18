@@ -207,10 +207,6 @@
     mix-blend-mode: screen;
   }
 
-  /* Regular (unhighlighted) tiles: shine sits slightly lower. */
-  &.tile-face::before {
-    top: 5px;
-  }
 }
 
 @utility tile-teal-fill {
