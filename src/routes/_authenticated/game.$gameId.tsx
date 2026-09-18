@@ -964,17 +964,15 @@ function GamePage() {
                   ))
                 )}
               </ol>
-            ) : state.history.length > 0 ? (
+            ) : state.history.at(-1) ? (
               <p className="mt-2 text-sm">
                 <span className="truncate">
                   <span className="text-muted-foreground">
-                    {names[state.history[state.history.length - 1].player]}:
+                    {names[state.history.at(-1)!.player]}:
                   </span>{" "}
-                  {state.history[state.history.length - 1].description}
+                  {state.history.at(-1)!.description}
                 </span>
-                <span className="ml-2 font-semibold">
-                  {state.history[state.history.length - 1].score}
-                </span>
+                <span className="ml-2 font-semibold">{state.history.at(-1)!.score}</span>
               </p>
             ) : (
               <p className="mt-2 text-sm text-muted-foreground">No moves yet.</p>
