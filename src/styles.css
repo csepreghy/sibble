@@ -101,6 +101,9 @@
   --dl: oklch(0.82 0.07 235);
   --naughty: oklch(0.72 0.21 350);
   --naughty-foreground: oklch(0.99 0.01 350);
+  --accent-deep: oklch(0.45 0.1 200);
+  --naughty-deep: oklch(0.55 0.2 350);
+
 
 
   --chart-1: oklch(0.78 0.14 72);
@@ -138,6 +141,8 @@
   --border: oklch(0.38 0.035 160);
   --input: oklch(0.38 0.035 160);
   --ring: oklch(0.78 0.14 72);
+  --accent-deep: oklch(0.45 0.1 200);
+  --naughty-deep: oklch(0.55 0.2 350);
 }
 
 @layer base {
@@ -167,5 +172,40 @@
 @utility tile-face {
   background: linear-gradient(180deg, oklch(0.94 0.05 85) 0%, var(--color-tile) 100%);
   color: var(--color-tile-foreground);
+  box-shadow: var(--shadow-tile);
+}
+
+/* Glossy fills for highlighted tiles, after the ClimbQuest .tile-3d look:
+   color gradient fading darker, plus an inset white shine on top. */
+@utility tile-gloss {
+  &::before {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    height: 27%;
+    pointer-events: none;
+    z-index: 2;
+    background: linear-gradient(
+      135deg,
+      hsl(0 0% 100% / 0.36) 0%,
+      hsl(0 0% 100% / 0.12) 35%,
+      hsl(0 0% 100% / 0) 75%
+    );
+    border-radius: 0.3rem;
+    mix-blend-mode: screen;
+  }
+}
+
+@utility tile-teal-fill {
+  background: linear-gradient(180deg, var(--accent) 0%, var(--accent-deep) 100%);
+  color: var(--accent-foreground);
+  box-shadow: var(--shadow-tile);
+}
+
+@utility tile-pink-fill {
+  background: linear-gradient(180deg, var(--naughty) 0%, var(--naughty-deep) 100%);
+  color: var(--naughty-foreground);
   box-shadow: var(--shadow-tile);
 }

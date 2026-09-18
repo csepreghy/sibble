@@ -210,6 +210,7 @@ export function GameBoard({
               const content = tile ?? (placed ? { letter: placed.letter, blank: placed.blank } : null);
               const isDragged = draggingIndex === index;
               const isNaughty = Boolean(content) && (naughtySet.has(index) || tile?.naughty);
+              const isLastPlayed = Boolean(tile) && lastPlayed.includes(index);
 
               return (
                 <button
@@ -224,12 +225,16 @@ export function GameBoard({
                   className={cn(
                     "relative flex aspect-square items-center justify-center rounded-[4px] bg-board-cell text-[0.5rem] font-bold leading-none transition-all duration-150 sm:rounded-md sm:text-[0.6rem]",
                     premium && !content && PREMIUM_CLASS[premium],
-                    content && "tile-face",
+                    content
+                      ? isNaughty
+                        ? "tile-pink-fill tile-gloss"
+                        : isLastPlayed
+                          ? "tile-teal-fill tile-gloss"
+                          : "tile-face"
+                      : null,
                     placed && "z-10 shadow-md ring-[1.5px] ring-primary",
-                    tile && lastPlayed.includes(index) && "ring-[1.5px] ring-accent",
                     !content && hoverIndex === index && "ring-[1.5px] ring-primary/70",
                     !content && "hover:brightness-95",
-                    isNaughty && "z-10 ring-[1.5px] ring-naughty",
                     isDragged && "opacity-30",
                   )}
                   aria-label={
