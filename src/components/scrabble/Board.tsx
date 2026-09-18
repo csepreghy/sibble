@@ -258,7 +258,7 @@ export function GameBoard({
                   ) : index === CENTER ? (
                     <span className="text-[0.65rem] leading-none sm:text-base">★</span>
                   ) : premium ? (
-                    <span className="px-0.5 text-center text-[0.45rem] uppercase tracking-tight sm:text-[0.6rem]">
+                    <span className="px-0.5 text-center text-[0.45rem] uppercase tracking-tight sm:text-[0.8rem]">
                       {PREMIUM_LABEL[premium]}
                     </span>
                   ) : null}
