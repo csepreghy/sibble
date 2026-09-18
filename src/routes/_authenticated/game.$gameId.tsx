@@ -32,6 +32,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeSelector } from "@/components/ThemeSelector";
 import { NotificationToggle } from "@/components/NotificationToggle";
 import { notifyOpponentTurn } from "@/lib/push.functions";
+import { sendRematchInvite } from "@/lib/rematch";
 
 /** Nudges the other player; never blocks or breaks a saved turn. */
 function nudgeOpponent(gameId: string, summary?: string) {
@@ -127,7 +128,6 @@ function GamePage() {
 
   const [celebrate, setCelebrate] = useState(0);
   const [birdVisible, setBirdVisible] = useState(false);
-  const [resignNoticeClosed, setResignNoticeClosed] = useState(false);
   const [gameOverClosed, setGameOverClosed] = useState(false);
   const [rematchSent, setRematchSent] = useState(false);
   const [rematchBusy, setRematchBusy] = useState(false);
