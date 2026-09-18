@@ -660,6 +660,18 @@ function GamePage() {
   const names: [string, string] = [game.player1_name, game.player2 ? game.player2_name : "Waiting…"];
   const lastEntry = state.history[state.history.length - 1] ?? null;
   const waiting = game.status === "waiting";
+  const displayedTurnSeat = pickPhase?.kind === "draft" ? pickPhase.seat : state.turn;
+  const turnHeading = game.status === "finished"
+    ? "Game over"
+    : waiting
+      ? "Waiting for an opponent"
+      : game.solo
+        ? `Your turn as ${names[displayedTurnSeat]}`
+        : displayedTurnSeat === activeSeat
+          ? pickPhase?.kind === "draft" ? "Your pick" : "Your turn"
+          : pickPhase?.kind === "draft"
+            ? `${names[displayedTurnSeat]} is picking`
+            : `${names[displayedTurnSeat]}'s turn`;
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-6">
@@ -744,6 +756,28 @@ function GamePage() {
               onPick={pickLetter}
             />
           ) : null}
+          <section
+            className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-lg border-2 border-primary bg-primary/15 px-4 py-3 shadow-panel"
+            aria-live="polite"
+            aria-label={turnHeading}
+          >
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="relative flex h-3 w-3 shrink-0" aria-hidden>
+                {game.status === "active" && !waiting ? (
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60 motion-reduce:animate-none" />
+                ) : null}
+                <span className="relative inline-flex h-3 w-3 rounded-full bg-primary" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-[0.65rem] font-bold uppercase text-primary">Current turn</p>
+                <p className="truncate text-lg font-bold text-foreground sm:text-xl">{turnHeading}</p>
+              </div>
+            </div>
+            <div className="shrink-0 text-right sm:hidden">
+              <p className="text-2xl font-bold leading-none text-primary">{state.bag.length}</p>
+              <p className="mt-1 text-[0.65rem] font-bold uppercase text-foreground">tiles left</p>
+            </div>
+          </section>
           <GameBoard
             board={state.board}
             pending={pending}
@@ -848,11 +882,18 @@ function GamePage() {
                 key={seat}
                 className={`mt-3 flex items-center justify-between rounded-lg px-3 py-2 ${
                   state.turn === seat && game.status === "active"
-                    ? "bg-primary text-primary-foreground"
+                    ? "border-2 border-primary bg-primary text-primary-foreground shadow-panel"
                     : "bg-secondary"
                 }`}
               >
-                <span className="text-sm font-semibold">{names[seat]}</span>
+                <span className="flex min-w-0 items-center gap-2 text-sm font-semibold">
+                  <span className="truncate">{names[seat]}</span>
+                  {state.turn === seat && game.status === "active" ? (
+                    <span className="shrink-0 rounded-sm bg-primary-foreground/15 px-1.5 py-0.5 text-[0.6rem] font-bold uppercase">
+                      Turn
+                    </span>
+                  ) : null}
+                </span>
                 <span className="text-lg font-bold">{state.scores[seat]}</span>
               </div>
             ))}
@@ -888,7 +929,7 @@ function GamePage() {
               </div>
             ) : null}
           </div>
-          <p className="text-sm font-bold text-foreground">
+          <p className="hidden text-base font-bold text-foreground sm:block">
             {state.bag.length} tiles left in the bag
           </p>
 
