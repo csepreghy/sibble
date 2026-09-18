@@ -40,6 +40,24 @@ export const THEMES: ThemeOption[] = [
     swatch: ["oklch(0.17 0.05 235)", "oklch(0.82 0.17 165)", "oklch(0.73 0.21 340)"],
   },
   {
+    id: "reef",
+    name: "Neon Reef",
+    blurb: "Deep navy with teal glow and orange sparks",
+    swatch: ["oklch(0.16 0.05 255)", "oklch(0.84 0.15 185)", "oklch(0.78 0.18 55)"],
+  },
+  {
+    id: "grape",
+    name: "Grape Soda",
+    blurb: "Royal purple with hot pink and orange",
+    swatch: ["oklch(0.17 0.06 305)", "oklch(0.72 0.23 345)", "oklch(0.79 0.17 55)"],
+  },
+  {
+    id: "current",
+    name: "Deep Current",
+    blurb: "Midnight blue with teal, violet and pink",
+    swatch: ["oklch(0.15 0.05 250)", "oklch(0.82 0.15 185)", "oklch(0.65 0.22 300)"],
+  },
+  {
     id: "classic",
     name: "Parlour Green",
     blurb: "The original felt table and maple tiles",

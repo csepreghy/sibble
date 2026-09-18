@@ -208,7 +208,10 @@
 @utility tile-teal-fill {
   background: linear-gradient(180deg, var(--accent) 0%, var(--accent-deep) 100%);
   color: var(--accent-foreground);
-  box-shadow: var(--shadow-tile);
+  box-shadow:
+    var(--shadow-tile),
+    0 0 10px color-mix(in oklab, var(--accent) 70%, transparent),
+    0 0 24px color-mix(in oklab, var(--accent) 35%, transparent);
 }
 
 @utility tile-pink-fill {
