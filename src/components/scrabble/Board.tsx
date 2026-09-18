@@ -232,7 +232,7 @@ export function GameBoard({
                           ? "tile-teal-fill tile-gloss"
                           : "tile-face"
                       : null,
-                    placed && "z-10 shadow-md tile-placing",
+                    placed && "z-10 shadow-md tile-placing tile-gloss",
                     !content && hoverIndex === index && "ring-[1.5px] ring-primary/70",
                     !content && "hover:brightness-95",
                     isDragged && "opacity-30",
