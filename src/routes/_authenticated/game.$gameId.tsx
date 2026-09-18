@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Shuffle, Undo2 } from "lucide-react";
+import { ChevronDown, Shuffle, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/hooks/useSession";
@@ -60,6 +60,7 @@ function GamePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  const [movesOpen, setMovesOpen] = useState(false);
   const [pending, setPending] = useState<Placement[]>([]);
   const [selected, setSelected] = useState<number | null>(null);
   const [exchangeMode, setExchangeMode] = useState(false);
@@ -934,24 +935,48 @@ function GamePage() {
           </p>
 
           <div className="rounded-xl border border-border bg-card p-4">
-            <h3 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
-              Moves
-            </h3>
-            <ol className="mt-3 space-y-2 text-sm">
-              {state.history.length === 0 ? (
-                <li className="text-muted-foreground">No moves yet.</li>
-              ) : (
-                [...state.history].reverse().map((entry, position) => (
-                  <li key={position} className="flex justify-between gap-3">
-                    <span className="truncate">
-                      <span className="text-muted-foreground">{names[entry.player]}:</span>{" "}
-                      {entry.description}
-                    </span>
-                    <span className="font-semibold">{entry.score}</span>
-                  </li>
-                ))
-              )}
-            </ol>
+            <button
+              type="button"
+              onClick={() => setMovesOpen((open) => !open)}
+              className="flex w-full items-center justify-between text-left"
+              aria-expanded={movesOpen}
+            >
+              <h3 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
+                Moves {state.history.length > 0 ? `(${state.history.length})` : ""}
+              </h3>
+              <ChevronDown
+                className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${movesOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+            {movesOpen ? (
+              <ol className="mt-3 space-y-2 text-sm">
+                {state.history.length === 0 ? (
+                  <li className="text-muted-foreground">No moves yet.</li>
+                ) : (
+                  [...state.history].reverse().map((entry, position) => (
+                    <li key={position} className="flex justify-between gap-3">
+                      <span className="truncate">
+                        <span className="text-muted-foreground">{names[entry.player]}:</span>{" "}
+                        {entry.description}
+                      </span>
+                      <span className="font-semibold">{entry.score}</span>
+                    </li>
+                  ))
+                )}
+              </ol>
+            ) : state.history.at(-1) ? (
+              <p className="mt-2 text-sm">
+                <span className="truncate">
+                  <span className="text-muted-foreground">
+                    {names[state.history.at(-1)!.player]}:
+                  </span>{" "}
+                  {state.history.at(-1)!.description}
+                </span>
+                <span className="ml-2 font-semibold">{state.history.at(-1)!.score}</span>
+              </p>
+            ) : (
+              <p className="mt-2 text-sm text-muted-foreground">No moves yet.</p>
+            )}
           </div>
         </aside>
       </div>
