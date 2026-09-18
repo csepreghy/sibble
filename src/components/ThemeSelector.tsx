@@ -10,7 +10,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useSession } from "@/hooks/useSession";
 import { DEFAULT_THEME, fetchTheme, saveTheme, THEMES, themeName } from "@/lib/theme";
 
 /** Each person picks their own palette; it only changes their own screen. */
