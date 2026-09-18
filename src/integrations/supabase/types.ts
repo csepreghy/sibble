@@ -128,6 +128,47 @@ export type Database = {
         }
         Relationships: []
       }
+      rematch_invites: {
+        Row: {
+          created_at: string
+          from_name: string
+          from_user: string
+          id: string
+          new_game_id: string
+          previous_game_id: string | null
+          status: string
+          to_user: string
+        }
+        Insert: {
+          created_at?: string
+          from_name: string
+          from_user: string
+          id?: string
+          new_game_id: string
+          previous_game_id?: string | null
+          status?: string
+          to_user: string
+        }
+        Update: {
+          created_at?: string
+          from_name?: string
+          from_user?: string
+          id?: string
+          new_game_id?: string
+          previous_game_id?: string | null
+          status?: string
+          to_user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rematch_invites_new_game_id_fkey"
+            columns: ["new_game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
