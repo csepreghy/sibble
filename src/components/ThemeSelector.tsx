@@ -13,23 +13,21 @@ import {
 import { useSession } from "@/hooks/useSession";
 import { DEFAULT_THEME, fetchTheme, saveTheme, THEMES, themeName } from "@/lib/theme";
 
-/** Anyone can pick. The chosen palette applies to everyone, live. */
+/** Each person picks their own palette; it only changes their own screen. */
 export function ThemeSelector() {
-  const { user } = useSession();
-  const userId = user?.id ?? "";
   const queryClient = useQueryClient();
 
   const active = useQuery({
     queryKey: ["app-theme"],
     queryFn: fetchTheme,
-    staleTime: 60_000,
+    staleTime: Infinity,
   }).data ?? DEFAULT_THEME;
 
   const change = useMutation({
-    mutationFn: (id: string) => saveTheme(id, userId),
+    mutationFn: (id: string) => saveTheme(id),
     onSuccess: (_data, id) => {
       queryClient.setQueryData(["app-theme"], id);
-      toast.success(`Theme set to ${themeName(id)} for everyone`);
+      toast.success(`Theme set to ${themeName(id)}`);
     },
     onError: () => toast.error("Couldn't change the theme. Please try again."),
   });
@@ -44,7 +42,7 @@ export function ThemeSelector() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64">
-        <DropdownMenuLabel>Colour scheme (everyone)</DropdownMenuLabel>
+        <DropdownMenuLabel>Colour scheme (just you)</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {THEMES.map((theme) => (
           <DropdownMenuItem
