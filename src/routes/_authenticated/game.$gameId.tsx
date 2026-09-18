@@ -412,7 +412,7 @@ function GamePage() {
       bag: refilled.bag,
       racks,
       scores,
-      turn: earnsPick ? activeSeat : activeSeat === 0 ? 1 : 0,
+      turn: activeSeat === 0 ? 1 : 0,
       pick: earnsPick ? { kind: "bonus", seat: activeSeat } : null,
       consecutivePasses: 0,
       lastPlayed: pending.map((placement) => placement.index),
