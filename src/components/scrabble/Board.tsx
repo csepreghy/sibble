@@ -225,6 +225,7 @@ export function GameBoard({
                   className={cn(
                     "relative flex aspect-square items-center justify-center rounded-[4px] bg-board-cell text-[0.5rem] font-bold leading-none transition-all duration-150 sm:rounded-md sm:text-[0.6rem]",
                     premium && !content && PREMIUM_CLASS[premium],
+                    premium && !content && "premium-sunken",
                     content
                       ? isNaughty
                         ? "tile-pink-fill tile-gloss"
