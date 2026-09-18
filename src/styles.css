@@ -101,6 +101,9 @@
   --dl: oklch(0.82 0.07 235);
   --naughty: oklch(0.72 0.21 350);
   --naughty-foreground: oklch(0.99 0.01 350);
+  --accent-deep: oklch(0.45 0.1 200);
+  --naughty-deep: oklch(0.55 0.2 350);
+
 
 
   --chart-1: oklch(0.78 0.14 72);
@@ -138,6 +141,8 @@
   --border: oklch(0.38 0.035 160);
   --input: oklch(0.38 0.035 160);
   --ring: oklch(0.78 0.14 72);
+  --accent-deep: oklch(0.45 0.1 200);
+  --naughty-deep: oklch(0.55 0.2 350);
 }
 
 @layer base {
