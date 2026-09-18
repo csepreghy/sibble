@@ -22,6 +22,7 @@ export function AppNav() {
         </Link>
       ))}
     </nav>
+      <NotificationToggle />
       <ThemeSelector />
     </div>
   );
