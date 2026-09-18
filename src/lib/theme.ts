@@ -1,4 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
 
 export interface ThemeOption {
   id: string;
@@ -82,20 +81,15 @@ export function applyTheme(id: string) {
   document.documentElement.dataset['theme'] = id;
 }
 
+const THEME_STORAGE_KEY = "tile-table:theme";
+
+/** The theme is personal: stored in this browser only. */
 export async function fetchTheme(): Promise<string> {
-  const { data, error } = await supabase
-    .from("app_settings")
-    .select("value")
-    .eq("key", "theme")
-    .maybeSingle();
-  if (error || !data) return DEFAULT_THEME;
-  return data.value || DEFAULT_THEME;
+  if (typeof window === "undefined") return DEFAULT_THEME;
+  return window.localStorage.getItem(THEME_STORAGE_KEY) || DEFAULT_THEME;
 }
 
-export async function saveTheme(id: string, userId: string) {
-  const { error } = await supabase
-    .from("app_settings")
-    .update({ value: id, updated_by: userId, updated_at: new Date().toISOString() })
-    .eq("key", "theme");
-  if (error) throw error;
+export async function saveTheme(id: string, _userId?: string) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(THEME_STORAGE_KEY, id);
 }
