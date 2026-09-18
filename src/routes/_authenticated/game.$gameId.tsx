@@ -529,7 +529,6 @@ function GamePage() {
         bag: refilled.bag,
         racks,
         pick: null,
-        turn: phase.seat === 0 ? 1 : 0,
       };
     }
     await persist(next, game.status, state.version ?? null);
