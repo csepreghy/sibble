@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ThemeSelector } from "@/components/ThemeSelector";
+import { NotificationToggle } from "@/components/NotificationToggle";
 
 const TABS = [
   { to: "/lobby", label: "Games" },
@@ -21,6 +22,7 @@ export function AppNav() {
         </Link>
       ))}
     </nav>
+      <NotificationToggle />
       <ThemeSelector />
     </div>
   );

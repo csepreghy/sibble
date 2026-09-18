@@ -30,6 +30,13 @@ import { Rack } from "@/components/scrabble/Rack";
 import { Fireworks } from "@/components/scrabble/Fireworks";
 import { Button } from "@/components/ui/button";
 import { ThemeSelector } from "@/components/ThemeSelector";
+import { NotificationToggle } from "@/components/NotificationToggle";
+import { notifyOpponentTurn } from "@/lib/push.functions";
+
+/** Nudges the other player; never blocks or breaks a saved turn. */
+function nudgeOpponent(gameId: string, summary?: string) {
+  void notifyOpponentTurn({ data: { gameId, ...(summary ? { summary } : {}) } }).catch(() => {});
+}
 
 export const Route = createFileRoute("/_authenticated/game/$gameId")({
   head: () => ({
@@ -435,6 +442,10 @@ function GamePage() {
     setPending([]);
     setSelected(null);
     await persist(finished.state, finished.status, state.version ?? null);
+    nudgeOpponent(
+      gameId,
+      `${result.words[0]?.word ?? "A word"} for ${result.score} points.`,
+    );
     setCelebrate((n) => n + 1);
     const doubled = result.words.some((entry) => entry.naughty);
     toast.success(doubled ? `${result.score} points — double for a rude word!` : `${result.score} points`);
@@ -452,6 +463,7 @@ function GamePage() {
     };
     setPending([]);
     await persist(next, passes >= 4 ? "finished" : "active", state.version ?? null);
+    nudgeOpponent(gameId, "They passed.");
   }
 
   async function exchange() {
@@ -681,6 +693,7 @@ function GamePage() {
           ← Your games
         </Link>
         <div className="flex flex-wrap items-center gap-2">
+          <NotificationToggle />
           <ThemeSelector />
           {!game.solo ? (
             <Button variant="secondary" size="sm" onClick={copyLink}>
