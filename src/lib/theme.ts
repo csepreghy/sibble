@@ -58,6 +58,12 @@ export const THEMES: ThemeOption[] = [
     swatch: ["oklch(0.15 0.05 250)", "oklch(0.82 0.15 185)", "oklch(0.65 0.22 300)"],
   },
   {
+    id: "circuit",
+    name: "Night Circuit",
+    blurb: "Black-violet haze with an orange arc",
+    swatch: ["oklch(0.14 0.035 285)", "oklch(0.73 0.19 52)", "oklch(0.6 0.22 275)"],
+  },
+  {
     id: "classic",
     name: "Parlour Green",
     blurb: "The original felt table and maple tiles",
