@@ -235,15 +235,6 @@
     0 0 24px color-mix(in oklab, var(--placing) 35%, transparent);
 }
 
-/* Empty premium squares (DL, TL, DW, TW): inset shadows so the square
-   looks pressed down into the board. Pure black/white mixes so it works
-   in every theme hue. */
-@utility premium-sunken {
-  box-shadow:
-    inset 0 2px 4px color-mix(in oklab, black 38%, transparent),
-    inset 0 1px 2px color-mix(in oklab, black 22%, transparent),
-    inset 0 -1px 1px color-mix(in oklab, white 45%, transparent);
-}
 
 @utility tile-pink-fill {
   background: linear-gradient(180deg, var(--naughty) 0%, var(--naughty-deep) 100%);
