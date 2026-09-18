@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Shuffle, Undo2 } from "lucide-react";
+import { ChevronDown, Shuffle, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/hooks/useSession";
@@ -60,6 +60,7 @@ function GamePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  const [movesOpen, setMovesOpen] = useState(false);
   const [pending, setPending] = useState<Placement[]>([]);
   const [selected, setSelected] = useState<number | null>(null);
   const [exchangeMode, setExchangeMode] = useState(false);
