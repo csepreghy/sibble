@@ -230,7 +230,7 @@ export function GameBoard({
                         ? "tile-pink-fill tile-gloss"
                         : isLastPlayed
                           ? "tile-teal-fill tile-gloss"
-                          : "tile-face"
+                          : "tile-face tile-gloss"
                       : null,
                     placed && "z-10 shadow-md tile-placing tile-gloss",
                     !content && hoverIndex === index && "ring-[1.5px] ring-primary/70",
