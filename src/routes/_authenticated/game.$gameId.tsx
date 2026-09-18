@@ -138,9 +138,14 @@ function GamePage() {
     pickPhase && activeSeat !== null && pickPhase.seat === activeSeat && game?.status === "active",
   );
 
+  // a bonus pick only blocks the picker; the opponent can carry on with their turn
+  const blockedByPick = Boolean(
+    pickPhase && (pickPhase.kind === "draft" || pickPhase.seat === activeSeat),
+  );
+
   const isMyTurn = Boolean(
     state &&
-      !pickPhase &&
+      !blockedByPick &&
       activeSeat !== null &&
       state.turn === activeSeat &&
       game?.status === "active",
@@ -148,7 +153,7 @@ function GamePage() {
 
   // tiles can be tried out on the board at any time; only submitting needs your turn
   const canPlace = Boolean(
-    state && !pickPhase && activeSeat !== null && game?.status === "active",
+    state && !blockedByPick && activeSeat !== null && game?.status === "active",
   );
 
   const rack = state && activeSeat !== null ? (state.racks[activeSeat] ?? []) : [];
