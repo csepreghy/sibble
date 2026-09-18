@@ -32,6 +32,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeSelector } from "@/components/ThemeSelector";
 import { NotificationToggle } from "@/components/NotificationToggle";
 import { notifyOpponentTurn } from "@/lib/push.functions";
+import { sendRematchInvite } from "@/lib/rematch";
 
 /** Nudges the other player; never blocks or breaks a saved turn. */
 function nudgeOpponent(gameId: string, summary?: string) {
@@ -127,7 +128,27 @@ function GamePage() {
 
   const [celebrate, setCelebrate] = useState(0);
   const [birdVisible, setBirdVisible] = useState(false);
-  const [resignNoticeClosed, setResignNoticeClosed] = useState(false);
+  const [gameOverClosed, setGameOverClosed] = useState(false);
+  const [rematchSent, setRematchSent] = useState(false);
+  const [rematchBusy, setRematchBusy] = useState(false);
+
+  const wonFinished = Boolean(
+    game &&
+      state &&
+      myIndex !== null &&
+      !game.solo &&
+      game.status === "finished" &&
+      (state.resignedBy !== undefined && state.resignedBy !== null
+        ? state.resignedBy !== myIndex
+        : (state.scores[myIndex] ?? 0) > (state.scores[myIndex === 0 ? 1 : 0] ?? 0)),
+  );
+  const winCelebratedRef = useRef(false);
+  useEffect(() => {
+    if (wonFinished && !winCelebratedRef.current) {
+      winCelebratedRef.current = true;
+      setCelebrate((count) => count + 1);
+    }
+  }, [wonFinished]);
   const seenHistoryRef = useRef<number | null>(null);
 
   const historyLength = state?.history.length ?? 0;
@@ -671,6 +692,37 @@ function GamePage() {
   }
 
   const names: [string, string] = [game.player1_name, game.player2 ? game.player2_name : "Waiting…"];
+  const resigner = state.resignedBy;
+  const otherSeat: 0 | 1 = myIndex === 0 ? 1 : 0;
+  const opponentId = myIndex === 0 ? game.player2 : game.player1;
+  const isDraw =
+    (resigner === undefined || resigner === null) &&
+    (state.scores[myIndex] ?? 0) === (state.scores[otherSeat] ?? 0);
+  const iWon = wonFinished;
+  const showGameOver =
+    !game.solo &&
+    game.status === "finished" &&
+    !gameOverClosed &&
+    !(state.hiddenFor ?? []).includes(myIndex);
+
+  async function sendRematch() {
+    if (!user || !opponentId || rematchBusy) return;
+    setRematchBusy(true);
+    try {
+      await sendRematchInvite({
+        userId: user.id,
+        name: displayNameOf(user),
+        opponentId,
+        previousGameId: gameId,
+      });
+      setRematchSent(true);
+      toast.success("Rematch invitation sent.");
+    } catch {
+      toast.error("Couldn't send the rematch invitation. Please try again.");
+    } finally {
+      setRematchBusy(false);
+    }
+  }
   const lastEntry = state.history[state.history.length - 1] ?? null;
   const waiting = game.status === "waiting";
   const displayedTurnSeat = pickPhase?.kind === "draft" ? pickPhase.seat : state.turn;
@@ -726,31 +778,47 @@ function GamePage() {
               </div>
             </div>
           ) : null}
-          {!game.solo &&
-          state.resignedBy !== undefined &&
-          state.resignedBy !== null &&
-          state.resignedBy !== activeSeat &&
-          !resignNoticeClosed ? (
+          {showGameOver ? (
             <div
-              className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 backdrop-blur-sm"
+              className="fixed inset-0 z-[55] flex items-center justify-center bg-background/80 p-6 backdrop-blur-sm"
               role="dialog"
-              aria-label="Your opponent gave up"
-              onClick={() => setResignNoticeClosed(true)}
+              aria-label="Game over"
             >
-              <div
-                className="animate-in zoom-in duration-200 relative flex max-w-sm flex-col items-center gap-4 rounded-2xl bg-card p-8 text-center shadow-panel"
-                onClick={(event) => event.stopPropagation()}
-              >
-                <span className="text-5xl leading-none" aria-hidden>
-                  🏳️
+              <div className="animate-in zoom-in duration-200 flex w-full max-w-sm flex-col items-center gap-3 rounded-2xl bg-card p-8 text-center shadow-panel">
+                <span className="text-6xl leading-none" aria-hidden>
+                  {iWon ? "🎉" : isDraw ? "🤝" : "😭"}
                 </span>
-                <p className="text-lg font-bold">{names[state.resignedBy]} gave up</p>
-                <p className="text-sm text-muted-foreground">
-                  The game is over — you win this one.
+                <p className="text-xl font-bold">
+                  {iWon ? "You win!" : isDraw ? "It's a draw" : "You lost this one"}
                 </p>
-                <Button variant="secondary" onClick={() => setResignNoticeClosed(true)}>
-                  OK
-                </Button>
+                <p className="text-sm text-muted-foreground">
+                  {resigner !== undefined && resigner !== null
+                    ? `${names[resigner]} gave up.`
+                    : `Final score: ${state.scores[0]} – ${state.scores[1]}.`}{" "}
+                  {iWon
+                    ? "Enjoy it while it lasts."
+                    : isDraw
+                      ? "Nobody blinked. Go again?"
+                      : "Time to get even."}
+                </p>
+                <div className="mt-3 flex w-full flex-col gap-2">
+                  <Button
+                    size="lg"
+                    disabled={rematchBusy || rematchSent || !opponentId}
+                    onClick={sendRematch}
+                  >
+                    {rematchSent ? "Invitation sent…" : "Rematch"}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setGameOverClosed(true);
+                      navigate({ to: "/lobby" });
+                    }}
+                  >
+                    Back to Menu
+                  </Button>
+                </div>
               </div>
             </div>
           ) : null}
