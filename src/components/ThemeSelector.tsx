@@ -34,7 +34,6 @@ export function ThemeSelector() {
     onError: () => toast.error("Couldn't change the theme. Please try again."),
   });
 
-  if (admin.data !== true) return null;
 
   return (
     <DropdownMenu>
