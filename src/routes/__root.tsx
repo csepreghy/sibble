@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
+import { useAppTheme } from "@/hooks/useAppTheme";
 
 
 function NotFoundComponent() {
@@ -117,7 +118,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" data-theme="midnight">
       <head>
         <HeadContent />
       </head>
@@ -127,6 +128,11 @@ function RootShell({ children }: { children: ReactNode }) {
       </body>
     </html>
   );
+}
+
+function ThemeSync() {
+  useAppTheme();
+  return null;
 }
 
 function RootComponent() {
@@ -144,6 +150,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <ThemeSync />
       <Toaster position="top-center" />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />

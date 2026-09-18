@@ -29,6 +29,7 @@ import { LetterPool } from "@/components/scrabble/LetterPool";
 import { Rack } from "@/components/scrabble/Rack";
 import { Fireworks } from "@/components/scrabble/Fireworks";
 import { Button } from "@/components/ui/button";
+import { ThemeSelector } from "@/components/ThemeSelector";
 
 export const Route = createFileRoute("/_authenticated/game/$gameId")({
   head: () => ({
@@ -666,7 +667,8 @@ function GamePage() {
         <Link to="/lobby" className="text-sm text-muted-foreground hover:text-foreground">
           ← Your games
         </Link>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <ThemeSelector />
           {!game.solo ? (
             <Button variant="secondary" size="sm" onClick={copyLink}>
               Copy invite link
