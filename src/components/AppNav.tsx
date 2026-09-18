@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { ThemeSelector } from "@/components/ThemeSelector";
 
 const TABS = [
   { to: "/lobby", label: "Games" },
@@ -7,6 +8,7 @@ const TABS = [
 
 export function AppNav() {
   return (
+    <div className="flex items-center gap-2">
     <nav className="flex gap-1 rounded-full border border-border bg-secondary/60 p-1">
       {TABS.map((tab) => (
         <Link
@@ -19,5 +21,7 @@ export function AppNav() {
         </Link>
       ))}
     </nav>
+      <ThemeSelector />
+    </div>
   );
 }

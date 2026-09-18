@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useSession } from "@/hooks/useSession";
 import { isAdmin } from "@/lib/games";
-import { DEFAULT_THEME, saveTheme, THEMES, themeName } from "@/lib/theme";
+import { DEFAULT_THEME, fetchTheme, saveTheme, THEMES, themeName } from "@/lib/theme";
 
 /** Admin-only picker. The chosen palette applies to everyone, live. */
 export function ThemeSelector() {
@@ -26,12 +26,11 @@ export function ThemeSelector() {
     enabled: Boolean(userId),
   });
 
-  const current = (queryClient.getQueryData<string>(["app-theme"]) ?? DEFAULT_THEME) as string;
   const active = useQuery({
     queryKey: ["app-theme"],
-    enabled: false,
-    initialData: current,
-  }).data;
+    queryFn: fetchTheme,
+    staleTime: 60_000,
+  }).data ?? DEFAULT_THEME;
 
   const change = useMutation({
     mutationFn: (id: string) => saveTheme(id, userId),
