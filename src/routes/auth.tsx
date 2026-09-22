@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -71,7 +71,15 @@ function AuthPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-6">
+    <main className="relative flex min-h-screen items-center justify-center px-6">
+      <Link
+        to="/"
+        className="absolute left-5 top-5 flex items-center gap-2.5 sm:left-8 sm:top-8"
+        aria-label="Tile Table home"
+      >
+        <span className="tile-face flex size-8 items-center justify-center rounded-md font-display text-lg font-bold">T</span>
+        <span className="font-display text-lg font-bold">Tile Table</span>
+      </Link>
       <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-8 text-center shadow-panel">
         <h1 className="text-2xl font-bold">Welcome back</h1>
         <p className="mt-2 text-sm text-muted-foreground">
