@@ -6,9 +6,9 @@ export const Route = createFileRoute("/auth/callback")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Signing you in — Tile Table" },
+      { title: "Signing you in — Sibble" },
       { name: "description", content: "Finishing sign in." },
-      { property: "og:title", content: "Signing you in — Tile Table" },
+      { property: "og:title", content: "Signing you in — Sibble" },
       { property: "og:description", content: "Finishing sign in." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

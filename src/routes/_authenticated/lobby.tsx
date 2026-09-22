@@ -7,13 +7,14 @@ import { useSession } from "@/hooks/useSession";
 import { createGame, deleteGame, displayNameOf, fetchMyGames, isAdmin, type GameRow } from "@/lib/games";
 import { Button } from "@/components/ui/button";
 import { AppNav } from "@/components/AppNav";
+import { BrandLogo } from "@/components/BrandLogo";
 
 export const Route = createFileRoute("/_authenticated/lobby")({
   head: () => ({
     meta: [
-      { title: "Your games — Tile Table" },
+      { title: "Your games — Sibble" },
       { name: "description", content: "Start a Scrabble game or pick up one you're already playing." },
-      { property: "og:title", content: "Your games — Tile Table" },
+      { property: "og:title", content: "Your games — Sibble" },
       { property: "og:description", content: "Start a game or continue one in progress." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -65,6 +66,7 @@ function Lobby() {
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
+      <BrandLogo className="mb-6 h-12 w-auto sm:h-14" />
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold">Your games</h1>

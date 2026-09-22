@@ -33,6 +33,7 @@ import { ThemeSelector } from "@/components/ThemeSelector";
 import { NotificationToggle } from "@/components/NotificationToggle";
 import { notifyOpponentTurn } from "@/lib/push.functions";
 import { sendRematchInvite } from "@/lib/rematch";
+import { BrandLogo } from "@/components/BrandLogo";
 
 /** Nudges the other player; never blocks or breaks a saved turn. */
 function nudgeOpponent(gameId: string, summary?: string) {
@@ -42,9 +43,9 @@ function nudgeOpponent(gameId: string, summary?: string) {
 export const Route = createFileRoute("/_authenticated/game/$gameId")({
   head: () => ({
     meta: [
-      { title: "Game — Tile Table" },
-      { name: "description", content: "A game of Scrabble in progress on Tile Table." },
-      { property: "og:title", content: "Game — Tile Table" },
+      { title: "Game — Sibble" },
+      { name: "description", content: "A game of Scrabble in progress on Sibble." },
+      { property: "og:title", content: "Game — Sibble" },
       { property: "og:description", content: "A game of Scrabble in progress." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -741,9 +742,12 @@ function GamePage() {
   return (
     <main className="mx-auto max-w-5xl px-4 py-6">
       <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <Link to="/lobby" className="text-sm text-muted-foreground hover:text-foreground">
-          ← Your games
-        </Link>
+        <div className="flex items-center gap-4">
+          <BrandLogo className="h-10 w-auto sm:h-12" />
+          <Link to="/lobby" className="text-sm text-muted-foreground hover:text-foreground">
+            ← Your games
+          </Link>
+        </div>
         <div className="flex flex-wrap items-center gap-2">
           <NotificationToggle />
           <ThemeSelector />

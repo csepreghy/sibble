@@ -4,16 +4,17 @@ import { useMemo } from "react";
 import { useSession } from "@/hooks/useSession";
 import { computeStats, fetchMyGames, type GameRow } from "@/lib/games";
 import { AppNav } from "@/components/AppNav";
+import { BrandLogo } from "@/components/BrandLogo";
 
 export const Route = createFileRoute("/_authenticated/stats")({
   head: () => ({
     meta: [
-      { title: "Your statistics — Tile Table" },
+      { title: "Your statistics — Sibble" },
       {
         name: "description",
-        content: "Wins, losses, best words and head-to-head records for every Tile Table game you've played.",
+        content: "Wins, losses, best words and head-to-head records for every Sibble game you've played.",
       },
-      { property: "og:title", content: "Your statistics — Tile Table" },
+      { property: "og:title", content: "Your statistics — Sibble" },
       { property: "og:description", content: "Your Scrabble history and head-to-head records." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -52,6 +53,7 @@ function Stats() {
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-12">
+      <BrandLogo className="mb-6 h-12 w-auto sm:h-14" />
       <header className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-bold">Statistics</h1>
         <AppNav />

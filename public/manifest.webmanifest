@@ -1,0 +1,13 @@
+{
+  "name": "Sibble",
+  "short_name": "Sibble",
+  "description": "A vibrant, ad-free word game for two.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080814",
+  "theme_color": "#080814",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

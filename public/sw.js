@@ -6,16 +6,16 @@ self.addEventListener("push", (event) => {
   try {
     payload = event.data ? event.data.json() : {};
   } catch (error) {
-    payload = { title: "Tile Table", body: event.data ? event.data.text() : "" };
+    payload = { title: "Sibble", body: event.data ? event.data.text() : "" };
   }
-  const title = payload.title || "Tile Table";
+  const title = payload.title || "Sibble";
   event.waitUntil(
     self.registration.showNotification(title, {
       body: payload.body || "It's your move.",
       tag: payload.tag || "tile-table",
       renotify: true,
-      icon: "/favicon.ico",
-      badge: "/favicon.ico",
+      icon: "/icon-192.png",
+      badge: "/favicon.png",
       data: { url: payload.url || "/lobby" },
     }),
   );
