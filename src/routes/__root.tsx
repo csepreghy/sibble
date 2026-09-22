@@ -81,13 +81,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Tile Table — Play Scrabble online, ad-free" },
+      { title: "Sibble — Play Scrabble online, ad-free" },
       {
         name: "description",
         content:
           "A calm, ad-free Scrabble board for two. Sign in, send a link and play a full game with the official word list.",
       },
-      { property: "og:title", content: "Tile Table — Play Scrabble online, ad-free" },
+      { property: "og:title", content: "Sibble — Play Scrabble online, ad-free" },
       {
         property: "og:description",
         content: "A calm, ad-free Scrabble board for two players.",
@@ -106,7 +106,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Karla:wght@400;500;700&display=swap",
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.png", type: "image/png" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png", sizes: "180x180" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
     ],
   }),
   shellComponent: RootShell,

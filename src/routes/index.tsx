@@ -6,12 +6,13 @@ import { fetchMyGames } from "@/lib/games";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { LandingBoard } from "@/components/landing/LandingBoard";
+import { BrandLogo } from "@/components/BrandLogo";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [
-    { title: "Tile Table — A better way to play Scrabble online" },
+    { title: "Sibble — A better way to play Scrabble online" },
     { name: "description", content: "Play Scrabble online with someone you like. Share a game, choose your look, and take your turn without adverts or clutter." },
-    { property: "og:title", content: "Tile Table — A better way to play Scrabble online" },
+    { property: "og:title", content: "Sibble — A better way to play Scrabble online" },
     { property: "og:description", content: "A vivid, ad-free Scrabble board for two. Share a link, choose a theme, and play at your own pace." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary_large_image" },
@@ -48,10 +49,7 @@ function Index() {
     <main className="min-h-screen overflow-hidden">
       <header className="relative z-30 border-b border-border/60 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-8">
-          <Link to="/" className="flex items-center gap-2.5" aria-label="Tile Table home">
-            <span className="tile-face flex size-8 items-center justify-center rounded-md font-display text-lg font-bold">T</span>
-            <span className="font-display text-lg font-bold">Tile Table</span>
-          </Link>
+          <BrandLogo className="h-12 w-auto sm:h-14" />
           <nav className="hidden items-center gap-7 text-sm font-semibold text-muted-foreground md:flex" aria-label="Landing page">
             <a className="transition-colors hover:text-foreground" href="#features">Features</a>
             <a className="transition-colors hover:text-foreground" href="#themes">Themes</a>
@@ -117,10 +115,10 @@ function Index() {
       <section className="border-t border-border px-5 py-20 sm:px-8 sm:py-28"><div className="mx-auto max-w-5xl text-center">
         <div className="mx-auto mb-7 flex w-fit gap-1.5">{["T", "I", "L", "E"].map((letter) => <span key={letter} className="tile-face tile-gloss relative flex size-11 items-center justify-center rounded-md text-lg font-bold">{letter}</span>)}</div>
         <h2 className="text-4xl font-bold sm:text-6xl">Your next great word is waiting.</h2><p className="mx-auto mt-5 max-w-xl text-lg text-muted-foreground">No adverts. No noisy extras. Just a beautiful board and someone worth playing.</p>
-        {!loading ? <Button asChild size="lg" className="mt-8 h-12 px-7 text-base"><Link to={destination}>{user ? "Return to your games" : "Play Tile Table"}<ArrowRight /></Link></Button> : null}
+        {!loading ? <Button asChild size="lg" className="mt-8 h-12 px-7 text-base"><Link to={destination}>{user ? "Return to your games" : "Play Sibble"}<ArrowRight /></Link></Button> : null}
       </div></section>
 
-      <footer className="border-t border-border px-5 py-8 sm:px-8"><div className="mx-auto flex max-w-7xl flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between"><p className="font-display font-bold text-foreground">Tile Table</p><p>Made for good words and better company.</p></div></footer>
+      <footer className="border-t border-border px-5 py-8 sm:px-8"><div className="mx-auto flex max-w-7xl flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between"><BrandLogo className="h-10 w-auto" /><p>Made for good words and better company.</p></div></footer>
     </main>
   );
 }
