@@ -71,14 +71,17 @@ function Index() {
             <span className="flex items-center gap-2 text-sm text-muted-foreground"><CheckCircle2 className="size-4 text-accent" /> Google or Apple sign-in</span>
           </div>
         </div>
-        <div className="relative mx-auto w-full max-w-[680px] lg:translate-x-8">
+        <div className="relative mx-auto w-full max-w-[680px] pb-[12%] pt-[5%] lg:translate-x-8">
           <div className="absolute -inset-8 bg-primary/10 blur-3xl" aria-hidden="true" />
-          <div className="relative rotate-[1.5deg] transition-transform duration-500 hover:rotate-0">
+          <div className="absolute left-0 top-0 w-[88%] -rotate-[5deg] opacity-80 shadow-panel" aria-hidden="true">
+            <LandingBoard theme="reef" variant="social" />
+          </div>
+          <div className="relative ml-auto w-[91%] rotate-[1.5deg] transition-transform duration-500 hover:rotate-0">
             <div className="mb-3 flex items-center justify-between rounded-md border border-border bg-card/90 px-4 py-3 shadow-panel backdrop-blur">
               <div><p className="text-xs font-bold uppercase tracking-[0.14em] text-primary">Your turn</p><p className="font-bold">Andrew <span className="text-muted-foreground">186</span></p></div>
               <div className="text-right"><p className="text-xs text-muted-foreground">Last move</p><p className="font-bold">PLAY <span className="text-accent">+18</span></p></div>
             </div>
-            <LandingBoard />
+            <LandingBoard theme="circuit" variant="hero" />
           </div>
         </div>
       </section>
