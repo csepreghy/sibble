@@ -61,7 +61,7 @@ function Index() {
         </div>
       </header>
 
-      <section className="relative mx-auto grid min-h-[calc(100svh-4rem)] max-w-7xl items-center gap-12 px-5 py-14 sm:px-8 lg:grid-cols-[0.82fr_1.18fr] lg:py-20">
+      <section className="relative mx-auto grid max-w-7xl items-center gap-12 px-5 py-14 sm:px-8 lg:min-h-[min(900px,calc(100svh-4rem))] lg:grid-cols-[0.82fr_1.18fr] lg:py-20">
         <div className="relative z-10 max-w-xl">
           <p className="mb-5 flex items-center gap-2 text-sm font-bold uppercase tracking-[0.16em] text-primary"><span className="h-px w-8 bg-primary" /> Scrabble, minus the noise</p>
           <h1 className="text-5xl font-bold leading-[0.98] sm:text-6xl lg:text-7xl">Your favourite word game, <span className="text-primary">beautifully played.</span></h1>
