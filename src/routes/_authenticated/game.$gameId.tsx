@@ -809,6 +809,9 @@ function GamePage() {
                   >
                     {rematchSent ? "Invitation sent…" : "Rematch"}
                   </Button>
+                  <Button variant="secondary" onClick={() => setGameOverClosed(true)}>
+                    View board
+                  </Button>
                   <Button
                     variant="ghost"
                     onClick={() => {

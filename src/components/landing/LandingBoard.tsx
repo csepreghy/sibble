@@ -22,14 +22,20 @@ function makeBoard(variant: "hero" | "social" | "bold") {
   const tiles = new Map<number, DemoTile>();
   if (variant === "hero") {
     placeWord(tiles, "PLAY", 7, 5, "across", "last");
-    placeWord(tiles, "YOUR", 5, 7, "down", "regular");
-    placeWord(tiles, "WAY", 9, 7, "across", "placing");
+    placeWord(tiles, "DAY", 5, 8, "down", "regular");
+    placeWord(tiles, "PAST", 7, 5, "down", "regular");
+    placeWord(tiles, "SUN", 9, 5, "across", "placing");
+    placeWord(tiles, "NOTE", 9, 7, "down", "regular");
   } else if (variant === "social") {
     placeWord(tiles, "SISTER", 7, 4, "across", "last");
-    placeWord(tiles, "TURNS", 5, 7, "down", "regular");
+    placeWord(tiles, "WATER", 5, 7, "down", "regular");
+    placeWord(tiles, "READ", 9, 7, "across", "placing");
+    placeWord(tiles, "DICE", 9, 10, "down", "regular");
   } else {
     placeWord(tiles, "VIVID", 7, 5, "across", "last");
-    placeWord(tiles, "MOOD", 5, 7, "down", "naughty");
+    placeWord(tiles, "RIVER", 5, 7, "down", "regular");
+    placeWord(tiles, "ECHO", 8, 7, "across", "placing");
+    placeWord(tiles, "OPEN", 8, 10, "down", "regular");
   }
   return tiles;
 }
@@ -51,7 +57,7 @@ export function LandingBoard({ theme = "circuit", variant = "hero", compact = fa
               tile?.tone === "placing" && "tile-placing tile-gloss",
               tile?.tone === "regular" && "tile-face tile-gloss",
             )}>
-              {tile ? <><span>{tile.letter}</span><span className="absolute bottom-[1px] right-[1px] text-[0.42em] opacity-75">{tile.value}</span></> : index === 112 ? <span className="text-[0.72em]">★</span> : premium ? <span className="text-[0.5em]">{premium}</span> : null}
+              {tile ? <><span>{tile.letter}</span><span className="absolute bottom-[1px] right-[1px] text-[0.42em] opacity-75">{tile.value}</span></> : index === 112 ? <span className="text-[0.72em]">★</span> : premium ? <span className={compact ? "text-[0.5em]" : "text-[0.55rem] sm:text-[0.72rem]"}>{premium}</span> : null}
             </span>
           );
         })}
