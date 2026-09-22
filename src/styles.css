@@ -245,6 +245,23 @@
     0 0 24px color-mix(in oklab, var(--naughty) 35%, transparent);
 }
 
+@utility landing-board-shell {
+  position: relative;
+  width: 100%;
+  isolation: isolate;
+}
+
+@utility landing-board-compact {
+  & > div {
+    gap: 1px;
+    padding: 0.375rem;
+  }
+
+  & > div > span {
+    border-radius: 2px;
+  }
+}
+
 /* ============================================================
    Themes. The admin picks one for everyone; it is applied as
    data-theme on <html>. `classic` matches the original parlour look.
