@@ -35,7 +35,7 @@ function makeBoard(variant: "hero" | "social" | "bold") {
     placeWord(tiles, "VIVID", 7, 5, "across", "last");
     placeWord(tiles, "RIVER", 5, 7, "down", "regular");
     placeWord(tiles, "ECHO", 8, 7, "across", "placing");
-    placeWord(tiles, "HOME", 8, 10, "down", "regular");
+    placeWord(tiles, "OPEN", 8, 10, "down", "regular");
   }
   return tiles;
 }
