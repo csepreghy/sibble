@@ -273,12 +273,12 @@ export function GameBoard({
             >
               <span
                 className={cn(
-                  "flex animate-in items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold shadow-panel zoom-in duration-200",
+                  "flex animate-in items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold shadow-panel zoom-in duration-200 opacity-80",
                   !preview.valid
-                    ? "bg-destructive text-destructive-foreground"
+                    ? "bg-destructive/85 text-destructive-foreground"
                     : preview.naughty
-                      ? "bg-naughty text-naughty-foreground"
-                      : "bg-emerald-600 text-white",
+                      ? "bg-naughty/85 text-naughty-foreground"
+                      : "bg-emerald-600/85 text-white",
                 )}
               >
                 {preview.valid ? (
