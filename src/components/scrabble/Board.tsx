@@ -26,7 +26,7 @@ type WordAxis = "h" | "v" | "x";
 
 const CELL = 100 / SIZE;
 // Clearance between the word and the points badge, in board squares.
-const BADGE_GAP = CELL * 0.55;
+const BADGE_GAP = CELL * 0.25;
 
 function wordAxis(pending: Placement[]): WordAxis {
   if (pending.length < 2) return "x";
