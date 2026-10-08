@@ -273,7 +273,7 @@ export function GameBoard({
             >
               <span
                 className={cn(
-                  "flex animate-in items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold shadow-panel zoom-in duration-200 opacity-80",
+                  "flex animate-in items-center gap-0.5 rounded-[4px] px-1.5 py-0.5 text-[0.62rem] font-bold leading-none shadow-panel zoom-in duration-200 opacity-80 sm:gap-1 sm:rounded-md sm:px-2 sm:py-1 sm:text-xs",
                   !preview.valid
                     ? "bg-destructive/85 text-destructive-foreground"
                     : preview.naughty
@@ -283,12 +283,12 @@ export function GameBoard({
               >
                 {preview.valid ? (
                   <>
-                    <Check className="h-3 w-3" strokeWidth={3} />
+                    <Check className="h-2.5 w-2.5 sm:h-3 sm:w-3" strokeWidth={3} />
                     {preview.score}
                     {preview.naughty ? <span className="opacity-90">2×</span> : null}
                   </>
                 ) : (
-                  <X className="h-3 w-3" strokeWidth={3} />
+                  <X className="h-2.5 w-2.5 sm:h-3 sm:w-3" strokeWidth={3} />
                 )}
               </span>
             </div>
