@@ -22,15 +22,54 @@ const MAX_ZOOM = 3.5;
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
-function badgePosition(anchorIndex: number) {
+type WordAxis = "h" | "v" | "x";
+
+const CELL = 100 / SIZE;
+// Clearance between the word and the points badge, in board squares.
+const BADGE_GAP = CELL * 0.55;
+
+function wordAxis(pending: Placement[]): WordAxis {
+  if (pending.length < 2) return "x";
+  if (new Set(pending.map((placement) => rowOf(placement.index))).size === 1) return "h";
+  if (new Set(pending.map((placement) => colOf(placement.index))).size === 1) return "v";
+  return "x";
+}
+
+function badgePosition(anchorIndex: number, axis: WordAxis) {
   const col = colOf(anchorIndex);
   const row = rowOf(anchorIndex);
+
+  // Across a horizontal word the badge sits above (or below) the last tile, so
+  // it never covers the letters that were just laid down.
+  if (axis === "h") {
+    const nearTop = row <= 1;
+    return {
+      left: `calc(${(col + 0.5) * CELL}%)`,
+      top: nearTop ? `calc(${(row + 1) * CELL}% + ${BADGE_GAP}%)` : `calc(${row * CELL}% - ${BADGE_GAP}%)`,
+      transform: nearTop ? "translate(-50%, 0)" : "translate(-50%, -100%)",
+    };
+  }
+
+  // Down a vertical word it sits to the side of the last tile instead.
+  if (axis === "v") {
+    const nearRight = col >= SIZE - 2;
+    return {
+      top: `calc(${(row + 0.5) * CELL}%)`,
+      left: nearRight ? `calc(${col * CELL}% - ${BADGE_GAP}%)` : `calc(${(col + 1) * CELL}% + ${BADGE_GAP}%)`,
+      transform: nearRight ? "translate(-100%, -50%)" : "translate(0, -50%)",
+    };
+  }
+
   const nearRight = col >= SIZE - 2;
   const nearTop = row <= 1;
 
   return {
-    left: nearRight ? `${(col / SIZE) * 100}%` : `${((col + 1) / SIZE) * 100}%`,
-    top: nearTop ? `${((row + 1) / SIZE) * 100}%` : `${(row / SIZE) * 100}%`,
+    left: nearRight
+      ? `calc(${col * CELL}% - ${BADGE_GAP}%)`
+      : `calc(${(col + 1) * CELL}% - ${BADGE_GAP}%)`,
+    top: nearTop
+      ? `calc(${(row + 1) * CELL}% + ${BADGE_GAP}%)`
+      : `calc(${row * CELL}% - ${BADGE_GAP}%)`,
     transform: nearRight
       ? nearTop
         ? "translate(-60%, 20%)"
