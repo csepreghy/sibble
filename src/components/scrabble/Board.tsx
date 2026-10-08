@@ -220,6 +220,7 @@ export function GameBoard({
   }
 
   const anchorIndex = preview?.anchor ?? null;
+  const axis = wordAxis(pending);
 
   return (
     <div className="relative">
@@ -308,7 +309,7 @@ export function GameBoard({
           {preview && anchorIndex !== null ? (
             <div
               className="pointer-events-none absolute z-20"
-              style={badgePosition(anchorIndex)}
+              style={badgePosition(anchorIndex, axis)}
             >
               <span
                 className={cn(
