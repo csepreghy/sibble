@@ -60,6 +60,23 @@ export interface PickPhase {
   seat: 0 | 1;
   /** draft only: the seat that picked first and therefore plays first */
   first?: 0 | 1;
+  /** ms timestamp when this pick opened; used to auto-fill if nobody picks */
+  since?: number;
+}
+
+/** tiles each player hand-picks in the opening draft; the rest are dealt at random */
+export const DRAFT_PICKS = 2;
+/** how long a bonus pick waits before random letters are dealt instead */
+export const PICK_TIMEOUT_MS = 60_000;
+
+/** finish an open bonus pick by dealing random letters to the picker */
+export function autoResolveBonus(state: GameState): GameState {
+  const phase = state.pick;
+  if (!phase || phase.kind !== "bonus") return state;
+  const racks: [string[], string[]] = [...state.racks] as [string[], string[]];
+  const refilled = draw(state.bag, racks[phase.seat]);
+  racks[phase.seat] = refilled.rack;
+  return { ...state, bag: refilled.bag, racks, pick: null };
 }
 
 export interface GameState {

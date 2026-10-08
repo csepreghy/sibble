@@ -18,6 +18,9 @@ import { isNaughtyWord, loadWordList } from "@/lib/words";
 import {
   LETTER_VALUES,
   RACK_SIZE,
+  DRAFT_PICKS,
+  PICK_TIMEOUT_MS,
+  autoResolveBonus,
   draw,
   removeFromRack,
   validateMove,
@@ -429,9 +432,11 @@ function GamePage() {
       if (tile && !tile.naughty) board[index] = { ...tile, naughty: true };
     }
     // three tiles or more earns one free choice from the pool before the rest refill
-    const earnsPick = !game.solo && pending.length >= 3 && state.bag.length > 0;
-    const refilled = earnsPick ? { bag: state.bag, rack: nextRack } : draw(state.bag, nextRack);
-    const racks: [string[], string[]] = [...state.racks] as [string[], string[]];
+    // an opponent's unfinished bonus pick gets random letters so nothing is lost
+    const base = state.pick?.kind === "bonus" && state.pick.seat !== activeSeat ? autoResolveBonus(state) : state;
+    const earnsPick = !game.solo && pending.length >= 3 && base.bag.length > 0;
+    const refilled = earnsPick ? { bag: base.bag, rack: nextRack } : draw(base.bag, nextRack);
+    const racks: [string[], string[]] = [...base.racks] as [string[], string[]];
     racks[activeSeat] = refilled.rack;
 
     const scores: [number, number] = [...state.scores] as [number, number];
@@ -444,7 +449,7 @@ function GamePage() {
       racks,
       scores,
       turn: activeSeat === 0 ? 1 : 0,
-      pick: earnsPick ? { kind: "bonus", seat: activeSeat } : null,
+      pick: earnsPick ? { kind: "bonus", seat: activeSeat, since: Date.now() } : null,
       consecutivePasses: 0,
       lastPlayed: pending.map((placement) => placement.index),
       history: [
@@ -546,12 +551,21 @@ function GamePage() {
     let next: GameState;
     if (phase.kind === "draft") {
       const other: 0 | 1 = phase.seat === 0 ? 1 : 0;
-      const done = racks[0].length >= RACK_SIZE && racks[1].length >= RACK_SIZE;
-      const nextSeat: 0 | 1 = racks[other].length < RACK_SIZE ? other : phase.seat;
+      const done = racks[0].length >= DRAFT_PICKS && racks[1].length >= DRAFT_PICKS;
+      const nextSeat: 0 | 1 = racks[other].length < DRAFT_PICKS ? other : phase.seat;
       const first: 0 | 1 = phase.first ?? 0;
+      let finalBag = bag;
+      if (done) {
+        // hand-picked tiles are in; deal the rest of both racks at random
+        for (const seat of [0, 1] as const) {
+          const refilled = draw(finalBag, racks[seat]);
+          finalBag = refilled.bag;
+          racks[seat] = refilled.rack;
+        }
+      }
       next = {
         ...state,
-        bag,
+        bag: finalBag,
         racks,
         pick: done ? null : { ...phase, seat: nextSeat },
         turn: done ? first : state.turn,
@@ -569,6 +583,18 @@ function GamePage() {
     }
     await persist(next, game.status, state.version ?? null);
   }
+
+  // if a bonus pick sits too long, either player's screen deals random letters
+  useEffect(() => {
+    const phase = state?.pick;
+    if (!phase || phase.kind !== "bonus" || !game || game.status !== "active" || !state) return;
+    const wait = Math.max(0, (phase.since ?? 0) + PICK_TIMEOUT_MS - Date.now());
+    const timer = window.setTimeout(() => {
+      void persist(autoResolveBonus(state), game.status, state.version ?? null).catch(() => {});
+    }, wait);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state?.pick, state?.version, game?.status]);
 
   async function resign() {
     if (!state || !game || activeSeat === null || saving) return;
@@ -838,8 +864,8 @@ function GamePage() {
               subtitle={
                 myPick
                   ? pickPhase.kind === "draft"
-                    ? `Your pick — tap a letter (${state.racks[activeSeat ?? 0]?.length ?? 0} of ${RACK_SIZE}).`
-                    : "You played three or more tiles — choose one letter, the rest come at random."
+                    ? `Your pick — tap a letter (${state.racks[activeSeat ?? 0]?.length ?? 0} of ${DRAFT_PICKS}) — the rest are dealt at random.`
+                    : "You played three or more tiles — choose one letter within a minute, the rest come at random."
                   : `Waiting for ${names[pickPhase.seat]} to choose a letter.`
               }
               onPick={pickLetter}
