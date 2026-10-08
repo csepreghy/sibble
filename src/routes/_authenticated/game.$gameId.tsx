@@ -896,7 +896,9 @@ function GamePage() {
           <GameBoard
             board={state.board}
             pending={pending}
-            lastPlayed={state.lastPlayed ?? []}
+            lastPlayed={(state.lastPlayed ?? []).filter(
+              (index) => activeSeat === null || state.board[index]?.player !== activeSeat,
+            )}
             preview={preview}
             hoverIndex={hoverIndex}
             draggingIndex={draggingBoardIndex}
