@@ -6,13 +6,13 @@ import { Button } from "@/components/ui/button";
 import { StoryBoard } from "./StoryBoard";
 
 /** Shared by the bottom-right Bag menu and Run Info. Review never touches live play. */
-export function CompletedPages({ state }: { state: StoryState }) {
+export function CompletedPages({ state, onReviewChange }: { state: StoryState; onReviewChange?: (reviewing: boolean) => void }) {
   const [selected, setSelected] = useState<CompletedPage | null>(null);
   const config = selected ? PAGES[selected.pageIndex] : null;
   if (selected && config) {
     return (
       <section className="space-y-3" aria-label="Completed page review">
-        <Button variant="ghost" size="sm" onClick={() => setSelected(null)}><ArrowLeft className="h-4 w-4" /> Completed pages</Button>
+        <Button variant="ghost" size="sm" onClick={() => { setSelected(null); onReviewChange?.(false); }}><ArrowLeft className="h-4 w-4" /> Completed pages</Button>
         <h3 className="text-lg font-bold">Chapter {config.chapter} · Page {config.page}</h3>
         {config.plotTwist && <p className="text-sm text-accent">{TWIST_INFO[config.plotTwist].name}</p>}
         <StoryBoard key={selected.pageIndex} size={config.size} board={selected.board} tiles={selected.tiles} premiums={config.premiums} usedPremiums={selected.usedPremiums} pending={[]} letterUpgrades={selected.letterUpgrades} disabled onCellClick={() => {}} />
@@ -39,7 +39,7 @@ export function CompletedPages({ state }: { state: StoryState }) {
         return <div key={chapter} className="space-y-1.5"><h4 className="text-xs font-bold text-muted-foreground">Chapter {chapter}</h4>
           {pages.map(page => {
             const snapshot = state.completedPages?.find(item => item.pageIndex === page.pageIndex);
-            return <Button key={page.pageIndex} variant="outline" className="h-auto w-full justify-between gap-2 py-2 text-left" disabled={!snapshot} onClick={() => snapshot && setSelected(snapshot)}>
+            return <Button key={page.pageIndex} variant="outline" className="h-auto w-full justify-between gap-2 py-2 text-left" disabled={!snapshot} onClick={() => { if (snapshot) { setSelected(snapshot); onReviewChange?.(true); } }}>
               <span>Page {page.page}{page.plotTwist ? ` · ${TWIST_INFO[page.plotTwist].name}` : ""}</span>
               {snapshot ? <Check className="h-4 w-4 shrink-0 text-story-valid" /> : <span className="text-xs text-muted-foreground">Not saved</span>}
             </Button>;
