@@ -957,7 +957,7 @@
 .story-shopping.story-compact .story-shop-offers { gap: 8px; }
 .story-shopping.story-compact .story-shop-offers > button { max-width: none; }
 .story-shopping.story-compact .story-footer { flex: 0 0 56px; min-height: 56px; order: 4; }
-.story-continue { flex: 0 0 44px; width: 100%; max-width: 640px; margin-inline: auto; padding-bottom: env(safe-area-inset-bottom); }
+.story-continue { flex: 0 0 44px; order: 5; width: 100%; max-width: 640px; margin-inline: auto; padding-bottom: env(safe-area-inset-bottom); }
 .story-continue > button { height: 44px; }
 @media (max-height: 730px) {
   .story-shopping.story-compact .story-footer { display: none; }
