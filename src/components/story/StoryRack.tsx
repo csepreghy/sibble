@@ -1,6 +1,7 @@
 import { LETTER_VALUES } from "@/lib/scrabble";
 import type { Enhancement, StoryTile } from "@/lib/story/types";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const ENH_CLASS: Record<Enhancement, string> = {
   DL: "tile-enh-dl",
@@ -18,6 +19,8 @@ interface StoryRackProps {
   draggingId?: string | null;
   onSelect: (tileId: string) => void;
   onTilePointerDown?: (tileId: string, event: React.PointerEvent) => void;
+  compact?: boolean;
+  capacity?: number;
 }
 
 export function StoryRack({
@@ -29,22 +32,26 @@ export function StoryRack({
   draggingId,
   onSelect,
   onTilePointerDown,
+  compact,
+  capacity = 7,
 }: StoryRackProps) {
   return (
-    <div className="flex items-center justify-center gap-1 rounded-xl border border-border bg-secondary/60 p-1.5 sm:gap-1.5 sm:p-2">
+    <div aria-label="Letter rack" className={cn("flex items-center justify-center gap-1 rounded-xl border border-border bg-secondary/60 p-1.5 sm:gap-1.5 sm:p-2", compact && "story-rack")} style={compact ? { ["--rack-capacity" as string]: capacity } : undefined}>
       {tiles.length === 0 ? (
         <span className="px-2 py-3 text-sm text-muted-foreground">No tiles left</span>
       ) : (
         tiles.map((tile) => (
-          <button
+          <Button
             key={tile.id}
             type="button"
+            variant="ghost"
             data-draggable-tile="true"
             style={{ touchAction: "none" }}
             onClick={() => onSelect(tile.id)}
             onPointerDown={(event) => onTilePointerDown?.(tile.id, event)}
             className={cn(
-              "relative flex aspect-square w-10 items-center justify-center rounded-[4px] text-lg font-bold transition-all duration-150 hover:-translate-y-1 hover:shadow-lg active:scale-95 sm:w-12 sm:rounded-md sm:text-xl",
+              "relative flex h-auto aspect-square w-10 shrink-0 items-center justify-center rounded-[4px] p-0 text-lg font-bold transition-all duration-150 hover:-translate-y-1 hover:shadow-lg active:scale-95 sm:w-12 sm:rounded-md sm:text-xl",
+              compact && "story-rack-tile",
               tile.enhancement ? `${ENH_CLASS[tile.enhancement]} tile-gloss` : "tile-face tile-gloss",
               selectedId === tile.id && !discardMode && "-translate-y-1.5 ring-[1.5px] ring-primary",
               discardMode && discardSelection.includes(tile.id) && "-translate-y-1.5 ring-[1.5px] ring-accent",
@@ -61,7 +68,7 @@ export function StoryRack({
                 {tile.enhancement}
               </span>
             ) : null}
-          </button>
+          </Button>
         ))
       )}
     </div>

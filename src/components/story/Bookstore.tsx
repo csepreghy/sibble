@@ -152,7 +152,7 @@ function OfferVisual({ offer, state, large }: { offer: Offer; state: StoryState;
     case "pen": {
       const Icon = penIcon(offer.penId);
       return (
-        <span className={cn("flex items-center justify-center rounded-full border border-shop-pen/50 bg-shop-pen/15 shadow-[0_0_14px_color-mix(in_oklab,var(--color-shop-pen)_35%,transparent)]", box)}>
+        <span className={cn("flex items-center justify-center rounded-full border border-shop-pen/50 bg-shop-pen/15", box)}>
           <Icon className={cn("text-shop-pen", large ? "h-8 w-8" : "h-6 w-6")} />
         </span>
       );
@@ -169,17 +169,18 @@ function OfferVisual({ offer, state, large }: { offer: Offer; state: StoryState;
 interface BookstoreProps {
   state: StoryState;
   onBuy: (offerIndex: number) => void;
+  compact?: boolean;
 }
 
-export function Bookstore({ state, onBuy }: BookstoreProps) {
+export function Bookstore({ state, onBuy, compact }: BookstoreProps) {
   const [inspect, setInspect] = useState<number | null>(null);
   const offers = state.offers ?? [];
   const inspected = inspect !== null ? offers[inspect] : undefined;
   const inspectedPrice = inspected ? priceFor(state.upgrades, inspected.price) : 0;
 
   return (
-    <div className="flex h-full flex-col">
-      <header className="mb-4 flex items-center justify-between">
+    <div className={cn("flex h-full min-h-0 flex-col", compact && "story-shop")}>
+      {!compact && <header className="mb-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
         <div>
           <h2 className="text-xl font-bold">The Bookstore</h2>
           <p className="text-xs text-muted-foreground">Tools for writing your next Page. Tap an item for details.</p>
@@ -187,22 +188,23 @@ export function Bookstore({ state, onBuy }: BookstoreProps) {
         <span className="flex items-center gap-2 rounded-full bg-gold/15 px-4 py-1 text-3xl font-bold text-gold">
           <Coins className="h-7 w-7" /> {state.coins}
         </span>
-      </header>
+      </header>}
 
-      <div className="grid grid-cols-2 content-start gap-3 overflow-y-auto sm:grid-cols-3 lg:grid-cols-4">
+      <div aria-label="Bookstore offers" className={cn("grid content-start overflow-y-auto", compact ? "story-shop-offers grid-cols-2 gap-3" : "grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4")}>
         {offers.map((offer, index) => {
           if (offer.sold) return null;
           const price = priceFor(state.upgrades, offer.price);
           const affordable = state.coins >= price;
           const cat = category(offer);
           return (
-            <button
+            <Button
               key={index}
               type="button"
+              variant="ghost"
               onClick={() => setInspect(index)}
               style={{ ["--glow" as string]: glowVar(offer) }}
               className={cn(
-                "shop-card mb-1 flex aspect-square flex-col items-center justify-between rounded-xl border-2 p-2 text-center",
+                "shop-card mb-1 flex h-auto aspect-square flex-col items-center justify-between gap-1 whitespace-normal rounded-lg border-2 p-2 text-center",
                 !affordable && "opacity-70",
               )}
             >
@@ -213,13 +215,13 @@ export function Bookstore({ state, onBuy }: BookstoreProps) {
               <span className={cn("flex items-center gap-1 self-end rounded-full bg-gold/15 px-2 py-0.5 text-sm font-bold text-gold", !affordable && "text-gold/60")}>
                 <Coins className="h-3.5 w-3.5" /> {price}
               </span>
-            </button>
+            </Button>
           );
         })}
       </div>
 
       <Dialog open={!!inspected} onOpenChange={(open) => !open && setInspect(null)}>
-        <DialogContent className="max-w-xs border-0 bg-transparent p-0 shadow-none [&>button:last-child]:hidden">
+        <DialogContent className="max-h-[90dvh] max-w-xs overflow-y-auto border-0 bg-transparent p-0 shadow-none">
           {inspected ? (
             <div
               style={{ ["--glow" as string]: glowVar(inspected) }}
@@ -236,7 +238,8 @@ export function Bookstore({ state, onBuy }: BookstoreProps) {
                   size="sm"
                   disabled={state.coins < inspectedPrice}
                   onClick={() => {
-                    const i = inspect!;
+                    const i = inspect;
+                    if (i === null) return;
                     setInspect(null);
                     onBuy(i);
                   }}
@@ -257,7 +260,8 @@ export function Bookstore({ state, onBuy }: BookstoreProps) {
 
 /** Left-sidebar Page Complete summary shown while shopping. */
 export function BookstoreSummary({ state, onContinue }: { state: StoryState; onContinue: () => void }) {
-  const done = PAGES[state.pageIndex]!;
+  const done = PAGES[state.pageIndex];
+  if (!done) return null;
   const next = PAGES[state.pageIndex + 1];
   return (
     <div className="flex flex-1 flex-col gap-3">

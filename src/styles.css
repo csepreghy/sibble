@@ -765,12 +765,14 @@
 
 :root {
   /* Scoring panel language: blue = Base Ink, orange = Mult. */
+  --story-grid-line: oklch(1 0 0);
   --base-ink: oklch(0.72 0.14 235);
   --mult-ink: oklch(0.78 0.16 60);
   --gold: oklch(0.84 0.16 88);
 }
 
 @theme inline {
+  --color-story-grid-line: var(--story-grid-line);
   --color-base-ink: var(--base-ink);
   --color-mult-ink: var(--mult-ink);
   --color-gold: var(--gold);
@@ -807,14 +809,112 @@
   box-shadow: var(--shadow-tile), 0 0 12px color-mix(in oklab, var(--tw) 65%, transparent);
 }
 
-/* Story mode is landscape-first: small portrait screens get a rotate hint. */
-.story-rotate-hint {
-  display: none;
+/* One mounted Story, with a viewport-sized compact presentation. */
+.story-rotate-hint { z-index: 100; }
+.story-compact {
+  height: var(--story-visible-height, 100dvh);
+  padding: max(6px, env(safe-area-inset-top)) max(6px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left));
+  gap: 6px;
+  overflow-y: auto;
 }
-@media (orientation: portrait) and (max-width: 64rem) {
-  .story-rotate-hint {
-    display: flex;
-  }
+.story-hud {
+  width: 100%;
+  max-width: 640px;
+  margin-inline: auto;
+  flex: 0 0 138px;
+  min-height: 138px;
+  padding: 2px 4px;
+}
+.story-score-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  border-top: 1px solid var(--border);
+}
+.story-score-value { position: relative; display: flex; gap: 5px; align-items: baseline; min-width: 0; }
+.story-score-value strong { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.story-score-delta { position: absolute; right: 0; top: -4px; }
+.story-score-caption { height: 22px; display: flex; align-items: center; justify-content: space-between; gap: 4px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.story-compact .story-desktop-sidebar { display: none; }
+.story-compact .story-workspace {
+  display: grid;
+  grid-template-rows: 46px minmax(0, 1fr);
+  gap: 6px;
+  padding: 0;
+  width: 100%;
+  max-width: 640px;
+  margin-inline: auto;
+  flex: 1 0 auto;
+  min-height: 252px;
+}
+.story-pens {
+  grid-row: 1;
+  grid-column: 1;
+  height: 46px;
+  padding: 2px 4px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  overflow-x: auto;
+  border-radius: 6px;
+}
+.story-pen-slot { width: 44px; height: 40px; flex: 0 0 44px; gap: 0; }
+.story-compact .story-main {
+  grid-row: 2;
+  grid-column: 1;
+  min-height: 200px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  border-radius: 0;
+  overflow: visible;
+  align-items: center;
+  justify-content: center;
+}
+.story-board-square {
+  width: min(100%, max(200px, calc(var(--story-visible-height, 100dvh) - 320px - env(safe-area-inset-top) - env(safe-area-inset-bottom))));
+  max-width: 100%;
+  aspect-ratio: 1;
+  flex: none;
+}
+.story-compact .story-footer {
+  flex: 0 0 106px;
+  min-height: 106px;
+  width: 100%;
+  max-width: 640px;
+  margin-inline: auto;
+  flex-direction: column;
+  padding: 0;
+  gap: 6px;
+}
+.story-compact .story-footer > div:first-child { max-width: none; }
+.story-rack { height: 56px; gap: 4px; padding: 4px; border-radius: 6px; }
+.story-rack .story-rack-tile {
+  width: min(46px, calc((100% - 8px - (var(--rack-capacity) - 1) * 4px) / var(--rack-capacity)));
+  max-height: 46px;
+  border-radius: 4px;
+}
+.story-rack-tile > span:nth-child(2) { font-size: 10px; left: 3px; bottom: 3px; }
+.story-rack-tile > span:nth-child(3) { font-size: 9px; right: 2px; bottom: 3px; }
+.story-compact .story-actions { display: flex; flex-wrap: nowrap; width: 100%; height: 44px; gap: 5px; }
+.story-compact .story-actions > button { height: 44px; min-width: 44px; padding-inline: 10px; }
+.story-compact .story-actions .story-play-button { order: -1; flex: 1; }
+.story-compact .story-action-label { display: none; }
+.story-compact .story-actions svg { margin: 0; }
+.story-shopping.story-compact .story-workspace { flex: 1 1 0; min-height: 0; }
+.story-shopping.story-compact .story-main { min-height: 0; overflow: hidden; align-items: stretch; }
+.story-shop-offers { min-height: 0; flex: 1; grid-auto-rows: max-content; padding: 2px 3px 12px; overscroll-behavior: contain; }
+.story-shop-offers > button { min-width: 0; max-width: 250px; width: 100%; justify-self: center; }
+.story-shopping.story-compact .story-footer { flex: 0 0 56px; min-height: 56px; order: 4; }
+.story-continue { flex: 0 0 44px; width: 100%; max-width: 640px; margin-inline: auto; }
+.story-continue > button { height: 44px; }
+@media (max-height: 730px) {
+  .story-shopping.story-compact .story-footer { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .anim-tile-bump, .anim-score-pop, .shop-card-live { animation: none; }
 }
 
 /* Bookstore cards: tactile, raised, glossy, with a slow pulsing category glow.
@@ -830,6 +930,7 @@
     0 5px 0 color-mix(in oklab, var(--glow) 35%, black),
     0 10px 18px -6px hsl(0 0% 0% / 0.6);
   position: relative;
+  color: var(--foreground);
   overflow: hidden;
   border-color: color-mix(in oklab, var(--glow) 80%, transparent);
   background:

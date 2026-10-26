@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { LETTER_VALUES } from "@/lib/scrabble";
 import type { BoardTile, Enhancement, PendingPlacement, StoryTile } from "@/lib/story/types";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const PREMIUM_CLASS: Record<string, string> = {
   TW: "bg-tw text-primary-foreground",
@@ -38,6 +39,7 @@ interface StoryBoardProps {
   draggingIndex?: number | null;
   onCellClick: (index: number) => void;
   onTilePointerDown?: (index: number, event: React.PointerEvent) => void;
+  compact?: boolean;
 }
 
 export function StoryBoard({
@@ -55,6 +57,7 @@ export function StoryBoard({
   draggingIndex,
   onCellClick,
   onTilePointerDown,
+  compact,
 }: StoryBoardProps) {
   const pendingMap = new Map(pending.map((p) => [p.index, p]));
   const tileById = new Map(tiles.map((t) => [t.id, t]));
@@ -116,7 +119,8 @@ export function StoryBoard({
     pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
     if (pointers.current.size === 2) {
       const [a, b] = [...pointers.current.values()];
-      pinch.current = { distance: Math.hypot(a!.x - b!.x, a!.y - b!.y) };
+      if (!a || !b) return;
+      pinch.current = { distance: Math.hypot(a.x - b.x, a.y - b.y) };
       pan.current = null;
     } else if (pointers.current.size === 1 && viewRef.current.zoom > 1) {
       const target = event.target as HTMLElement;
@@ -133,12 +137,13 @@ export function StoryBoard({
     if (!rect) return;
     if (pointers.current.size === 2 && pinch.current) {
       const [a, b] = [...pointers.current.values()];
-      const distance = Math.hypot(a!.x - b!.x, a!.y - b!.y);
+      if (!a || !b) return;
+      const distance = Math.hypot(a.x - b.x, a.y - b.y);
       if (pinch.current.distance > 0) {
         applyZoom(
           viewRef.current.zoom * (distance / pinch.current.distance),
-          (a!.x + b!.x) / 2 - rect.left,
-          (a!.y + b!.y) / 2 - rect.top,
+          (a.x + b.x) / 2 - rect.left,
+          (a.y + b.y) / 2 - rect.top,
         );
       }
       pinch.current = { distance };
@@ -160,7 +165,7 @@ export function StoryBoard({
   }
 
   return (
-    <div className="relative mx-auto w-full max-w-[min(100%,calc(100dvh-16rem))]">
+    <div data-story-board className={cn("relative mx-auto w-full max-w-[min(100%,calc(100dvh-16rem))]", compact && "story-board-square")}>
       <div
         ref={viewportRef}
         onPointerDown={handlePointerDown}
@@ -168,7 +173,7 @@ export function StoryBoard({
         onPointerUp={endPointer}
         onPointerCancel={endPointer}
         className="relative overflow-hidden rounded-xl bg-board p-1.5 shadow-panel sm:p-2.5"
-        style={{ touchAction: "pan-y" }}
+        style={{ touchAction: "none" }}
       >
         <div
           className="relative origin-top-left"
@@ -178,7 +183,7 @@ export function StoryBoard({
           }}
         >
           <div
-            className="grid gap-[3px] overflow-hidden rounded-[4px] bg-white p-[3px] dark:bg-white sm:rounded-md"
+            className="grid gap-[3px] overflow-hidden rounded-[4px] bg-story-grid-line p-[3px] sm:rounded-md"
             style={{
               gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
               containerType: "inline-size",
@@ -266,7 +271,7 @@ export function StoryBoard({
       </div>
 
       {zoom > 1 ? (
-        <button
+        <Button
           type="button"
           onClick={() => {
             setZoom(1);
@@ -275,7 +280,7 @@ export function StoryBoard({
           className="absolute right-3 top-3 z-30 rounded-full bg-card/90 px-2.5 py-1 text-xs font-semibold shadow-panel"
         >
           Reset zoom
-        </button>
+        </Button>
       ) : null}
     </div>
   );

@@ -9,4 +9,8 @@ Source spec: uploaded `Sibble_-_Singleplayer_Story_Mode_pasted.md`. Multiplayer 
 - [x] Nav entry + head metadata; portrait rotate message
 - [x] Verify: build clean, Playwright smoke test of a full Page 1 loop (placed IT, scored 8 Ink with centre DW)
 
-Follow-up ideas (not requested yet): pen artwork images, balance tuning, onboarding polish.
+## Responsive SibbleBook redesign
+- [x] Preserve shared game state and desktop presentation; select compact/desktop/rotation layouts.
+- [x] Compact HUD, horizontal Pens, fixed board viewport, rack/actions and overlay settings.
+- [x] Portrait Bookstore with scrolling two-column offers and accessible coins/Continue.
+- [x] Verify device layouts, multiple grid sizes, scoring, discards, purchases and orientation persistence (Chromium device emulation; physical Safari browser controls not available here).

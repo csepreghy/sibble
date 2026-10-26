@@ -13,6 +13,9 @@ import {
   Shuffle,
   Sparkles,
   Trash2,
+  Settings,
+  Smartphone,
+  Palette,
 } from "lucide-react";
 import { loadWordList } from "@/lib/words";
 import { cn } from "@/lib/utils";
@@ -29,6 +32,9 @@ import {
 import { validateStoryMove } from "@/lib/story/placement";
 import { scorePlacement } from "@/lib/story/scoring";
 import { loadStory, saveStory } from "@/lib/story/storage";
+import { useStoryLayout } from "@/hooks/useStoryLayout";
+import { ThemeSelector } from "@/components/ThemeSelector";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { penSlots } from "@/lib/story/upgrades";
 import type { PendingPlacement, PenInstance, StoryState, StoryTile } from "@/lib/story/types";
 import { Button } from "@/components/ui/button";
@@ -103,6 +109,9 @@ function fmtDelta(diff: number): string {
 
 function StoryPlay() {
   const navigate = useNavigate();
+  const layout = useStoryLayout();
+  const compact = layout !== "desktop";
+  const [themeOpen, setThemeOpen] = useState(false);
   const [story, setStory] = useState<StoryState | null>(() => loadStory());
   const [words, setWords] = useState<Set<string> | null>(null);
   const [pending, setPending] = useState<PendingPlacement[]>([]);
@@ -159,7 +168,7 @@ function StoryPlay() {
     };
   }, []);
 
-  const config = story ? PAGES[story.pageIndex]! : null;
+  const config = story ? PAGES[story.pageIndex] : null;
   const tileById = useMemo(
     () => new Map((story?.tiles ?? []).map((tile) => [tile.id, tile])),
     [story?.tiles],
@@ -193,7 +202,7 @@ function StoryPlay() {
     return null;
   }
 
-  const rackTiles = story.page.rack.map((id) => tileById.get(id)!).filter(Boolean);
+  const rackTiles = story.page.rack.flatMap((id) => { const tile = tileById.get(id); return tile ? [tile] : []; });
   const twist = config.plotTwist ? TWIST_INFO[config.plotTwist] : null;
   const busy = anim.running;
 
@@ -325,7 +334,9 @@ function StoryPlay() {
     const rack = [...story.page.rack];
     for (let i = rack.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [rack[i], rack[j]] = [rack[j]!, rack[i]!];
+      const a = rack[i];
+      const b = rack[j];
+      if (a && b) [rack[i], rack[j]] = [b, a];
     }
     setStory({ ...story, page: { ...story.page, rack } });
   }
@@ -466,6 +477,7 @@ function StoryPlay() {
   }
 
   function startNewStory() {
+    if (!window.confirm("Start a new Story? This replaces your current Story.")) return;
     const fresh = newStory();
     setStory(fresh);
     setPending([]);
@@ -478,17 +490,45 @@ function StoryPlay() {
   const showEnd = story.phase === "victory" || story.phase === "defeat";
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden">
-      {/* Rotate hint for small portrait screens */}
-      <div className="story-rotate-hint fixed inset-0 z-50 flex-col items-center justify-center gap-3 bg-background p-8 text-center">
-        <RotateCcw className="h-10 w-10 text-primary" />
-        <p className="text-lg font-bold">Rotate your device</p>
-        <p className="text-sm text-muted-foreground">Story Mode is played in landscape.</p>
-      </div>
+    <div className={cn("story-screen flex h-dvh flex-col overflow-hidden", compact && "story-compact", story.phase === "bookstore" && "story-shopping")} data-layout={layout}>
+      {layout === "rotate" && <div className="story-rotate-hint fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-background p-8 text-center">
+        <div className="relative text-primary"><Smartphone className="h-20 w-20 rotate-90" /><RotateCcw className="absolute -right-5 -top-3 h-8 w-8" /></div>
+        <h1 className="text-2xl font-bold">SibbleBook is best played in portrait</h1>
+        <p className="text-sm text-muted-foreground">Rotate your phone to continue writing your Story.</p>
+      </div>}
 
-      <div className="flex min-h-0 flex-1 gap-3 p-3">
+      {compact && <header className="story-hud">
+        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+          <div className="min-w-0">
+            <p className="truncate text-xs font-bold text-muted-foreground">Chapter {config.chapter} · Page {config.page}{story.phase === "bookstore" ? " · Complete!" : ""}</p>
+            <p className="truncate text-2xl font-bold tabular-nums">{story.phase === "bookstore" ? "The Bookstore" : story.page.ink.toLocaleString()} {story.phase !== "bookstore" && <span className="text-sm text-muted-foreground">/ {config.inkTarget.toLocaleString()} Ink</span>}</p>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild><Button variant="outline" size="icon" aria-label="Story settings"><Settings /></Button></DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => navigate({ to: "/lobby" })}><Home /> Return to main menu</DropdownMenuItem>
+              <DropdownMenuItem onClick={startNewStory}><Sparkles /> Start new Story</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setDialog({ kind: "run-info" })}><Info /> Run Info</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setThemeOpen(true)}><Palette /> Theme</DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive" onClick={() => { if (window.confirm("End this Story? Your run will be over.")) setStory({ ...story, phase: "defeat" }); }}><Trash2 /> End this Story</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 text-xs">
+          <p className="min-w-0 truncate text-muted-foreground">Words: <strong className="text-foreground">{story.page.wordsLeft}</strong> · Discards: <strong className="text-foreground">{story.page.discardsLeft}</strong></p>
+          <span className="flex items-center gap-1 text-xl font-bold tabular-nums text-gold"><Coins className="h-4 w-4" />{story.coins}</span>
+        </div>
+        <div className="story-score-row tabular-nums" aria-label="Base and Mult">
+          <div className="story-score-value text-base-ink"><span className="text-xs">Base</span><strong key={`compact-base-${anim.base}`} className={cn("text-2xl", busy && "anim-score-pop")}>{busy ? anim.base : 0}</strong><span className="story-score-delta text-xs">{anim.baseDelta}</span></div>
+          <span className="text-muted-foreground">×</span>
+          <div className="story-score-value text-mult-ink"><span className="text-xs">Mult</span><strong key={`compact-mult-${anim.mult}`} className={cn("text-2xl", busy && "anim-score-pop")}>{busy ? anim.mult : 0}</strong><span className="story-score-delta text-xs">{anim.multDelta}</span></div>
+          <span className="min-w-0 truncate text-right text-sm font-bold text-gold">{busy ? (anim.base * anim.mult).toLocaleString() : preview && "ink" in preview ? `~${preview.ink.toLocaleString()}` : 0} Ink</span>
+        </div>
+        <div className="story-score-caption text-xs text-muted-foreground">{anim.label ?? preview?.error ?? ""}{twist && <Popover><PopoverTrigger asChild><Button variant="ghost" size="sm" className="h-5 px-1 text-accent" aria-label="Plot Twist rules"><Info />{twist.name}</Button></PopoverTrigger><PopoverContent><p className="font-bold">{twist.name}</p><p>{twist.description}</p></PopoverContent></Popover>}</div>
+      </header>}
+      <div className="story-workspace flex min-h-0 flex-1 gap-3 p-3">
         {/* Left sidebar — run information */}
-        <aside className="flex w-52 shrink-0 flex-col gap-3 overflow-y-auto rounded-xl border border-border bg-card/60 p-3 sm:w-60">
+        <aside className="story-desktop-sidebar flex w-52 shrink-0 flex-col gap-3 overflow-y-auto rounded-xl border border-border bg-card/60 p-3 sm:w-60">
           {story.phase === "bookstore" ? (
             <BookstoreSummary state={story} onContinue={() => setStory(continueToNextPage(story))} />
           ) : (
@@ -587,7 +627,7 @@ function StoryPlay() {
                   <Sparkles className="mr-2 h-4 w-4" /> New Story
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => setStory({ ...story, phase: "defeat" })}
+                  onClick={() => { if (window.confirm("End this Story? Your run will be over.")) setStory({ ...story, phase: "defeat" }); }}
                   className="text-destructive"
                 >
                   <Trash2 className="mr-2 h-4 w-4" /> End this Story
@@ -598,11 +638,12 @@ function StoryPlay() {
         </aside>
 
         {/* Center — board or Bookstore */}
-        <main className="flex min-w-0 flex-1 flex-col justify-center overflow-y-auto rounded-xl border border-border bg-card/30 p-3">
+        <main className="story-main flex min-w-0 flex-1 flex-col justify-center overflow-y-auto rounded-xl border border-border bg-card/30 p-3">
           {story.phase === "bookstore" ? (
-            <Bookstore state={story} onBuy={handleBuy} />
+            <Bookstore state={story} onBuy={handleBuy} compact={compact} />
           ) : (
             <StoryBoard
+              compact={compact}
               size={config.size}
               board={story.page.board}
               tiles={story.tiles}
@@ -623,6 +664,7 @@ function StoryPlay() {
 
         {/* Right sidebar — Pens */}
         <PenSidebar
+          horizontal={compact}
           pens={story.pens}
           slots={penSlots(story.upgrades)}
           activePenId={anim.activePenId}
@@ -631,12 +673,14 @@ function StoryPlay() {
       </div>
 
       {/* Bottom — rack and actions */}
-      <footer className="flex items-center justify-center gap-2 px-3 pb-3">
+      <footer className="story-footer flex items-center justify-center gap-2 px-3 pb-3">
         <div className={cn("w-full", story.phase === "bookstore" ? "max-w-2xl" : "max-w-md")}>
           {story.phase === "bookstore" ? (
             <div className="pointer-events-none">
               <StoryRack
-                tiles={"SIBBLEBOOK".split("").map((letter, i) => ({ id: `deco-${i}`, letter, enhancement: null }))}
+                compact={compact}
+                capacity={compact ? 6 : 10}
+                tiles={(compact ? "SIBBLE" : "SIBBLEBOOK").split("").map((letter, i) => ({ id: `deco-${i}`, letter, enhancement: null }))}
                 selectedId={null}
                 discardMode={false}
                 discardSelection={[]}
@@ -646,6 +690,8 @@ function StoryPlay() {
             </div>
           ) : (
           <StoryRack
+            compact={compact}
+            capacity={story.upgrades.includes("bigger-rack") ? 8 : 7}
             tiles={rackTiles}
             selectedId={selectedRackId}
             discardMode={discardMode}
@@ -657,9 +703,9 @@ function StoryPlay() {
           />
           )}
         </div>
-        <div className={cn("flex flex-wrap items-center gap-1.5", story.phase === "bookstore" && "hidden")}>
-          <Button variant="outline" size="sm" onClick={shuffleRack} disabled={busy || story.phase !== "play"}>
-            <Shuffle className="mr-1 h-4 w-4" /> Shuffle
+        <div className={cn("story-actions flex flex-wrap items-center gap-1.5", story.phase === "bookstore" && "hidden")}>
+          <Button title="Shuffle" aria-label="Shuffle" variant="outline" size="sm" onClick={shuffleRack} disabled={busy || story.phase !== "play"}>
+            <Shuffle className="mr-1 h-4 w-4" /><span className="story-action-label">Shuffle</span>
           </Button>
           {discardMode ? (
             <>
@@ -687,12 +733,13 @@ function StoryPlay() {
               Discard
             </Button>
           )}
-          <Button variant="outline" size="sm" onClick={() => setDialog({ kind: "bag" })}>
-            <Layers className="mr-1 h-4 w-4" /> Bag
+          <Button title="Bag" aria-label="Bag" variant="outline" size="sm" onClick={() => setDialog({ kind: "bag" })}>
+            <Layers className="mr-1 h-4 w-4" /><span className="story-action-label">Bag</span>
           </Button>
           <Button
             size="sm"
             disabled={busy || story.phase !== "play" || pending.length === 0 || !words}
+            className="story-play-button"
             onClick={playWord}
           >
             <Play className="mr-1 h-4 w-4" /> Play word
@@ -700,6 +747,8 @@ function StoryPlay() {
         </div>
       </footer>
 
+      {compact && story.phase === "bookstore" && <div className="story-continue"><Button className="w-full" onClick={() => setStory(continueToNextPage(story))}>Continue to Next Page <ArrowRight /></Button></div>}
+      <Dialog open={themeOpen} onOpenChange={setThemeOpen}><DialogContent><DialogTitle>Story theme</DialogTitle><ThemeSelector /></DialogContent></Dialog>
       {/* Dialogs */}
       {showIntro ? <PageIntroDialog state={story} onStart={() => setIntroDismissed(story.pageIndex)} /> : null}
       {showEnd ? <StoryEndDialog state={story} won={story.phase === "victory"} onNewStory={startNewStory} /> : null}
