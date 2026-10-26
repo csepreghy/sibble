@@ -1031,3 +1031,14 @@
   .story-pen-purchase-flight { display: none; }
   .story-pen-arrival { animation: none; }
 }
+/* ============= Story — a purchased item flying into the Sibble rack ============= */
+.story-item-purchase-flight { position: fixed; z-index: 100; pointer-events: none; display: flex; align-items: center; justify-content: center; animation: story-pen-purchase-flight 720ms cubic-bezier(.3,.1,.5,1) both; }
+@keyframes story-sibble-arrival {
+  0%, 100% { transform: scale(1); filter: none; }
+  35% { transform: scale(1.05); filter: brightness(1.35); }
+}
+.story-sibble-arrival { animation: story-sibble-arrival 420ms ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .story-item-purchase-flight { display: none; }
+  .story-sibble-arrival { animation: none; }
+}
