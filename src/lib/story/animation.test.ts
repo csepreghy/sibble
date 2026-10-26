@@ -50,3 +50,9 @@ test("Reduced skips contribution events but retains each word and its exact tota
   assert.deepEqual(reduced.filter(event => event.type === "result").map(event => [event.base, event.mult, event.ink]), [[5, 13, 65], [2, 2, 4]]);
   assert.equal(events.length, 7);
 });
+import { countCrossingTime as cross, totalCountDuration as tcd } from "./animation";
+test("confetti fires when the page count crosses the target, before the count ends", () => {
+  const t = cross(0, 100, 30);
+  assert.ok(t > 0 && t < tcd(100));
+  assert.equal(cross(50, 100, 30), 0);
+});
