@@ -1,0 +1,267 @@
+import { useCallback, useEffect, useRef, useState } from "react";
+import { LETTER_VALUES } from "@/lib/scrabble";
+import type { BoardTile, Enhancement, PendingPlacement, StoryTile } from "@/lib/story/types";
+import { cn } from "@/lib/utils";
+
+const PREMIUM_CLASS: Record<string, string> = {
+  TW: "bg-tw text-primary-foreground",
+  DW: "bg-dw text-primary-foreground",
+  TL: "bg-tl text-primary-foreground",
+  DL: "bg-dl text-tile-foreground",
+};
+
+const ENH_CLASS: Record<Enhancement, string> = {
+  DL: "tile-enh-dl",
+  TL: "tile-enh-tl",
+  DW: "tile-enh-dw",
+  TW: "tile-enh-tw",
+};
+
+const MIN_ZOOM = 1;
+const MAX_ZOOM = 3.5;
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
+interface StoryBoardProps {
+  size: number;
+  board: (BoardTile | null)[];
+  tiles: StoryTile[];
+  premiums: Record<number, Enhancement>;
+  usedPremiums: number[];
+  pending: PendingPlacement[];
+  letterUpgrades: Record<string, number>;
+  /** index highlighted during the scoring animation */
+  activeIndex?: number | null;
+  /** word currently being scored */
+  activeWord?: number[] | null;
+  disabled?: boolean;
+  onCellClick: (index: number) => void;
+}
+
+export function StoryBoard({
+  size,
+  board,
+  tiles,
+  premiums,
+  usedPremiums,
+  pending,
+  letterUpgrades,
+  activeIndex,
+  activeWord,
+  disabled,
+  onCellClick,
+}: StoryBoardProps) {
+  const pendingMap = new Map(pending.map((p) => [p.index, p]));
+  const tileById = new Map(tiles.map((t) => [t.id, t]));
+  const usedSet = new Set(usedPremiums);
+  const activeWordSet = new Set(activeWord ?? []);
+  const center = ((size - 1) / 2) * size + (size - 1) / 2;
+
+  // Container-relative font sizes so any board size stays legible.
+  const letterFont = `${(100 / size) * 0.44}cqw`;
+  const cornerFont = `${(100 / size) * 0.17}cqw`;
+  const labelFont = `${(100 / size) * 0.2}cqw`;
+
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const [zoom, setZoom] = useState(1);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const viewRef = useRef({ zoom: 1, offset: { x: 0, y: 0 } });
+  viewRef.current = { zoom, offset };
+
+  const applyZoom = useCallback((nextZoom: number, px: number, py: number) => {
+    const { zoom: current, offset: currentOffset } = viewRef.current;
+    const target = clamp(nextZoom, MIN_ZOOM, MAX_ZOOM);
+    if (target === current) return;
+    const k = target / current;
+    const next = { x: px - (px - currentOffset.x) * k, y: py - (py - currentOffset.y) * k };
+    const rect = viewportRef.current?.getBoundingClientRect();
+    if (rect) {
+      next.x = clamp(next.x, rect.width - rect.width * target, 0);
+      next.y = clamp(next.y, rect.height - rect.height * target, 0);
+    }
+    setZoom(target);
+    setOffset(target === MIN_ZOOM ? { x: 0, y: 0 } : next);
+  }, []);
+  const applyZoomRef = useRef(applyZoom);
+  applyZoomRef.current = applyZoom;
+
+  useEffect(() => {
+    const el = viewportRef.current;
+    if (!el) return;
+    const onWheel = (event: WheelEvent) => {
+      event.preventDefault();
+      const dy = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? 100 : 1);
+      const rect = el.getBoundingClientRect();
+      const intensity = event.ctrlKey ? 0.006 : 0.0018;
+      applyZoomRef.current(
+        viewRef.current.zoom * Math.exp(-dy * intensity),
+        event.clientX - rect.left,
+        event.clientY - rect.top,
+      );
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, []);
+
+  const pointers = useRef(new Map<number, { x: number; y: number }>());
+  const pinch = useRef<{ distance: number } | null>(null);
+  const pan = useRef<{ x: number; y: number; offset: { x: number; y: number } } | null>(null);
+
+  function handlePointerDown(event: React.PointerEvent) {
+    pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (pointers.current.size === 2) {
+      const [a, b] = [...pointers.current.values()];
+      pinch.current = { distance: Math.hypot(a!.x - b!.x, a!.y - b!.y) };
+      pan.current = null;
+    } else if (pointers.current.size === 1 && viewRef.current.zoom > 1) {
+      pan.current = { x: event.clientX, y: event.clientY, offset: viewRef.current.offset };
+    }
+  }
+
+  function handlePointerMove(event: React.PointerEvent) {
+    if (!pointers.current.has(event.pointerId)) return;
+    pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    const rect = viewportRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    if (pointers.current.size === 2 && pinch.current) {
+      const [a, b] = [...pointers.current.values()];
+      const distance = Math.hypot(a!.x - b!.x, a!.y - b!.y);
+      if (pinch.current.distance > 0) {
+        applyZoom(
+          viewRef.current.zoom * (distance / pinch.current.distance),
+          (a!.x + b!.x) / 2 - rect.left,
+          (a!.y + b!.y) / 2 - rect.top,
+        );
+      }
+      pinch.current = { distance };
+      return;
+    }
+    if (pan.current) {
+      const scale = viewRef.current.zoom;
+      setOffset({
+        x: clamp(pan.current.offset.x + (event.clientX - pan.current.x), rect.width - rect.width * scale, 0),
+        y: clamp(pan.current.offset.y + (event.clientY - pan.current.y), rect.height - rect.height * scale, 0),
+      });
+    }
+  }
+
+  function endPointer(event: React.PointerEvent) {
+    pointers.current.delete(event.pointerId);
+    if (pointers.current.size < 2) pinch.current = null;
+    if (pointers.current.size === 0) pan.current = null;
+  }
+
+  return (
+    <div className="relative mx-auto w-full max-w-[min(100%,calc(100dvh-16rem))]">
+      <div
+        ref={viewportRef}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={endPointer}
+        onPointerCancel={endPointer}
+        className="relative overflow-hidden rounded-xl bg-board p-1.5 shadow-panel sm:p-2.5"
+        style={{ touchAction: "pan-y" }}
+      >
+        <div
+          className="relative origin-top-left"
+          style={{
+            transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
+            transition: pan.current || pinch.current ? "none" : "transform 120ms ease-out",
+          }}
+        >
+          <div
+            className="grid gap-[3px] overflow-hidden rounded-[4px] bg-white p-[3px] dark:bg-white sm:rounded-md"
+            style={{
+              gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
+              containerType: "inline-size",
+            }}
+          >
+            {board.map((cell, index) => {
+              const placed = pendingMap.get(index);
+              const committedTile = cell ? tileById.get(cell.tileId) : null;
+              const pendingTile = placed ? tileById.get(placed.tileId) : null;
+              const enhancement = committedTile?.enhancement ?? pendingTile?.enhancement ?? null;
+              const letter = cell?.letter ?? placed?.letter ?? null;
+              const blank = cell?.blank ?? placed?.blank ?? false;
+              const premium = premiums[index] ?? null;
+              const premiumUsed = usedSet.has(index);
+              const isActive = activeIndex === index;
+              const inActiveWord = activeWordSet.has(index);
+
+              return (
+                <button
+                  key={index}
+                  type="button"
+                  data-cell-index={index}
+                  disabled={disabled}
+                  onClick={() => onCellClick(index)}
+                  className={cn(
+                    "relative flex aspect-square items-center justify-center rounded-[4px] bg-board-cell font-bold leading-none transition-all duration-150 sm:rounded-md",
+                    premium && !letter && !premiumUsed && PREMIUM_CLASS[premium],
+                    premium && !letter && premiumUsed && "bg-board-cell opacity-80",
+                    letter
+                      ? enhancement
+                        ? `${ENH_CLASS[enhancement]} tile-gloss`
+                        : "tile-face tile-gloss"
+                      : null,
+                    placed && "z-10 shadow-md tile-placing tile-gloss",
+                    isActive && "z-10 ring-2 ring-primary brightness-110",
+                    !isActive && inActiveWord && "ring-1 ring-primary/60",
+                    !letter && "hover:brightness-95",
+                  )}
+                  aria-label={
+                    letter
+                      ? `${letter} on square ${index + 1}`
+                      : premium
+                        ? `${premium} square`
+                        : `empty square ${index + 1}`
+                  }
+                >
+                  {letter ? (
+                    <>
+                      <span className="pointer-events-none leading-none" style={{ fontSize: letterFont }}>
+                        {blank ? letter.toLowerCase() : letter}
+                      </span>
+                      <span
+                        className="pointer-events-none absolute bottom-[2px] left-[3px] font-semibold leading-none text-base-ink"
+                        style={{ fontSize: cornerFont }}
+                      >
+                        {blank ? 0 : (LETTER_VALUES[letter] ?? 0) + (letterUpgrades[letter] ?? 0)}
+                      </span>
+                      {enhancement ? (
+                        <span
+                          className="pointer-events-none absolute bottom-[2px] right-[3px] font-bold leading-none text-mult-ink"
+                          style={{ fontSize: cornerFont }}
+                        >
+                          {enhancement}
+                        </span>
+                      ) : null}
+                    </>
+                  ) : index === center ? (
+                    <span style={{ fontSize: labelFont }} className="leading-none">★</span>
+                  ) : premium && !premiumUsed ? (
+                    <span className="px-0.5 text-center uppercase tracking-tight" style={{ fontSize: labelFont }}>
+                      {premium}
+                    </span>
+                  ) : null}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {zoom > 1 ? (
+        <button
+          type="button"
+          onClick={() => {
+            setZoom(1);
+            setOffset({ x: 0, y: 0 });
+          }}
+          className="absolute right-3 top-3 z-30 rounded-full bg-card/90 px-2.5 py-1 text-xs font-semibold shadow-panel"
+        >
+          Reset zoom
+        </button>
+      ) : null}
+    </div>
+  );
+}

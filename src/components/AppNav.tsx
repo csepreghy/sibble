@@ -4,6 +4,7 @@ import { NotificationToggle } from "@/components/NotificationToggle";
 
 const TABS = [
   { to: "/lobby", label: "Home" },
+  { to: "/story", label: "Story" },
   { to: "/history", label: "History" },
   { to: "/stats", label: "Statistics" },
 ] as const;
