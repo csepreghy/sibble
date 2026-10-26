@@ -231,13 +231,14 @@ export function StoryBoard({
                         : "tile-face tile-gloss"
                       : null,
                     placed && "z-10 shadow-md",
-                    isActive && "z-10 ring-4 ring-base-ink brightness-110 anim-tile-bump",
+                    isActive && "z-10 brightness-110 anim-tile-bump",
                     !isActive && inActiveWord && "brightness-110",
                     !letter && hoverIndex === index && "ring-[1.5px] ring-primary/70",
                     !letter && "hover:brightness-95",
                     draggingIndex === index && "opacity-30",
                     index === center && !letter && "overflow-hidden bg-transparent",
                   )}
+                  style={isActive ? { boxShadow: `0 0 0 ${highlightWidth} var(--color-base-ink)` } : undefined}
                   aria-label={
                     letter
                       ? `${letter} on square ${index + 1}`
