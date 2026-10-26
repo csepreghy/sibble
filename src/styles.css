@@ -841,7 +841,7 @@
   box-shadow: var(--shadow-tile);
 }
 .story-number-box strong { font-size: 32px; line-height: 1; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
-.story-number-delta { position: absolute; right: 5px; top: 2px; font-size: 12px; font-weight: 700; }
+.story-number-delta { position: absolute; right: 5px; top: 2px; font-size: 12px; font-weight: 700; z-index: 3; }
 .story-score-times { text-align: center; font-size: 32px; font-weight: 800; line-height: 1; }
 .story-round-score { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .story-target-score, .story-current-score { position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 2px; min-width: 0; height: 68px; border-radius: 6px; color: var(--story-score-foreground); box-shadow: var(--shadow-tile); text-align: center; }

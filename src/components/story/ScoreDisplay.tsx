@@ -37,12 +37,12 @@ export function ScoreBoxes({ base = 0, mult = 0, running = false, baseDelta, mul
     }
   }, [base, mult, baseDelta, multDelta, running]);
   return <div ref={root} className="story-score-boxes tabular-nums" aria-label={`Base ${base} times Mult ${mult}`}>
-    <div data-score-box="base" className="story-number-box bg-base-ink">
+    <div data-score-box="base" className="story-number-box tile-gloss bg-base-ink">
       <CountNumber value={base} running={running} />
       {baseDelta && <span className="story-number-delta">{baseDelta}</span>}
     </div>
     <span className="story-score-times" aria-hidden="true">×</span>
-    <div data-score-box="mult" className="story-number-box bg-mult-ink">
+    <div data-score-box="mult" className="story-number-box tile-gloss bg-mult-ink">
       <CountNumber value={mult} running={running} />
       {multDelta && <span className="story-number-delta">{multDelta}</span>}
     </div>

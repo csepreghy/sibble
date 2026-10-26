@@ -85,7 +85,7 @@ function StoryIntro() {
           </p>
         </div>
         <div className="rounded-lg border border-border bg-card p-4">
-          <Coins className="h-5 w-5 text-primary" />
+          <Coins className="h-5 w-5 text-gold" />
           <h2 className="mt-2 font-semibold">The Bookstore</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Earn Coins on every Page and spend them between rounds to shape your strategy.
