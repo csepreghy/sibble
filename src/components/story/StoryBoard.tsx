@@ -216,7 +216,7 @@ export function StoryBoard({
                         ? `${ENH_CLASS[enhancement]} tile-gloss`
                         : "tile-face tile-gloss"
                       : null,
-                    placed && "z-10 shadow-md tile-placing tile-gloss",
+                    placed && "z-10 shadow-md",
                     isActive && "z-10 ring-2 ring-primary brightness-110",
                     !isActive && inActiveWord && "ring-1 ring-primary/60",
                     !letter && hoverIndex === index && "ring-[1.5px] ring-primary/70",
