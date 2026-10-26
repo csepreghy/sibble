@@ -52,6 +52,6 @@ Source spec: uploaded `Sibble_-_Singleplayer_Story_Mode_pasted.md`. Multiplayer 
 - [x] Verify signed-in purchase persistence, visible Pen flight/owned slot, blank selection, and phone/desktop layout; 8 Story tests pass and preview build is clean.
 
 ## Completed Story pages
-- [ ] Preserve completed boards, played words and page stats in the current device's run.
-- [ ] Add chapter-grouped page review to bottom controls and Run Info without interrupting play.
-- [ ] Verify review, closing/reopening, persistence and unchanged gameplay.
+- [x] Preserve completed boards, played words and page stats in the current device's run; older discarded boards cannot be recovered.
+- [x] Add chapter-grouped page review to bottom controls and Run Info without interrupting play.
+- [x] Verify signed-in CAT completion, review, closing/reopening, reload persistence and preserved pending placements on phone/desktop; 17 tests pass and build clean.
