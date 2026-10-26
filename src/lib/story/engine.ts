@@ -251,7 +251,6 @@ export function buyOffer(state: StoryState, offerIndex: number, targetTileId?: s
         },
       };
     case "enhancement": {
-      if (!targetTileId) return { needsTile: paid, offerIndex };
       const tile = state.tiles.find((t) => t.id === targetTileId);
       if (!tile || tile.letter === "?") return { error: "Choose a letter tile to enhance." };
       return {
