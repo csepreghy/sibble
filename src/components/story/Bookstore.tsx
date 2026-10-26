@@ -34,7 +34,7 @@ function offerBody(offer: Offer, state: StoryState) {
       const current = (LETTER_VALUES[offer.letter] ?? 0) + (state.letterUpgrades[offer.letter] ?? 0);
       return (
         <>
-          <span className="tile-face tile-gloss flex h-12 w-12 items-center justify-center rounded-md text-2xl font-bold">
+          <span className="tile-face flex h-12 w-12 items-center justify-center rounded-md text-2xl font-bold">
             {offer.letter}
           </span>
           <span className="text-xs text-muted-foreground">
@@ -59,7 +59,7 @@ function offerBody(offer: Offer, state: StoryState) {
         <>
           <span
             className={cn(
-              "tile-gloss flex h-12 w-12 items-center justify-center rounded-md text-sm font-bold",
+              "flex h-12 w-12 items-center justify-center rounded-md text-sm font-bold",
               `tile-enh-${offer.enhancement.toLowerCase()}`,
             )}
           >
