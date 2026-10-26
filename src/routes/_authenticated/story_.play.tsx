@@ -10,6 +10,7 @@ import {
   Play,
   RotateCcw,
   Shuffle,
+  Sparkles,
   Trash2,
 } from "lucide-react";
 import { loadWordList } from "@/lib/words";
