@@ -42,7 +42,7 @@ function glowVar(offer: Offer): string {
   if (offer.kind === "word-length") return "var(--color-shop-length)";
   if (offer.kind === "pen") return "var(--color-shop-pen)";
   if (offer.kind === "upgrade") return "var(--color-shop-upgrade)";
-  return `var(--color-shop-${offer.enhancement.toLowerCase()})`;
+  return "var(--color-shop-enhancement)";
 }
 
 function category(offer: Offer): { label: string; border: string; text: string } {
@@ -51,16 +51,8 @@ function category(offer: Offer): { label: string; border: string; text: string }
       return { label: "Letter", border: "border-shop-letter/70", text: "text-shop-letter" };
     case "word-length":
       return { label: "Word", border: "border-shop-length/70", text: "text-shop-length" };
-    case "enhancement": {
-      const map = {
-        DL: ["border-shop-dl/70", "text-shop-dl"],
-        TL: ["border-shop-tl/80", "text-shop-tl"],
-        DW: ["border-shop-dw/70", "text-shop-dw"],
-        TW: ["border-shop-tw/80", "text-shop-tw"],
-      } as const;
-      const [border, text] = map[offer.enhancement];
-      return { label: "Enhance", border, text };
-    }
+    case "enhancement":
+      return { label: "Enhance", border: "border-shop-enhancement/70", text: "text-shop-enhancement" };
     case "pen":
       return { label: "Pen", border: "border-shop-pen/70", text: "text-shop-pen" };
     case "upgrade":
@@ -147,13 +139,13 @@ function OfferVisual({ offer, state, large, small }: { offer: Offer; state: Stor
       );
     case "enhancement": {
       const enhText = {
-        DL: "text-shop-dl",
-        TL: "text-shop-tl",
-        DW: "text-shop-dw",
-        TW: "text-shop-tw",
+        DL: "border-shop-dl/50 bg-shop-dl/15 text-shop-dl",
+        TL: "border-shop-tl/50 bg-shop-tl/15 text-shop-tl",
+        DW: "border-shop-dw/50 bg-shop-dw/15 text-shop-dw",
+        TW: "border-shop-tw/50 bg-shop-tw/15 text-shop-tw",
       } as const;
       return (
-        <span className={cn("shop-enh-tile relative tile-gloss flex items-center justify-center rounded-md border font-bold", box, large ? "text-lg" : "text-sm", enhText[offer.enhancement])}>
+        <span className={cn("relative flex items-center justify-center rounded-md border font-bold", box, large ? "text-lg" : "text-sm", enhText[offer.enhancement])}>
           {offer.enhancement}
         </span>
       );
@@ -178,7 +170,7 @@ function OfferVisual({ offer, state, large, small }: { offer: Offer; state: Stor
 
 interface BookstoreProps {
   state: StoryState;
-  onBuy: (offerIndex: number) => void;
+  onBuy: (offerIndex: number, source?: DOMRect) => void;
   compact?: boolean;
 }
 
@@ -240,11 +232,12 @@ export function Bookstore({ state, onBuy, compact }: BookstoreProps) {
                 <Button
                   disabled={state.coins < inspectedPrice}
                   className="relative tile-gloss h-10 px-6 text-base font-bold bg-gold-button text-background hover:bg-gold-button/90"
-                  onClick={() => {
+                  onClick={(event) => {
                     const i = inspect;
                     if (i === null) return;
+                    const source = event.currentTarget.closest('[role="dialog"]')?.getBoundingClientRect();
                     setInspect(null);
-                    onBuy(i);
+                    onBuy(i, source);
                   }}
                 >
                   {state.coins < inspectedPrice ? "Not enough Coins" : "Buy"}
