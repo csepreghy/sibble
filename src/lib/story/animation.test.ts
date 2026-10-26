@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import { strict as assert } from "node:assert";
-import { animationEvents, STORY_CONFETTI_MS } from "./animation";
+import { animationEvents, STORY_CONFETTI_MS, STORY_TOTAL_COUNT_MS } from "./animation";
 import type { ScoreEvent } from "./scoring";
 
 const events: ScoreEvent[] = [
@@ -15,6 +15,10 @@ const events: ScoreEvent[] = [
 
 test("page confetti uses its normal 0.8-second duration independently of scoring speed", () => {
   assert.equal(STORY_CONFETTI_MS, 800);
+});
+
+test("simultaneous Base/Mult total counting takes 1.5 seconds at normal speed", () => {
+  assert.equal(STORY_TOTAL_COUNT_MS, 1500);
 });
 
 test("Normal keeps every existing scoring animation event", () => {
