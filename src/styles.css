@@ -769,6 +769,7 @@
   --base-ink: oklch(0.72 0.14 235);
   --mult-ink: oklch(0.78 0.16 60);
   --gold: oklch(0.84 0.16 88);
+  --gold-button: oklch(0.72 0.19 68);
   --story-valid: oklch(0.78 0.19 145);
   --story-score-foreground: oklch(1 0 0);
   --story-target-bg: oklch(0.57 0.22 350);
@@ -780,6 +781,7 @@
   --color-base-ink: var(--base-ink);
   --color-mult-ink: var(--mult-ink);
   --color-gold: var(--gold);
+  --color-gold-button: var(--gold-button);
   --color-story-valid: var(--story-valid);
   --color-story-score-foreground: var(--story-score-foreground);
   --color-shop-letter: oklch(0.68 0.15 245);
@@ -957,8 +959,8 @@
 .story-shop-offers > button { min-width: 0; max-width: 250px; width: 100%; justify-self: center; }
 .story-shopping.story-compact .story-shop-offers { gap: 8px; }
 .story-shopping.story-compact .story-shop-offers > button { max-width: none; }
-.story-shopping.story-compact .story-footer { flex: 0 0 56px; min-height: 56px; order: 4; }
-.story-continue { flex: 0 0 44px; order: 5; width: 100%; max-width: 640px; margin-inline: auto; padding-bottom: env(safe-area-inset-bottom); }
+.story-shopping.story-compact .story-footer { flex: 0 0 56px; min-height: 56px; order: 5; }
+.story-continue { flex: 0 0 44px; order: 4; width: 100%; max-width: 640px; margin-inline: auto; display: flex; justify-content: flex-end; padding-inline: 6px; }
 .story-continue > button { height: 44px; }
 @media (max-height: 730px) {
   .story-shopping.story-compact .story-footer { display: none; }
@@ -1001,6 +1003,7 @@
   }
   &:hover {
     transform: translateY(-3px);
+    animation: shop-glow-pulse 3.2s ease-in-out infinite;
   }
   &:active {
     transform: translateY(3px);
