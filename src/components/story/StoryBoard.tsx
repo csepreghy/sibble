@@ -34,8 +34,7 @@ interface StoryBoardProps {
   activeIndex?: number | null;
   /** word currently being scored */
   activeWord?: number[] | null;
-  validIndices?: number[];
-  invalidIndices?: number[];
+  wordHighlights?: { indices: number[]; valid: boolean }[];
   disabled?: boolean;
   hoverIndex?: number | null;
   draggingIndex?: number | null;
@@ -54,8 +53,7 @@ export function StoryBoard({
   letterUpgrades,
   activeIndex,
   activeWord,
-  validIndices,
-  invalidIndices,
+  wordHighlights = [],
   disabled,
   hoverIndex,
   draggingIndex,
@@ -67,8 +65,6 @@ export function StoryBoard({
   const tileById = new Map(tiles.map((t) => [t.id, t]));
   const usedSet = new Set(usedPremiums);
   const activeWordSet = new Set(activeWord ?? []);
-  const validSet = new Set(validIndices ?? []);
-  const invalidSet = new Set(invalidIndices ?? []);
   const center = ((size - 1) / 2) * size + (size - 1) / 2;
 
   // Container-relative font sizes so any board size stays legible.
@@ -189,7 +185,7 @@ export function StoryBoard({
           }}
         >
           <div
-            className="grid gap-[3px] overflow-hidden rounded-[4px] bg-story-grid-line p-[3px] sm:rounded-md"
+            className="relative grid gap-[3px] overflow-hidden rounded-[4px] bg-story-grid-line p-[3px] sm:rounded-md"
             style={{
               gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
               containerType: "inline-size",
@@ -228,8 +224,6 @@ export function StoryBoard({
                         : "tile-face tile-gloss"
                       : null,
                     placed && "z-10 shadow-md",
-                    !isActive && !inActiveWord && validSet.has(index) && "story-word-valid",
-                    !isActive && !inActiveWord && invalidSet.has(index) && "story-word-invalid",
                     isActive && "z-10 ring-4 ring-base-ink brightness-110 anim-tile-bump",
                     !isActive && inActiveWord && "ring-[3px] ring-mult-ink anim-tile-bump",
                     !letter && hoverIndex === index && "ring-[1.5px] ring-primary/70",
@@ -274,6 +268,14 @@ export function StoryBoard({
                 </button>
               );
             })}
+            <div className="pointer-events-none absolute inset-[3px] z-20 grid gap-[3px]" style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${size}, minmax(0, 1fr))` }}>
+              {wordHighlights.map((word, i) => {
+                const rows = word.indices.map(index => Math.floor(index / size));
+                const cols = word.indices.map(index => index % size);
+                if (!rows.length) return null;
+                return <div key={i} data-word-valid={word.valid} className={cn("rounded-[4px] border-[3px]", word.valid ? "border-story-valid" : "border-destructive")} style={{ gridRow: `${Math.min(...rows) + 1} / ${Math.max(...rows) + 2}`, gridColumn: `${Math.min(...cols) + 1} / ${Math.max(...cols) + 2}` }} />;
+              })}
+            </div>
           </div>
         </div>
       </div>
