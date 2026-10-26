@@ -33,6 +33,7 @@ import {
 } from "@/lib/story/engine";
 import { inspectPlacement } from "@/lib/story/preview";
 import { ScoreFlight, type ScoreFlightData } from "@/components/story/ScoreFlight";
+import { PenPurchaseFlight, type PenPurchaseFlightData } from "@/components/story/PenPurchaseFlight";
 import { RoundScore, ScoreBoxes } from "@/components/story/ScoreDisplay";
 import { loadStory, saveStory } from "@/lib/story/storage";
 import { useStoryLayout } from "@/hooks/useStoryLayout";
@@ -135,6 +136,8 @@ function StoryPlay() {
   >(null);
   const cancelAnim = useRef(false);
   const [flight, setFlight] = useState<ScoreFlightData | null>(null);
+  const [penFlight, setPenFlight] = useState<PenPurchaseFlightData | null>(null);
+  const [arrivingPenId, setArrivingPenId] = useState<string | null>(null);
   const [pageStats, setPageStats] = useState<PageStats | null>(null);
   const flightId = useRef(0);
 
@@ -466,7 +469,7 @@ function StoryPlay() {
     }
   }
 
-  function handleBuy(offerIndex: number) {
+  function handleBuy(offerIndex: number, source?: DOMRect) {
     if (!story) return;
     const result = buyOffer(story, offerIndex);
     if ("error" in result) {
@@ -479,6 +482,17 @@ function StoryPlay() {
         setDialog({ kind: "enhance", offerIndex, enhancement: offer.enhancement });
       }
       return;
+    }
+    const offer = story.offers?.[offerIndex];
+    if (offer?.kind === "pen" && source && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const target = [...document.querySelectorAll(`[data-pen-slot="${story.pens.length}"]`)]
+        .map(slot => slot.getBoundingClientRect()).find(rect => rect.width > 0 && rect.height > 0);
+      if (target) {
+        const x = source.left + source.width / 2;
+        const y = source.top + source.height / 2;
+        setArrivingPenId(null);
+        setPenFlight({ id: ++flightId.current, penId: offer.penId, x, y, dx: target.left + target.width / 2 - x, dy: target.top + target.height / 2 - y });
+      }
     }
     setStory(result);
     toast.success("Purchased!");
@@ -522,6 +536,7 @@ function StoryPlay() {
         <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
           <div className="min-w-0">
             <p className="truncate text-xs font-bold text-muted-foreground">Chapter {config.chapter} · Page {config.page}{story.phase === "bookstore" ? " · Complete!" : ""}</p>
+            {twist && story.phase === "play" && <Popover><PopoverTrigger asChild><Button variant="ghost" size="sm" className="h-5 max-w-full justify-start px-0 text-xs text-accent hover:bg-transparent hover:text-accent" aria-label="Plot Twist rules"><Info className="h-3 w-3" />{twist.name}</Button></PopoverTrigger><PopoverContent><p className="font-bold">{twist.name}</p><p>{twist.description}</p></PopoverContent></Popover>}
             {story.phase === "bookstore" && <p className="text-xl font-bold">The Bookstore</p>}
           </div>
           <DropdownMenu>
@@ -535,14 +550,10 @@ function StoryPlay() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        {story.phase !== "bookstore" && <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 text-xs">
-          <span />
-          <span className="flex items-center gap-1 text-xl font-bold tabular-nums text-gold"><Coins className="h-4 w-4" />{story.coins}</span>
-        </div>}
         {story.phase !== "bookstore" && <>
           <RoundScore target={config.inkTarget} current={story.page.ink} />
           <ScoreBoxes base={busy ? anim.base : 0} mult={busy ? anim.mult : 0} running={busy} baseDelta={anim.baseDelta} multDelta={anim.multDelta} />
-          <div className="story-score-caption text-xs text-muted-foreground">{anim.label ?? ""}{twist && <Popover><PopoverTrigger asChild><Button variant="ghost" size="sm" className="h-5 px-1 text-accent" aria-label="Plot Twist rules"><Info />{twist.name}</Button></PopoverTrigger><PopoverContent><p className="font-bold">{twist.name}</p><p>{twist.description}</p></PopoverContent></Popover>}</div>
+          <div className="story-score-caption text-xs text-muted-foreground">{anim.label ?? ""}</div>
         </>}
       </header>}
       <div className="story-workspace flex min-h-0 flex-1 gap-3 p-3">
@@ -553,14 +564,14 @@ function StoryPlay() {
           ) : (
           <>
           <div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex flex-col items-start gap-1">
               <h1 className="text-sm font-bold">{pageLabel(config)}</h1>
               {twist ? (
                 <Popover>
                   <PopoverTrigger asChild>
-                    <button type="button" aria-label="Plot Twist rules" className="text-accent hover:text-accent/80">
-                      <Info className="h-4 w-4" />
-                    </button>
+                    <Button variant="ghost" size="sm" aria-label="Plot Twist rules" className="h-6 px-0 text-accent hover:bg-transparent hover:text-accent">
+                      <Info className="h-4 w-4" /> {twist.name}
+                    </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-72 text-sm">
                     <p className="font-bold text-accent">Plot Twist: {twist.name}</p>
@@ -579,9 +590,6 @@ function StoryPlay() {
           <p className="min-h-4 text-center text-xs text-muted-foreground">{anim.label ?? ""}</p>
 
 
-          <div className="flex items-center justify-center gap-2 rounded-md bg-gold/15 px-2 py-2 text-3xl font-bold text-gold">
-            <Coins className="h-7 w-7" /> {story.coins}
-          </div>
           </>
           )}
 
@@ -638,6 +646,7 @@ function StoryPlay() {
             />
           )}
           {story.phase === "play" && <div className="story-board-status" aria-live="polite">
+            <span className="story-play-coins flex items-center gap-1 text-3xl font-black tabular-nums text-gold"><Coins className="h-6 w-6 shrink-0" />{story.coins}</span>
             <div className="story-remaining-counters"><span>Words left <strong className="text-xl tabular-nums text-base-ink">{story.page.wordsLeft}</strong></span><span>Discards left <strong className="text-xl tabular-nums text-mult-ink">{story.page.discardsLeft}</strong></span></div>
             {!busy && preview && <span className={cn("story-preview-tag", preview.error ? "bg-destructive/15 text-destructive" : "bg-story-valid/15 text-story-valid")} title={preview.error ?? "Ink before Pens"}>
               {preview.error ? <><X className="h-4 w-4 shrink-0" /><span className="truncate">{preview.error}</span></> : <><span>+{preview.ink?.toLocaleString()}</span><Droplet className="h-4 w-4" aria-label="Ink before Pens" /></>}
@@ -651,6 +660,8 @@ function StoryPlay() {
           pens={story.pens}
           slots={penSlots(story.upgrades)}
           activePenId={anim.activePenId}
+          arrivingPenId={arrivingPenId}
+          onArrivalEnd={() => setArrivingPenId(null)}
           onInspect={(pen) => setDialog({ kind: "pen", pen })}
         />
       </div>
@@ -774,6 +785,7 @@ function StoryPlay() {
       ) : null}
 
       <ScoreFlight flight={flight} />
+      <PenPurchaseFlight flight={penFlight} onArrive={() => { setArrivingPenId(penFlight?.penId ?? null); setPenFlight(null); }} />
       {drag ? (
         <div
           className="pointer-events-none fixed z-50"

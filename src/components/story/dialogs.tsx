@@ -315,14 +315,15 @@ export function BlankPickerDialog({ onPick, onClose }: { onPick: (letter: string
         </DialogHeader>
         <div className="grid grid-cols-6 gap-1.5">
           {"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map((letter) => (
-            <button
+            <Button
               key={letter}
               type="button"
+              variant="ghost"
               onClick={() => onPick(letter)}
-              className="tile-face tile-gloss flex aspect-square items-center justify-center rounded-md text-lg font-bold hover:-translate-y-0.5"
+              className="tile-face relative flex h-auto aspect-square items-center justify-center rounded-md p-0 text-lg font-bold hover:-translate-y-0.5 hover:bg-transparent hover:text-tile-foreground"
             >
               {letter}
-            </button>
+            </Button>
           ))}
         </div>
       </DialogContent>

@@ -790,6 +790,7 @@
   --color-shop-tl: oklch(0.6 0.19 255);
   --color-shop-dw: oklch(0.74 0.13 20);
   --color-shop-tw: oklch(0.6 0.21 25);
+  --color-shop-enhancement: oklch(0.72 0.22 350);
   --color-shop-pen: oklch(0.66 0.2 305);
   --color-shop-upgrade: oklch(0.72 0.13 170);
 }
@@ -816,37 +817,6 @@
   color: var(--tile-foreground);
   box-shadow: var(--shadow-tile), 0 0 12px color-mix(in oklab, var(--tw) 65%, transparent);
 }
-
-/* Bookstore enhancement tiles: a pink tile body whatever effect it grants,
-   with the tactile bevel + shine used by the other shop tiles. Only the
-   DL/TL/DW/TW label keeps its own colour. */
-@utility shop-enh-tile {
-  border-color: color-mix(in oklab, var(--naughty-deep) 60%, black);
-  background:
-    radial-gradient(
-      70% 66% at 50% 52%,
-      color-mix(in oklab, var(--naughty-deep) 22%, black) 0%,
-      color-mix(in oklab, var(--naughty-deep) 22%, black) 55%,
-      rgb(0 0 0 / 0.3) 78%,
-      transparent 88%
-    ),
-    linear-gradient(
-      180deg,
-      color-mix(in oklab, var(--naughty) 82%, white) 0%,
-      color-mix(in oklab, var(--naughty) 70%, black) 50%,
-      color-mix(in oklab, var(--naughty-deep) 70%, black) 100%
-    );
-  box-shadow:
-    inset 0 1px 0 hsl(0 0% 100% / 0.32),
-    inset 0 -2px 0 color-mix(in oklab, var(--naughty-deep) 55%, black),
-    0 3px 0 color-mix(in oklab, var(--naughty-deep) 70%, black),
-    0 6px 12px -4px hsl(0 0% 0% / 0.6),
-    0 0 12px color-mix(in oklab, var(--naughty) 45%, transparent);
-}
-
-
-
-
 
 /* One mounted Story, with a viewport-sized compact presentation. */
 .story-rotate-hint { z-index: 100; }
@@ -881,7 +851,7 @@
 .story-target-score { background: var(--story-target-bg); }
 .story-current-score { background: var(--story-current-bg); }
 .story-board-status { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px; min-height: 36px; width: 100%; max-width: 560px; margin: 6px auto 0; padding-inline: 10px; }
-.story-remaining-counters { display: flex; align-items: center; gap: 14px; font-size: 13px; font-weight: 600; }
+.story-remaining-counters { display: flex; align-items: center; justify-content: flex-end; margin-left: auto; gap: 10px; font-size: 12px; font-weight: 600; }
 .story-remaining-counters > span { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
 @keyframes story-number-flight {
   0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
@@ -891,6 +861,7 @@
 }
 .story-score-flight { position: fixed; z-index: 100; pointer-events: none; font-size: 28px; font-weight: 800; text-shadow: 0 2px 4px var(--background); animation: story-number-flight 580ms cubic-bezier(.3,.1,.5,1) both; }
 @media (prefers-reduced-motion: reduce) { .story-score-flight { display: none; } }
+.story-board-status .story-preview-tag { margin-left: auto; flex-basis: 100%; }
 .story-preview-tag { display: flex; align-items: center; justify-content: center; gap: 4px; min-width: 0; max-width: 60%; border-radius: 4px; padding: 4px 7px; font-size: 14px; font-weight: 700; }
 .story-word-valid { outline: 3px solid var(--story-valid); outline-offset: -3px; }
 .story-word-invalid { outline: 3px solid var(--destructive); outline-offset: -3px; }
@@ -1037,4 +1008,21 @@
   &:active {
     transform: none;
   }
+}
+
+@keyframes story-pen-purchase-flight {
+  0% { transform: translate(-50%, -50%) scale(1.4); opacity: 0; }
+  12% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translate(calc(-50% + var(--flight-x)), calc(-50% + var(--flight-y))) scale(.85); opacity: 0; }
+}
+.story-pen-purchase-flight { position: fixed; z-index: 100; pointer-events: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 6px; box-shadow: var(--shadow-tile); animation: story-pen-purchase-flight 720ms cubic-bezier(.3,.1,.5,1) both; }
+@keyframes story-pen-arrival {
+  0%, 100% { transform: scale(1); box-shadow: none; }
+  40% { transform: scale(1.12); box-shadow: 0 0 16px color-mix(in oklab, var(--color-shop-pen) 70%, transparent); }
+}
+.story-pen-arrival { animation: story-pen-arrival 360ms ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .story-pen-purchase-flight { display: none; }
+  .story-pen-arrival { animation: none; }
 }

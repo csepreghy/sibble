@@ -43,3 +43,10 @@ Source spec: uploaded `Sibble_-_Singleplayer_Story_Mode_pasted.md`. Multiplayer 
 - [x] Enhancement shop tiles use dark tinted category backgrounds (no see-through gradient).
 - [x] Buy button uses deeper, more saturated gold (--gold-button).
 - [x] Compact Bookstore bottom order: narrow right-aligned shiny Continue button above the decorative SIBBLE rack at the very bottom (verified at 393×852).
+
+## Shop and gameplay adjustments
+- [x] Pink enhancement whole-card border; restore effect-colored inner tiles.
+- [x] Purchased Pen flight into its slot, with reduced-motion support.
+- [x] Twist below Chapter/Page; coins left and remaining counters right below board.
+- [x] Matte blank-letter picker.
+- [x] Verify signed-in purchase persistence, visible Pen flight/owned slot, blank selection, and phone/desktop layout; 8 Story tests pass and preview build is clean.

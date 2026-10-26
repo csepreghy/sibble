@@ -38,11 +38,13 @@ interface PenSidebarProps {
   slots: number;
   /** pen currently animating its scoring activation */
   activePenId?: string | null;
+  arrivingPenId?: string | null;
+  onArrivalEnd?: () => void;
   onInspect: (pen: PenInstance) => void;
   horizontal?: boolean;
 }
 
-export function PenSidebar({ pens, slots, activePenId, onInspect, horizontal }: PenSidebarProps) {
+export function PenSidebar({ pens, slots, activePenId, arrivingPenId, onArrivalEnd, onInspect, horizontal }: PenSidebarProps) {
   const cells: (PenInstance | null)[] = [...pens];
   while (cells.length < slots) cells.push(null);
 
@@ -54,6 +56,7 @@ export function PenSidebar({ pens, slots, activePenId, onInspect, horizontal }: 
           return (
             <div
               key={`empty-${i}`}
+              data-pen-slot={i}
               className={cn("flex items-center justify-center rounded-lg border border-dashed border-border/70 bg-secondary/30", horizontal ? "story-pen-slot" : "aspect-[3/4]")}
             >
               <Feather className="h-4 w-4 text-muted-foreground/40" />
@@ -65,6 +68,9 @@ export function PenSidebar({ pens, slots, activePenId, onInspect, horizontal }: 
         return (
           <Button
             key={pen.penId}
+            data-pen-slot={i}
+            data-owned-pen={pen.penId}
+            onAnimationEnd={onArrivalEnd}
             type="button"
             onClick={() => onInspect(pen)}
             variant="ghost"
@@ -73,6 +79,7 @@ export function PenSidebar({ pens, slots, activePenId, onInspect, horizontal }: 
             className={cn(
               "flex h-auto flex-col items-center justify-center gap-1 whitespace-normal rounded-lg border border-shop-pen/50 bg-shop-pen/10 p-1 text-center transition-all duration-200 hover:border-shop-pen hover:bg-shop-pen/15 hover:text-foreground",
               horizontal ? "story-pen-slot" : "aspect-[3/4]",
+              arrivingPenId === pen.penId && "story-pen-arrival",
               activePenId === pen.penId &&
                 "border-shop-pen bg-shop-pen/25 shadow-[0_0_14px_color-mix(in_oklab,var(--color-shop-pen)_60%,transparent)] scale-105",
             )}
