@@ -679,7 +679,7 @@ function StoryPlay() {
           />
           )}
         </div>
-        <div className={cn("story-actions flex flex-wrap items-center gap-1.5", story.phase === "bookstore" && "hidden")}>
+        <div className={cn("story-actions items-center gap-1.5", story.phase === "bookstore" ? "hidden" : "flex flex-wrap")}>
           <Button title="Shuffle" aria-label="Shuffle" variant="outline" size="sm" onClick={shuffleRack} disabled={busy || story.phase !== "play"}>
             <Shuffle className="mr-1 h-4 w-4" /><span className="story-action-label">Shuffle</span>
           </Button>
