@@ -260,11 +260,11 @@ export function StoryBoard({
                     </>
                   ) : index === center ? (
                     <img
-                      src="/favicon.png"
+                      src="/icon-board.png"
                       alt=""
                       aria-hidden="true"
                       draggable={false}
-                      className="pointer-events-none w-[62%] select-none"
+                      className="pointer-events-none absolute inset-0 h-full w-full rounded-[inherit] object-cover select-none"
                     />
                   ) : premium && !premiumUsed ? (
                     <span className="px-0.5 text-center uppercase tracking-tight" style={{ fontSize: labelFont }}>

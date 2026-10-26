@@ -56,7 +56,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { StoryBoard } from "@/components/story/StoryBoard";
-import { StoryRack } from "@/components/story/StoryRack";
+import { StoryRack, type ReturningRackTile } from "@/components/story/StoryRack";
 import { PenSidebar } from "@/components/story/PenSidebar";
 import { Bookstore, BookstoreSummary } from "@/components/story/Bookstore";
 import { ScoreConfetti, type ScoreConfettiData } from "@/components/story/ScoreConfetti";
@@ -131,6 +131,7 @@ function StoryPlay() {
   const [story, setStory] = useState<StoryState | null>(() => loadStory());
   const [words, setWords] = useState<Set<string> | null>(null);
   const [pending, setPending] = useState<PendingPlacement[]>([]);
+  const [returningTiles, setReturningTiles] = useState<ReturningRackTile[]>([]);
   const [selectedRackId, setSelectedRackId] = useState<string | null>(null);
   const [discardMode, setDiscardMode] = useState(false);
   useStoryTheme();
@@ -235,7 +236,7 @@ function StoryPlay() {
     const placedAt = pending.find((p) => p.index === index);
     if (placedAt) {
       // Take the tile back to the rack.
-      setPending(pending.filter((p) => p.index !== index));
+      returnTileToRack(placedAt);
       return;
     }
     const committed = story.page.board[index];
@@ -253,6 +254,16 @@ function StoryPlay() {
     }
     setPending([...pending, { index, tileId: tile.id, letter: tile.letter, blank: false }]);
     setSelectedRackId(null);
+  }
+
+  function returnTileToRack(placement: PendingPlacement) {
+    const cell = document.querySelector(`[data-story-board] [data-cell-index="${placement.index}"]`);
+    const from = cell?.getBoundingClientRect();
+    if (from && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setReturningTiles(current => [...current, { tileId: placement.tileId, from: { left: from.left, top: from.top, width: from.width, height: from.height } }]);
+    }
+    setSelectedRackId(null);
+    setPending(current => current.filter(item => item.tileId !== placement.tileId));
   }
 
   function beginDrag(event: React.PointerEvent, tileId: string, letter: string, blank: boolean, source: DragSource) {
@@ -298,7 +309,10 @@ function StoryPlay() {
 
     if (target === null) {
       // Dropped off the board: a pending tile goes back to the rack.
-      if (source.type === "board") setPending(withoutSource);
+      if (source.type === "board") {
+        const placement = pending.find(item => item.index === source.index);
+        if (placement) returnTileToRack(placement);
+      }
       return;
     }
     if (story.page.board[target] || withoutSource.some((item) => item.index === target)) return;
@@ -334,7 +348,7 @@ function StoryPlay() {
   const draggingBoardIndex = drag?.source.type === "board" ? drag.source.index : null;
 
   function handleRackSelect(tileId: string) {
-    if (busy || !story || story.phase !== "play" || pendingIds.has(tileId)) return;
+    if (busy || !story || story.phase !== "play" || pendingIds.has(tileId) || returningTiles.some(item => item.tileId === tileId)) return;
     if (discardMode) {
       const limit = story.upgrades.includes("flexible-fingers") ? 4 : 3;
       setDiscardSelection((current) =>
@@ -838,6 +852,8 @@ function StoryPlay() {
             compact={compact}
             capacity={story.upgrades.includes("bigger-rack") ? 8 : 7}
             tiles={rackTiles}
+            returningTiles={returningTiles}
+            onReturnEnd={tileId => setReturningTiles(current => current.filter(item => item.tileId !== tileId))}
             selectedId={selectedRackId}
             discardMode={discardMode}
             discardSelection={discardSelection}

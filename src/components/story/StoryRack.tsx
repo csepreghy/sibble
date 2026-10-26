@@ -11,6 +11,11 @@ const ENH_CLASS: Record<Enhancement, string> = {
   TW: "tile-enh-tw",
 };
 
+export interface ReturningRackTile {
+  tileId: string;
+  from: { left: number; top: number; width: number; height: number };
+}
+
 interface StoryRackProps {
   tiles: StoryTile[];
   selectedId: string | null;
@@ -24,6 +29,8 @@ interface StoryRackProps {
   capacity?: number;
   /** false hides the tile shine (used by the decorative Bookstore row). */
   gloss?: boolean;
+  returningTiles?: ReturningRackTile[];
+  onReturnEnd?: (tileId: string) => void;
 }
 
 export function StoryRack({
@@ -38,9 +45,14 @@ export function StoryRack({
   compact,
   capacity = 7,
   gloss = true,
+  returningTiles = [],
+  onReturnEnd,
 }: StoryRackProps) {
   const rackRef = useRef<HTMLDivElement>(null);
   const positions = useRef(new Map<string, number>());
+  const flights = useRef(new Map<string, { clone: HTMLElement; animation: Animation }>());
+  const returnEnd = useRef(onReturnEnd);
+  returnEnd.current = onReturnEnd;
   const order = tiles.map((t) => t.id).join(",");
   useLayoutEffect(() => {
     const root = rackRef.current;
@@ -48,7 +60,8 @@ export function StoryRack({
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const next = new Map<string, number>();
     root.querySelectorAll<HTMLElement>("[data-rack-tile-id]").forEach((el) => {
-      const id = el.dataset["rackTileId"]!;
+      const id = el.dataset["rackTileId"];
+      if (!id) return;
       const left = el.offsetLeft;
       next.set(id, left);
       const prev = positions.current.get(id);
@@ -61,6 +74,60 @@ export function StoryRack({
     });
     positions.current = next;
   }, [order]);
+
+  useLayoutEffect(() => {
+    const root = rackRef.current;
+    if (!root) return;
+    for (const returning of returningTiles) {
+      if (flights.current.has(returning.tileId)) continue;
+      const target = [...root.querySelectorAll<HTMLElement>("[data-rack-tile-id]")]
+        .find(el => el.dataset["rackTileId"] === returning.tileId);
+      if (!target || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        returnEnd.current?.(returning.tileId);
+        continue;
+      }
+      const to = target.getBoundingClientRect();
+      const from = returning.from;
+      const clone = target.cloneNode(true) as HTMLElement;
+      clone.removeAttribute("disabled");
+      clone.removeAttribute("data-rack-tile-id");
+      clone.removeAttribute("data-draggable-tile");
+      clone.setAttribute("aria-hidden", "true");
+      clone.setAttribute("data-returning-tile", returning.tileId);
+      clone.tabIndex = -1;
+      Object.assign(clone.style, {
+        position: "fixed", left: `${to.left}px`, top: `${to.top}px`,
+        width: `${to.width}px`, height: `${to.height}px`, margin: "0",
+        visibility: "visible", pointerEvents: "none", zIndex: "100",
+        transition: "none", transformOrigin: "center",
+      });
+      root.appendChild(clone);
+      const dx = from.left + from.width / 2 - to.left - to.width / 2;
+      const dy = from.top + from.height / 2 - to.top - to.height / 2;
+      const start = `translate(${dx}px, ${dy}px) scale(${from.width / to.width}, ${from.height / to.height})`;
+      const animation = clone.animate([
+        { transform: start, offset: 0 },
+        { transform: start, offset: 0.12 },
+        { transform: `translate(${dx * 0.55}px, ${dy * 0.55 - 28}px) scale(1.08)`, offset: 0.5 },
+        { transform: "translate(0, 0) scale(1)", offset: 1 },
+      ], { duration: 660, easing: "cubic-bezier(.3,.1,.5,1)", fill: "both" });
+      flights.current.set(returning.tileId, { clone, animation });
+      animation.finished.then(() => {
+        clone.remove();
+        flights.current.delete(returning.tileId);
+        returnEnd.current?.(returning.tileId);
+        target.animate([{ transform: "scale(1.12)" }, { transform: "scale(1)" }], { duration: 240, easing: "ease-out" });
+      }).catch(() => {});
+    }
+  }, [returningTiles]);
+
+  useLayoutEffect(() => () => {
+    for (const { clone, animation } of flights.current.values()) {
+      animation.cancel();
+      clone.remove();
+    }
+    flights.current.clear();
+  }, []);
   return (
     <div ref={rackRef} aria-label="Letter rack" className={cn("relative flex items-center justify-center gap-1 rounded-xl border border-border bg-secondary/60 p-1.5 sm:gap-1.5 sm:p-2", compact && "story-rack")} style={compact ? { ["--rack-capacity" as string]: capacity } : undefined}>
       {tiles.length === 0 ? (
@@ -73,7 +140,8 @@ export function StoryRack({
             variant="ghost"
             data-draggable-tile="true"
             data-rack-tile-id={tile.id}
-            style={{ touchAction: "none" }}
+            disabled={returningTiles.some(item => item.tileId === tile.id)}
+            style={{ touchAction: "none", visibility: returningTiles.some(item => item.tileId === tile.id) ? "hidden" : undefined }}
             onClick={() => onSelect(tile.id)}
             onPointerDown={(event) => onTilePointerDown?.(tile.id, event)}
             className={cn(

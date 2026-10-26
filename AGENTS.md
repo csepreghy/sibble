@@ -11,6 +11,8 @@
 
 ## Architecture rules
 
+- Story rack returns commit pending-placement removal immediately; the shared rack reserves the destination and animates a presentation-only tile clone from the board bounds while its existing FLIP animation makes space, respecting reduced motion.
+
 - Owned Story Pens use one shared sortable control for touch, mouse and keyboard; persist reordered instances in the existing local run so gameplay and shopping share order and bonuses.
 
 - Pen explanations use a shared presentation component backed by the Pen definitions, with live scaling bonuses passed from Pen instances, so every inspector stays consistent without altering scoring.
