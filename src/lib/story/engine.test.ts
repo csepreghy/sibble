@@ -1,10 +1,10 @@
 import { test } from "node:test";
 import { strict as assert } from "node:assert";
 import { buyOffer, newStory } from "./engine";
-import type { Offer, StoryState } from "./types";
+import type { Enhancement, StoryState } from "./types";
 
 /** Bookstore with a single enhancement offer and enough Coins to buy it. */
-function shopWith(enhancement: Offer & { kind: "enhancement" } extends never ? never : "DL" | "TL" | "DW" | "TW"): StoryState {
+function shopWith(enhancement: Enhancement): StoryState {
   const base = newStory();
   return {
     ...base,
