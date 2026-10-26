@@ -40,17 +40,17 @@ interface PenSidebarProps {
   pens: PenInstance[];
   slots: number;
   /** pen currently animating its scoring activation */
-  activePenId?: string | null;
-  arrivingPenId?: string | null;
-  onArrivalEnd?: () => void;
+  activePenId?: string | null | undefined;
+  arrivingPenId?: string | null | undefined;
+  onArrivalEnd?: (() => void) | undefined;
   onInspect: (pen: PenInstance) => void;
   onReorder: (activeId: string, overId: string) => void;
-  disabled?: boolean;
-  horizontal?: boolean;
+  disabled?: boolean | undefined;
+  horizontal?: boolean | undefined;
 }
 
 function SortablePen({ pen, index, activePenId, arrivingPenId, onArrivalEnd, onInspect, horizontal, disabled }: Omit<PenSidebarProps, "pens" | "slots" | "onReorder"> & { pen: PenInstance; index: number }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: pen.penId, disabled });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: pen.penId, disabled: !!disabled });
   const def = penDef(pen.penId);
   const Icon = penIcon(pen.penId);
   return (
@@ -73,7 +73,7 @@ function SortablePen({ pen, index, activePenId, arrivingPenId, onArrivalEnd, onI
         !disabled && "cursor-grab active:cursor-grabbing",
         isDragging && "z-20 border-shop-pen bg-card",
         arrivingPenId === pen.penId && "story-pen-arrival",
-        activePenId === pen.penId && "border-shop-pen bg-shop-pen/25 scale-105",
+        activePenId === pen.penId && "border-shop-pen bg-shop-pen/25 shadow-[0_0_14px_color-mix(in_oklab,var(--color-shop-pen)_60%,transparent)] scale-105",
       )}
     >
       <Icon className="h-5 w-5 text-shop-pen" />
