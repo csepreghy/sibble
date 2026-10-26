@@ -34,7 +34,7 @@ import {
 } from "@/lib/story/engine";
 import { inspectPlacement } from "@/lib/story/preview";
 import { reorderPens } from "@/lib/story/pens";
-import { animationEvents, getStoryAnimationMode, setStoryAnimationMode, type StoryAnimationMode } from "@/lib/story/animation";
+import { animationEvents, getStoryAnimationMode, setStoryAnimationMode, STORY_CONFETTI_MS, type StoryAnimationMode } from "@/lib/story/animation";
 import { AnimationModeMenu } from "@/components/story/AnimationModeMenu";
 import { ScoreFlight, type ScoreFlightData } from "@/components/story/ScoreFlight";
 import { PenPurchaseFlight, type PenPurchaseFlightData } from "@/components/story/PenPurchaseFlight";
@@ -482,8 +482,9 @@ function StoryPlay() {
             if (animationMode === "reduced") {
               next.base = event.base;
               next.mult = event.mult;
-              next.baseDelta = fmtDelta(event.base);
-              next.multDelta = fmtDelta(event.mult);
+              // One simultaneous count from zero, without contribution tags or impacts.
+              next.baseDelta = null;
+              next.multDelta = null;
             }
             next.activeIndex = null;
             next.activePenId = null;
@@ -543,7 +544,7 @@ function StoryPlay() {
       const box = [...document.querySelectorAll(".story-current-score")].map(el => el.getBoundingClientRect()).find(r => r.width > 0);
       if (box && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
         setConfetti({ id: ++flightId.current, x: box.left + box.width / 2, y: box.top + box.height / 2 });
-        await wait(800);
+        await new Promise(resolve => setTimeout(resolve, STORY_CONFETTI_MS));
         setConfetti(null);
       }
     }
