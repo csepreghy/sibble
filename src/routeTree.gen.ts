@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated/history'
 import { Route as AuthenticatedLobbyRouteImport } from './routes/_authenticated/lobby'
 import { Route as AuthenticatedStatsRouteImport } from './routes/_authenticated/stats'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
@@ -30,6 +31,11 @@ const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedHistoryRoute = AuthenticatedHistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedLobbyRoute = AuthenticatedLobbyRouteImport.update({
   id: '/lobby',
@@ -55,6 +61,7 @@ const AuthenticatedGameGameIdRoute = AuthenticatedGameGameIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
+  '/history': typeof AuthenticatedHistoryRoute
   '/lobby': typeof AuthenticatedLobbyRoute
   '/stats': typeof AuthenticatedStatsRoute
   '/auth/callback': typeof AuthCallbackRoute
@@ -63,6 +70,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
+  '/history': typeof AuthenticatedHistoryRoute
   '/lobby': typeof AuthenticatedLobbyRoute
   '/stats': typeof AuthenticatedStatsRoute
   '/auth/callback': typeof AuthCallbackRoute
@@ -73,6 +81,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
+  '/_authenticated/history': typeof AuthenticatedHistoryRoute
   '/_authenticated/lobby': typeof AuthenticatedLobbyRoute
   '/_authenticated/stats': typeof AuthenticatedStatsRoute
   '/auth/callback': typeof AuthCallbackRoute
@@ -81,14 +90,28 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/auth' | '/lobby' | '/stats' | '/auth/callback' | '/game/$gameId'
+    | '/'
+    | '/auth'
+    | '/history'
+    | '/lobby'
+    | '/stats'
+    | '/auth/callback'
+    | '/game/$gameId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/lobby' | '/stats' | '/auth/callback' | '/game/$gameId'
+  to:
+    | '/'
+    | '/auth'
+    | '/history'
+    | '/lobby'
+    | '/stats'
+    | '/auth/callback'
+    | '/game/$gameId'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/history'
     | '/_authenticated/lobby'
     | '/_authenticated/stats'
     | '/auth/callback'
@@ -124,6 +147,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/history': {
+      id: '/_authenticated/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof AuthenticatedHistoryRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/lobby': {
       id: '/_authenticated/lobby'
       path: '/lobby'
@@ -156,12 +186,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedHistoryRoute: typeof AuthenticatedHistoryRoute
   AuthenticatedLobbyRoute: typeof AuthenticatedLobbyRoute
   AuthenticatedStatsRoute: typeof AuthenticatedStatsRoute
   AuthenticatedGameGameIdRoute: typeof AuthenticatedGameGameIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedHistoryRoute: AuthenticatedHistoryRoute,
   AuthenticatedLobbyRoute: AuthenticatedLobbyRoute,
   AuthenticatedStatsRoute: AuthenticatedStatsRoute,
   AuthenticatedGameGameIdRoute: AuthenticatedGameGameIdRoute,
