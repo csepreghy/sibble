@@ -1,5 +1,6 @@
 import { Droplet } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { scaled } from "@/lib/story/speed";
 
 // Count-up waits for the impact flash so it begins only after the hit.
 const IMPACT_MS = 80;
@@ -14,8 +15,8 @@ export function impactBox(box: Element) {
     { transform: "translate(3px,-1px) scale(1.14)", offset: 0.16 },
     { transform: "translate(-2px,0) scale(1.11)", offset: 0.26 },
     { transform: "translate(0,0) scale(1)" },
-  ], { duration: 380, easing: "cubic-bezier(.2,.7,.3,1)" });
-  box.animate([{ backgroundColor: `color-mix(in srgb, ${color}, white 50%)`, boxShadow: `0 0 28px ${color}` }, { backgroundColor: color, boxShadow: `0 0 0 ${color}` }], { duration: IMPACT_MS + 10, easing: "ease-out" });
+  ], { duration: scaled(380), easing: "cubic-bezier(.2,.7,.3,1)" });
+  box.animate([{ backgroundColor: `color-mix(in srgb, ${color}, white 50%)`, boxShadow: `0 0 28px ${color}` }, { backgroundColor: color, boxShadow: `0 0 0 ${color}` }], { duration: scaled(IMPACT_MS + 10), easing: "ease-out" });
 }
 
 export function CountNumber({ value, running }: { value: number; running: boolean }) {
@@ -26,10 +27,10 @@ export function CountNumber({ value, running }: { value: number; running: boolea
     previous.current = value;
     if (!running || value === 0 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) { setShown(value); return; }
     let frame = 0;
-    const start = performance.now() + IMPACT_MS;
+    const start = performance.now() + scaled(IMPACT_MS);
     const step = (time: number) => {
       if (time < start) { frame = requestAnimationFrame(step); return; }
-      const progress = Math.min(1, (time - start) / 260);
+      const progress = Math.min(1, (time - start) / scaled(260));
       const interpolated = from + (value - from) * (1 - (1 - progress) ** 3);
       setShown((Number.isInteger(value) ? Math.round(interpolated) : Math.round(interpolated * 10) / 10) || 0);
       if (progress < 1) frame = requestAnimationFrame(step);
