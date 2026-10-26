@@ -117,7 +117,8 @@ const IDLE_ANIM: AnimState = {
   label: null,
 };
 
-const STEP_MS = 600;
+// No pause between consecutive flying numbers: the next flight starts the moment the previous one lands.
+const STEP_MS = 0;
 
 function fmtDelta(diff: number): string {
   const rounded = Math.round(diff);
