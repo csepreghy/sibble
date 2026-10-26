@@ -241,7 +241,7 @@ export function StoryBoard({
                   {letter ? (
                     <>
                       <span className="pointer-events-none leading-none" style={{ fontSize: letterFont }}>
-                        {blank ? letter.toLowerCase() : letter}
+                        {letter}
                       </span>
                       <span
                         className="pointer-events-none absolute bottom-[2px] left-[3px] font-semibold leading-none text-base-ink"
