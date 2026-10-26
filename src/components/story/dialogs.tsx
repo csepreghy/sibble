@@ -80,7 +80,14 @@ export function PageIntroDialog({
 export function RunInfoDialog({ state, onClose }: { state: StoryState; onClose: () => void }) {
   const upgradedLetters = Object.keys(state.letterUpgrades).sort();
   const upgradedLengths = Object.keys(state.wordLengthUpgrades).map(Number).sort((a, b) => a - b);
-  const enhanced = state.tiles.filter((tile) => tile.enhancement);
+  const enhancedByLetter = new Map<string, { enhancement: string; count: number }>();
+  for (const tile of state.tiles) {
+    if (tile.letter === "?" || !tile.enhancement) continue;
+    const entry = enhancedByLetter.get(tile.letter) ?? { enhancement: tile.enhancement, count: 0 };
+    entry.count += 1;
+    enhancedByLetter.set(tile.letter, entry);
+  }
+  const enhanced = [...enhancedByLetter.entries()].sort((a, b) => a[0].localeCompare(b[0]));
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-h-[85dvh] max-w-lg overflow-y-auto">
@@ -117,14 +124,15 @@ export function RunInfoDialog({ state, onClose }: { state: StoryState; onClose: 
             )}
           </section>
           <section>
-            <h3 className="mb-1 font-bold">Enhanced tiles</h3>
+            <h3 className="mb-1 font-bold">Enhanced letters</h3>
             {enhanced.length === 0 ? (
-              <p className="text-muted-foreground">No enhanced tiles yet.</p>
+              <p className="text-muted-foreground">No enhanced letters yet.</p>
             ) : (
               <div className="flex flex-wrap gap-1.5">
-                {enhanced.map((tile) => (
-                  <span key={tile.id} className="rounded-md bg-secondary px-2 py-1 font-semibold">
-                    {tile.letter} <span className="text-mult-ink">{tile.enhancement}</span>
+                {enhanced.map(([letter, { enhancement, count }]) => (
+                  <span key={letter} className="rounded-md bg-secondary px-2 py-1 font-semibold">
+                    {letter} <span className="text-mult-ink">{enhancement}</span>
+                    <span className="text-muted-foreground"> ×{count}</span>
                   </span>
                 ))}
               </div>
@@ -333,6 +341,8 @@ export function BlankPickerDialog({ onPick, onClose }: { onPick: (letter: string
 
 // --- Enhancement tile picker ----------------------------------------------
 
+const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+
 export function EnhancePickerDialog({
   state,
   enhancement,
@@ -341,42 +351,43 @@ export function EnhancePickerDialog({
 }: {
   state: StoryState;
   enhancement: string;
-  onPick: (tileId: string) => void;
+  onPick: (letter: string) => void;
   onClose: () => void;
 }) {
-  const candidates = state.tiles.filter((tile) => tile.letter !== "?");
-  const unenhanced = candidates.filter((tile) => !tile.enhancement);
-  const enhanced = candidates.filter((tile) => tile.enhancement);
-  const renderTile = (tile: StoryTile) => (
-    <button
-      key={tile.id}
-      type="button"
-      onClick={() => onPick(tile.id)}
-      className="tile-face tile-gloss relative flex aspect-square items-center justify-center rounded-md text-lg font-bold hover:-translate-y-0.5"
-    >
-      {tile.letter}
-      {tile.enhancement ? (
-        <span className="absolute bottom-[2px] right-[3px] text-[0.55rem] font-bold text-mult-ink">{tile.enhancement}</span>
-      ) : null}
-    </button>
-  );
+  // One button per letter: the enhancement applies to every tile of the chosen letter.
+  const current = new Map<string, string>();
+  for (const tile of state.tiles) {
+    if (tile.letter !== "?" && tile.enhancement && !current.has(tile.letter)) current.set(tile.letter, tile.enhancement);
+  }
+  const enhancedLetters = [...current.entries()].sort((a, b) => a[0].localeCompare(b[0]));
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-h-[85dvh] max-w-md overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Enhance a tile with {enhancement}</DialogTitle>
+          <DialogTitle>Choose a letter for {enhancement}</DialogTitle>
         </DialogHeader>
         <p className="text-sm text-muted-foreground">
-          Pick one physical tile — it keeps the {enhancement} effect for the rest of the Story, even between Pages.
+          Every tile of the letter you pick keeps the {enhancement} effect for the rest of the Story, even between Pages.
         </p>
-        <div className="grid grid-cols-8 gap-1.5">{unenhanced.map(renderTile)}</div>
-        {enhanced.length > 0 ? (
-          <>
-            <p className="text-xs font-semibold text-muted-foreground">
-              Already enhanced — picking one replaces its current enhancement:
-            </p>
-            <div className="grid grid-cols-8 gap-1.5">{enhanced.map(renderTile)}</div>
-          </>
+        <div className="grid grid-cols-6 gap-1.5">
+          {ALPHABET.map((letter) => (
+            <button
+              key={letter}
+              type="button"
+              onClick={() => onPick(letter)}
+              className="tile-face tile-gloss relative flex aspect-square items-center justify-center rounded-md text-lg font-bold hover:-translate-y-0.5"
+            >
+              {letter}
+              {current.get(letter) ? (
+                <span className="absolute bottom-[2px] right-[3px] text-[0.55rem] font-bold text-mult-ink">{current.get(letter)}</span>
+              ) : null}
+            </button>
+          ))}
+        </div>
+        {enhancedLetters.length > 0 ? (
+          <p className="text-xs font-semibold text-muted-foreground">
+            Already enhanced: {enhancedLetters.map(([letter, enh]) => `${letter} (${enh})`).join(", ")}. Picking one of these replaces its enhancement.
+          </p>
         ) : null}
       </DialogContent>
     </Dialog>
