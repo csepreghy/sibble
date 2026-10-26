@@ -222,15 +222,15 @@ export function generateOffers(state: Pick<StoryState, "tiles" | "pens" | "upgra
   return offers;
 }
 
-export type PurchaseResult = StoryState | { error: string } | { needsTile: StoryState; offerIndex: number };
+export type PurchaseResult = StoryState | { error: string } | { needsLetter: StoryState; offerIndex: number };
 
-export function buyOffer(state: StoryState, offerIndex: number, targetTileId?: string): PurchaseResult {
+export function buyOffer(state: StoryState, offerIndex: number, targetLetter?: string): PurchaseResult {
   const offers = state.offers;
   if (!offers) return { error: "The Bookstore is closed." };
   const offer = offers[offerIndex];
   if (!offer || offer.sold) return { error: "That offer is no longer available." };
-  // Enhancement offers ask for a tile first; Coins are only taken once it's picked.
-  if (offer.kind === "enhancement" && !targetTileId) return { needsTile: state, offerIndex };
+  // Enhancement offers ask for a letter first; Coins are only taken once it's picked.
+  if (offer.kind === "enhancement" && !targetLetter) return { needsLetter: state, offerIndex };
   const price = priceFor(state.upgrades, offer.price);
   if (state.coins < price) return { error: "Not enough Coins." };
 
@@ -255,11 +255,13 @@ export function buyOffer(state: StoryState, offerIndex: number, targetTileId?: s
         },
       };
     case "enhancement": {
-      const tile = state.tiles.find((t) => t.id === targetTileId);
-      if (!tile || tile.letter === "?") return { error: "Choose a letter tile to enhance." };
+      const letter = (targetLetter ?? "").toUpperCase();
+      if (!/^[A-Z]$/.test(letter)) return { error: "Choose a letter to enhance." };
+      if (!state.tiles.some((t) => t.letter === letter)) return { error: `No ${letter} tiles to enhance.` };
       return {
         ...paid,
-        tiles: state.tiles.map((t) => (t.id === targetTileId ? { ...t, enhancement: offer.enhancement } : t)),
+        // The enhancement lands on every tile of the chosen letter.
+        tiles: state.tiles.map((t) => (t.letter === letter ? { ...t, enhancement: offer.enhancement } : t)),
       };
     }
     case "pen": {
