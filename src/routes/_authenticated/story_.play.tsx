@@ -520,12 +520,12 @@ function StoryPlay() {
       else await delay();
       if (cancelAnim.current) return;
       if (event.type === "result") {
-        // Mult -> Base: Base counts up to the word's Ink.
+        // Mult -> Base: the blue box counts up to the word's Ink with the accelerating count.
         await flyBox('[data-score-box="mult"]', '[data-score-box="base"]', "mult", `×${event.mult.toLocaleString(undefined, { maximumFractionDigits: 1 })}`);
         if (cancelAnim.current) return;
-        current = { ...current, multHidden: true, base: event.ink, baseDelta: `×${event.mult}`, activePenId: null, growToTotal: false };
+        current = { ...current, multHidden: true, base: event.ink, baseDelta: `×${event.mult}`, activePenId: null, growToTotal: true };
         setAnim(current);
-        await delay();
+        await wait(totalCountDuration(event.ink) + 100);
         // Base -> Round score: purple box counts up.
         await flyBox('[data-score-box="base"]', ".story-current-score", "base", event.ink.toLocaleString());
         if (cancelAnim.current) return;
