@@ -34,6 +34,8 @@ interface StoryBoardProps {
   activeIndex?: number | null;
   /** word currently being scored */
   activeWord?: number[] | null;
+  validIndices?: number[];
+  invalidIndices?: number[];
   disabled?: boolean;
   hoverIndex?: number | null;
   draggingIndex?: number | null;
@@ -52,6 +54,8 @@ export function StoryBoard({
   letterUpgrades,
   activeIndex,
   activeWord,
+  validIndices,
+  invalidIndices,
   disabled,
   hoverIndex,
   draggingIndex,
@@ -63,6 +67,8 @@ export function StoryBoard({
   const tileById = new Map(tiles.map((t) => [t.id, t]));
   const usedSet = new Set(usedPremiums);
   const activeWordSet = new Set(activeWord ?? []);
+  const validSet = new Set(validIndices ?? []);
+  const invalidSet = new Set(invalidIndices ?? []);
   const center = ((size - 1) / 2) * size + (size - 1) / 2;
 
   // Container-relative font sizes so any board size stays legible.
@@ -222,6 +228,8 @@ export function StoryBoard({
                         : "tile-face tile-gloss"
                       : null,
                     placed && "z-10 shadow-md",
+                    !isActive && !inActiveWord && validSet.has(index) && "story-word-valid",
+                    !isActive && !inActiveWord && invalidSet.has(index) && "story-word-invalid",
                     isActive && "z-10 ring-4 ring-base-ink brightness-110 anim-tile-bump",
                     !isActive && inActiveWord && "ring-[3px] ring-mult-ink anim-tile-bump",
                     !letter && hoverIndex === index && "ring-[1.5px] ring-primary/70",
