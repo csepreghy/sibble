@@ -34,13 +34,14 @@ import {
 import { inspectPlacement } from "@/lib/story/preview";
 import { ScoreFlight, type ScoreFlightData } from "@/components/story/ScoreFlight";
 import { PenPurchaseFlight, type PenPurchaseFlightData } from "@/components/story/PenPurchaseFlight";
+import { ItemPurchaseFlight, type ItemPurchaseFlightData } from "@/components/story/ItemPurchaseFlight";
 import { RoundScore, ScoreBoxes, impactBox } from "@/components/story/ScoreDisplay";
 import { loadStory, saveStory } from "@/lib/story/storage";
 import { useStoryLayout } from "@/hooks/useStoryLayout";
 import { useStoryTheme } from "@/hooks/useStoryTheme";
 import { getStorySpeed, nextStorySpeed, scaled, setStorySpeed } from "@/lib/story/speed";
 import { penSlots } from "@/lib/story/upgrades";
-import type { PendingPlacement, PenInstance, StoryState, StoryTile } from "@/lib/story/types";
+import type { Offer, PendingPlacement, PenInstance, StoryState, StoryTile } from "@/lib/story/types";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -146,6 +147,9 @@ function StoryPlay() {
   const cancelAnim = useRef(false);
   const [flight, setFlight] = useState<ScoreFlightData | null>(null);
   const [penFlight, setPenFlight] = useState<PenPurchaseFlightData | null>(null);
+  const [itemFlight, setItemFlight] = useState<ItemPurchaseFlightData | null>(null);
+  const [sibblePulse, setSibblePulse] = useState(false);
+  const sibblePulseTimer = useRef<number | null>(null);
   const [arrivingPenId, setArrivingPenId] = useState<string | null>(null);
   const [pageStats, setPageStats] = useState<PageStats | null>(null);
   const flightId = useRef(0);
@@ -546,6 +550,22 @@ function StoryPlay() {
     }
   }
 
+  function pulseSibble() {
+    setSibblePulse(true);
+    if (sibblePulseTimer.current) window.clearTimeout(sibblePulseTimer.current);
+    sibblePulseTimer.current = window.setTimeout(() => setSibblePulse(false), scaled(420));
+  }
+
+  /** Flies a purchased item into the decorative Sibble rack at the bottom of the Bookstore. */
+  function flyToSibble(offer: Offer, source?: DOMRect) {
+    if (!source || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const target = document.querySelector("[data-story-deco-rack]")?.getBoundingClientRect();
+    if (!target || target.width === 0) return;
+    const x = source.left + source.width / 2;
+    const y = source.top + source.height / 2;
+    setItemFlight({ id: ++flightId.current, offer, x, y, dx: target.left + target.width / 2 - x, dy: target.top + target.height / 2 - y });
+  }
+
   function handleBuy(offerIndex: number, source?: DOMRect) {
     if (!story) return;
     const result = buyOffer(story, offerIndex);
@@ -570,13 +590,16 @@ function StoryPlay() {
         setArrivingPenId(null);
         setPenFlight({ id: ++flightId.current, penId: offer.penId, x, y, dx: target.left + target.width / 2 - x, dy: target.top + target.height / 2 - y });
       }
+    } else if (offer) {
+      flyToSibble(offer, source);
     }
     setStory(result);
-    toast.success("Purchased!");
   }
 
   function handleEnhancePick(letter: string) {
     if (!story || dialog?.kind !== "enhance") return;
+    const source = document.querySelector('[role="dialog"]')?.getBoundingClientRect();
+    const offer = story.offers?.[dialog.offerIndex];
     const result = buyOffer(story, dialog.offerIndex, letter);
     setDialog(null);
     if ("error" in result) {
@@ -584,8 +607,8 @@ function StoryPlay() {
       return;
     }
     if ("needsLetter" in result) return;
+    if (offer) flyToSibble(offer, source);
     setStory(result);
-    toast.success(`Every ${letter} tile is now ${dialog.enhancement}!`);
   }
 
   function startNewStory() {
@@ -752,7 +775,7 @@ function StoryPlay() {
       <footer className="story-footer flex items-center justify-center gap-2 px-3 pb-3">
         <div className={cn("w-full", story.phase === "bookstore" ? "max-w-2xl" : "max-w-md")}>
           {story.phase === "bookstore" ? (
-            <div className="pointer-events-none">
+            <div data-story-deco-rack className={cn("pointer-events-none", sibblePulse && "story-sibble-arrival")}>
               <StoryRack
                 compact={compact}
                 capacity={compact ? 6 : 10}
@@ -868,6 +891,7 @@ function StoryPlay() {
       <ScoreFlight flight={flight} />
       <ScoreConfetti burst={confetti} />
       <PenPurchaseFlight flight={penFlight} onArrive={() => { setArrivingPenId(penFlight?.penId ?? null); setPenFlight(null); }} />
+      <ItemPurchaseFlight flight={itemFlight} state={story} onArrive={() => { setItemFlight(null); pulseSibble(); }} />
       {drag ? (
         <div
           className="pointer-events-none fixed z-50"

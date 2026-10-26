@@ -118,7 +118,7 @@ function fullText(offer: Offer, state: StoryState): ReactNode {
   }
 }
 
-function OfferVisual({ offer, state, large, small }: { offer: Offer; state: StoryState; large?: boolean; small?: boolean }) {
+export function OfferVisual({ offer, state, large, small }: { offer: Offer; state: StoryState; large?: boolean; small?: boolean }) {
   const box = large ? "h-16 w-16" : small ? "h-9 w-9" : "h-11 w-11";
   switch (offer.kind) {
     case "letter":
