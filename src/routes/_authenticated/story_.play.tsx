@@ -117,7 +117,8 @@ const IDLE_ANIM: AnimState = {
   label: null,
 };
 
-const STEP_MS = 600;
+// No pause between consecutive flying numbers: the next flight starts the moment the previous one lands.
+const STEP_MS = 0;
 
 function fmtDelta(diff: number): string {
   const rounded = Math.round(diff);
@@ -563,7 +564,7 @@ function StoryPlay() {
             setTimeout(() => { setConfetti(null); resolve(); }, STORY_CONFETTI_MS);
           }, at));
         }
-        await wait(Math.max(STEP_MS, totalCountDuration(event.ink) + 100));
+        await wait(Math.max(600, totalCountDuration(event.ink) + 100));
         // Empty boxes regrow their zeros.
         current = { ...current, base: 0, mult: 0, baseHidden: false, multHidden: false, popKey: ++popKey };
         setAnim(current);
