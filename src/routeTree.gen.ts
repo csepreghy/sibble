@@ -18,7 +18,9 @@ import { Route as AuthenticatedStatsRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedStoryRouteImport } from './routes/_authenticated/story'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as AuthenticatedGameGameIdRouteImport } from './routes/_authenticated/game.$gameId'
+import { Route as AuthenticatedStoryHistoryRouteImport } from './routes/_authenticated/story_.history'
 import { Route as AuthenticatedStoryPlayRouteImport } from './routes/_authenticated/story_.play'
+import { Route as AuthenticatedStoryStatsRouteImport } from './routes/_authenticated/story_.stats'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -64,9 +66,20 @@ const AuthenticatedGameGameIdRoute = AuthenticatedGameGameIdRouteImport.update({
   path: '/game/$gameId',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedStoryHistoryRoute =
+  AuthenticatedStoryHistoryRouteImport.update({
+    id: '/story_/history',
+    path: '/story/history',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedStoryPlayRoute = AuthenticatedStoryPlayRouteImport.update({
   id: '/story_/play',
   path: '/story/play',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedStoryStatsRoute = AuthenticatedStoryStatsRouteImport.update({
+  id: '/story_/stats',
+  path: '/story/stats',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 
@@ -79,7 +92,9 @@ export interface FileRoutesByFullPath {
   '/story': typeof AuthenticatedStoryRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/game/$gameId': typeof AuthenticatedGameGameIdRoute
+  '/story/history': typeof AuthenticatedStoryHistoryRoute
   '/story/play': typeof AuthenticatedStoryPlayRoute
+  '/story/stats': typeof AuthenticatedStoryStatsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -90,7 +105,9 @@ export interface FileRoutesByTo {
   '/story': typeof AuthenticatedStoryRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/game/$gameId': typeof AuthenticatedGameGameIdRoute
+  '/story/history': typeof AuthenticatedStoryHistoryRoute
   '/story/play': typeof AuthenticatedStoryPlayRoute
+  '/story/stats': typeof AuthenticatedStoryStatsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -103,7 +120,9 @@ export interface FileRoutesById {
   '/_authenticated/story': typeof AuthenticatedStoryRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/_authenticated/game/$gameId': typeof AuthenticatedGameGameIdRoute
+  '/_authenticated/story_/history': typeof AuthenticatedStoryHistoryRoute
   '/_authenticated/story_/play': typeof AuthenticatedStoryPlayRoute
+  '/_authenticated/story_/stats': typeof AuthenticatedStoryStatsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -116,7 +135,9 @@ export interface FileRouteTypes {
     | '/story'
     | '/auth/callback'
     | '/game/$gameId'
+    | '/story/history'
     | '/story/play'
+    | '/story/stats'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -127,7 +148,9 @@ export interface FileRouteTypes {
     | '/story'
     | '/auth/callback'
     | '/game/$gameId'
+    | '/story/history'
     | '/story/play'
+    | '/story/stats'
   id:
     | '__root__'
     | '/'
@@ -139,7 +162,9 @@ export interface FileRouteTypes {
     | '/_authenticated/story'
     | '/auth/callback'
     | '/_authenticated/game/$gameId'
+    | '/_authenticated/story_/history'
     | '/_authenticated/story_/play'
+    | '/_authenticated/story_/stats'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -213,11 +238,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGameGameIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/story_/history': {
+      id: '/_authenticated/story_/history'
+      path: '/story/history'
+      fullPath: '/story/history'
+      preLoaderRoute: typeof AuthenticatedStoryHistoryRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/story_/play': {
       id: '/_authenticated/story_/play'
       path: '/story/play'
       fullPath: '/story/play'
       preLoaderRoute: typeof AuthenticatedStoryPlayRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/story_/stats': {
+      id: '/_authenticated/story_/stats'
+      path: '/story/stats'
+      fullPath: '/story/stats'
+      preLoaderRoute: typeof AuthenticatedStoryStatsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
   }
@@ -229,7 +268,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedStatsRoute: typeof AuthenticatedStatsRoute
   AuthenticatedStoryRoute: typeof AuthenticatedStoryRoute
   AuthenticatedGameGameIdRoute: typeof AuthenticatedGameGameIdRoute
+  AuthenticatedStoryHistoryRoute: typeof AuthenticatedStoryHistoryRoute
   AuthenticatedStoryPlayRoute: typeof AuthenticatedStoryPlayRoute
+  AuthenticatedStoryStatsRoute: typeof AuthenticatedStoryStatsRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -238,7 +279,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedStatsRoute: AuthenticatedStatsRoute,
   AuthenticatedStoryRoute: AuthenticatedStoryRoute,
   AuthenticatedGameGameIdRoute: AuthenticatedGameGameIdRoute,
+  AuthenticatedStoryHistoryRoute: AuthenticatedStoryHistoryRoute,
   AuthenticatedStoryPlayRoute: AuthenticatedStoryPlayRoute,
+  AuthenticatedStoryStatsRoute: AuthenticatedStoryStatsRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

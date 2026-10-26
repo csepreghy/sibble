@@ -3,6 +3,7 @@ import { useState } from "react";
 import { BookOpen, Coins, Feather, Play, Sparkles } from "lucide-react";
 import { newStory } from "@/lib/story/engine";
 import { loadStory, saveStory } from "@/lib/story/storage";
+import { loadStoryStats, recordStoryStarted, saveStoryStats } from "@/lib/story/stats";
 import { AppNav } from "@/components/AppNav";
 import { useStoryTheme } from "@/hooks/useStoryTheme";
 import { BrandLogo } from "@/components/BrandLogo";
@@ -37,6 +38,7 @@ function StoryIntro() {
   function begin() {
     const story = newStory();
     saveStory(story);
+    saveStoryStats(recordStoryStarted(loadStoryStats()));
     navigate({ to: "/story/play" });
   }
 
@@ -52,7 +54,7 @@ function StoryIntro() {
           <h1 className="text-3xl font-bold">Story Mode</h1>
           <p className="mt-1 text-sm text-muted-foreground">A singleplayer word roguelike.</p>
         </div>
-        <AppNav showTheme={false} />
+        <AppNav />
       </header>
 
       <div className="mt-8 space-y-3">

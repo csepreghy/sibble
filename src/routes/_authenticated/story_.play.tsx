@@ -41,6 +41,7 @@ import { PenPurchaseFlight, type PenPurchaseFlightData } from "@/components/stor
 import { ItemPurchaseFlight, type ItemPurchaseFlightData } from "@/components/story/ItemPurchaseFlight";
 import { RoundScore, ScoreBoxes, impactBox } from "@/components/story/ScoreDisplay";
 import { loadStory, saveStory } from "@/lib/story/storage";
+import { loadStoryStats, recordPageCompleted, recordStoryEnded, recordStoryStarted, recordWordsPlayed, saveStoryStats } from "@/lib/story/stats";
 import { useStoryLayout } from "@/hooks/useStoryLayout";
 import { useStoryTheme } from "@/hooks/useStoryTheme";
 import { getStorySpeed, nextStorySpeed, scaled, setStorySpeed } from "@/lib/story/speed";
@@ -552,6 +553,11 @@ function StoryPlay() {
     setStory(result.state);
     setPending([]);
     setAnim(IDLE_ANIM);
+    let stats = recordWordsPlayed(loadStoryStats(), result.score.words.map((word) => ({ word: word.word, ink: word.ink })));
+    if (result.pageCompleted) stats = recordPageCompleted(stats, result.state.pageIndex, result.state.page.ink);
+    if (result.storyWon) stats = recordStoryEnded(stats, result.state, true);
+    else if (result.defeated) stats = recordStoryEnded(stats, result.state, false);
+    saveStoryStats(stats);
     if (result.storyWon) {
       toast.success("Story complete!");
     } else if (result.pageCompleted) {
@@ -630,11 +636,19 @@ function StoryPlay() {
   function startNewStory() {
     if (!window.confirm("Start a new Story? This replaces your current Story.")) return;
     const fresh = newStory();
+    saveStoryStats(recordStoryStarted(loadStoryStats()));
     setStory(fresh);
     setPending([]);
     setSelectedRackId(null);
     setIntroDismissed(-1);
     setDialog(null);
+  }
+
+  function endStory() {
+    if (!story) return;
+    if (!window.confirm("End this Story? Your run will be over.")) return;
+    saveStoryStats(recordStoryEnded(loadStoryStats(), story, false));
+    setStory({ ...story, phase: "defeat" });
   }
 
   const showIntro = story.phase === "play" && introDismissed !== story.pageIndex;
@@ -663,7 +677,7 @@ function StoryPlay() {
               <DropdownMenuItem onClick={() => setDialog({ kind: "run-info" })}><Info /> Run Info</DropdownMenuItem>
               <DropdownMenuItem onSelect={(e) => { e.preventDefault(); cycleSpeed(); }}><Gauge /> Animation speed: {speed}×</DropdownMenuItem>
               <AnimationModeMenu mode={animationMode} onChange={changeAnimationMode} disabled={busy} />
-              <DropdownMenuItem className="text-destructive" onClick={() => { if (window.confirm("End this Story? Your run will be over.")) setStory({ ...story, phase: "defeat" }); }}><Trash2 /> End this Story</DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive" onClick={endStory}><Trash2 /> End this Story</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -732,7 +746,7 @@ function StoryPlay() {
                 </DropdownMenuItem>
                 <AnimationModeMenu mode={animationMode} onChange={changeAnimationMode} disabled={busy} />
                 <DropdownMenuItem
-                  onClick={() => { if (window.confirm("End this Story? Your run will be over.")) setStory({ ...story, phase: "defeat" }); }}
+                  onClick={endStory}
                   className="text-destructive"
                 >
                   <Trash2 className="mr-2 h-4 w-4" /> End this Story

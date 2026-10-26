@@ -1,7 +1,7 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { BarChart3, History, Plus, User } from "lucide-react";
+import { User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/hooks/useSession";
 import { createGame, displayNameOf, fetchMyGames, isAdmin } from "@/lib/games";
@@ -77,23 +77,8 @@ function Lobby() {
         </div>
       </header>
 
-      <div className="mt-8 grid gap-3 sm:grid-cols-3">
-        <button
-          type="button"
-          disabled={start.isPending}
-          onClick={() => start.mutate(false)}
-          className="flex items-center gap-3 rounded-lg bg-primary p-4 text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
-        >
-          <Plus className="h-5 w-5" />
-          <span className="font-semibold">New game</span>
-        </button>
-        <Link to="/history" className="flex items-center gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary">
-          <History className="h-5 w-5 text-primary" /><span className="font-semibold">History</span>
-        </Link>
-        <Link to="/stats" className="flex items-center gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary">
-          <BarChart3 className="h-5 w-5 text-primary" /><span className="font-semibold">Statistics</span>
-        </Link>
-        {admin.data ? (
+      {admin.data ? (
+        <div className="mt-8">
           <button
             type="button"
             disabled={start.isPending}
@@ -102,8 +87,8 @@ function Lobby() {
           >
             <User className="h-5 w-5 text-primary" /><span className="font-semibold">Solo practice</span>
           </button>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
 
       <section className="mt-10 space-y-3">
         <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
