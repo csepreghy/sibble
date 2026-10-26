@@ -296,11 +296,11 @@ export function GameBoard({
                     </>
                   ) : index === CENTER ? (
                     <img
-                      src="/favicon.png"
+                      src="/icon-512.png"
                       alt=""
                       aria-hidden="true"
                       draggable={false}
-                      className="pointer-events-none w-[62%] select-none"
+                      className="pointer-events-none absolute inset-0 h-full w-full rounded-[inherit] object-cover select-none"
                     />
                   ) : premium ? (
                     <span className="px-0.5 text-center text-[0.45rem] uppercase tracking-tight sm:text-[0.8rem]">
