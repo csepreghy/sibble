@@ -278,7 +278,7 @@ export function validateMove(
 
   const boardIsEmpty = board.every((cell) => cell === null);
   if (boardIsEmpty) {
-    if (!pending.has(CENTER)) return { error: "The first word must cover the centre star." };
+    if (!pending.has(CENTER)) return { error: "The first word must cover the centre square." };
     if (indices.length < 2) return { error: "The first word needs at least two letters." };
   } else {
     const touches = indices.some((index) => {
