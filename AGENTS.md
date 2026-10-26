@@ -24,3 +24,5 @@
 - Story rack presentation excludes pending tile IDs; placement validation rejects duplicate physical IDs, and whole-word overlays use grid tracks so they stay aligned while zooming. Owned Pen and shop inspectors share the same detail-tile shell to keep their appearance consistent.
 - Any element given the `tile-gloss` shine must also be `relative` (or otherwise positioned): its shine is an absolutely positioned pseudo-element and escapes to the viewport otherwise, painting a sheen over the whole screen.
 - Story completed-page reviews use immutable board, tile, upgrade and scored-word snapshots captured at completion in the per-device run; reviewing a snapshot must never mutate the live page or its pending placements.
+- Story statistics live in `src/lib/story/stats.ts`, persisted per device in localStorage (`sibble:story:stats:v1`) and recorded from the play route after commits — never in the database, never recalculated from presentation state.
+- App navigation is mode-aware: `AppNav` picks Sibble vs Story Mode from the path, shows each mode's Home/History/Statistics tabs plus a primary start button, and only offers the theme selector in Sibble mode.

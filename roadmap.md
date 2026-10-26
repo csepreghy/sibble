@@ -2,6 +2,13 @@
 
 Source spec: uploaded `Sibble_-_Singleplayer_Story_Mode_pasted.md`. Multiplayer stays untouched.
 
+## Story statistics and mode navigation
+- [x] Persist per-device Story stats (longest word, best single word, highest page score, top 3 letters, stories started/won/lost, finished-story history) in localStorage.
+- [x] Record stats on every committed word, page completion, story start and story end (including manual End this Story).
+- [x] Add `/story/stats` and `/story/history` pages with head metadata.
+- [x] Redo AppNav: Sibble / Story Mode toggle top-right, per-mode Home/History/Statistics tabs, primary New game / Start-Continue Story button; theme selector only in Sibble mode; lobby drops duplicated cards.
+- [ ] Verify signed-in: stats accumulate after a scored word, both new pages render, mode toggle switches navigation on phone and desktop.
+
 ## Animation modes
 - [x] Remove Reduced initial counting flashes/addition tags; retain final impacts. Signed-in 3× scoring verified no early impacts, both final impacts and full 0.8s confetti before modal in both modes; 23 tests pass.
 - [x] Add saved Normal/Reduced setting independently of speed.
