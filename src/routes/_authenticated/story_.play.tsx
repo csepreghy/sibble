@@ -34,6 +34,8 @@ import {
 } from "@/lib/story/engine";
 import { inspectPlacement } from "@/lib/story/preview";
 import { reorderPens } from "@/lib/story/pens";
+import { animationEvents, getStoryAnimationMode, setStoryAnimationMode, type StoryAnimationMode } from "@/lib/story/animation";
+import { AnimationModeMenu } from "@/components/story/AnimationModeMenu";
 import { ScoreFlight, type ScoreFlightData } from "@/components/story/ScoreFlight";
 import { PenPurchaseFlight, type PenPurchaseFlightData } from "@/components/story/PenPurchaseFlight";
 import { ItemPurchaseFlight, type ItemPurchaseFlightData } from "@/components/story/ItemPurchaseFlight";
@@ -131,6 +133,9 @@ function StoryPlay() {
   const [discardMode, setDiscardMode] = useState(false);
   useStoryTheme();
   const [speed, setSpeed] = useState(1);
+  const [animationMode, setAnimationMode] = useState<StoryAnimationMode>("normal");
+  useEffect(() => setAnimationMode(getStoryAnimationMode()), []);
+  const changeAnimationMode = (mode: StoryAnimationMode) => { setStoryAnimationMode(mode); setAnimationMode(mode); };
   useEffect(() => setSpeed(getStorySpeed()), []);
   const cycleSpeed = () => { const v = nextStorySpeed(speed); setStorySpeed(v); setSpeed(v); };
   const [discardSelection, setDiscardSelection] = useState<string[]>([]);
@@ -420,7 +425,7 @@ function StoryPlay() {
     };
     let roundShown = story.page.ink;
     let popKey = 0;
-    for (const event of result.score.events) {
+    for (const event of animationEvents(result.score.events, animationMode)) {
       if (cancelAnim.current) return;
       const next: AnimState = { ...current, running: true, activeIndex: null, activePenId: null, baseDelta: null, multDelta: null };
         switch (event.type) {
@@ -474,15 +479,23 @@ function StoryPlay() {
             next.label = event.label;
             break;
           case "result":
+            if (animationMode === "reduced") {
+              next.base = event.base;
+              next.mult = event.mult;
+              next.baseDelta = fmtDelta(event.base);
+              next.multDelta = fmtDelta(event.mult);
+            }
             next.activeIndex = null;
             next.activePenId = null;
-            next.baseDelta = null;
-            next.multDelta = null;
+            if (animationMode === "normal") {
+              next.baseDelta = null;
+              next.multDelta = null;
+            }
             next.label = `${event.word}: ${event.ink} Ink`;
             break;
         }
       const kind = next.base !== current.base && next.baseDelta ? "base" : next.mult !== current.mult && next.multDelta ? "mult" : null;
-      if (kind) {
+      if (kind && animationMode === "normal") {
         const selectors = next.activePenId ? [`[data-owned-pen="${next.activePenId}"]`] : kind === "base" && next.activeIndex !== null ? [`[data-cell-index="${next.activeIndex}"]`] : (next.activeWord ?? []).map(index => `[data-cell-index="${index}"]`);
         const rects = selectors.flatMap(selector => { const rect = [...document.querySelectorAll(selector)].map(el => el.getBoundingClientRect()).find(r => r.width > 0); return rect ? [rect] : []; });
         const boxes = [...document.querySelectorAll(`[data-score-box="${kind}"]`)];
@@ -648,6 +661,7 @@ function StoryPlay() {
               <DropdownMenuItem onClick={startNewStory}><Sparkles /> Start new Story</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setDialog({ kind: "run-info" })}><Info /> Run Info</DropdownMenuItem>
               <DropdownMenuItem onSelect={(e) => { e.preventDefault(); cycleSpeed(); }}><Gauge /> Animation speed: {speed}×</DropdownMenuItem>
+              <AnimationModeMenu mode={animationMode} onChange={changeAnimationMode} disabled={busy} />
               <DropdownMenuItem className="text-destructive" onClick={() => { if (window.confirm("End this Story? Your run will be over.")) setStory({ ...story, phase: "defeat" }); }}><Trash2 /> End this Story</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -715,6 +729,7 @@ function StoryPlay() {
                 <DropdownMenuItem onSelect={(e) => { e.preventDefault(); cycleSpeed(); }}>
                   <Gauge className="mr-2 h-4 w-4" /> Animation speed: {speed}×
                 </DropdownMenuItem>
+                <AnimationModeMenu mode={animationMode} onChange={changeAnimationMode} disabled={busy} />
                 <DropdownMenuItem
                   onClick={() => { if (window.confirm("End this Story? Your run will be over.")) setStory({ ...story, phase: "defeat" }); }}
                   className="text-destructive"
