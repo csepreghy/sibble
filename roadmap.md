@@ -36,3 +36,10 @@ Source spec: uploaded `Sibble_-_Singleplayer_Story_Mode_pasted.md`. Multiplayer 
 - [x] Page Complete modal on reaching the Ink target: Ink scored, words played, best single-word Ink, coins earned (per-page stats tracked in PageState; verified 32 Ink / 1 word / 8 Ink / +20 coins screenshot).
 - [x] Pens always purple in the top bar/sidebar (shop-pen token, was orange primary).
 - [x] Buy button gold with white text, 25% larger (h-10, text-base; verified purchase still deducts coins).
+
+## Bookstore polish (hover, pens, enhancements, Continue)
+- [x] Shop card hover no longer changes name color or shows orange background; light pulsing glow on hover (opened tile already pulses).
+- [x] Pen bar slots show icon only; name/description appear in the opened inspector.
+- [x] Enhancement shop tiles use dark tinted category backgrounds (no see-through gradient).
+- [x] Buy button uses deeper, more saturated gold (--gold-button).
+- [x] Compact Bookstore bottom order: narrow right-aligned shiny Continue button above the decorative SIBBLE rack at the very bottom (verified at 393×852).
