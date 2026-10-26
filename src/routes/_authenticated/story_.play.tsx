@@ -528,7 +528,7 @@ function StoryPlay() {
                 <p className="text-[0.65rem] font-bold uppercase tracking-wide text-base-ink">Base</p>
                 <p className="flex items-baseline gap-1 text-3xl font-bold text-base-ink">
                   <span key={`base-${anim.base}`} className={cn("inline-block", anim.running && "anim-score-pop")}>
-                    {anim.running ? anim.base : "—"}
+                    {anim.running ? anim.base : 0}
                   </span>
                   {anim.baseDelta && <span className="text-base font-bold text-base-ink/80">{anim.baseDelta}</span>}
                 </p>
@@ -538,7 +538,7 @@ function StoryPlay() {
                 <p className="text-[0.65rem] font-bold uppercase tracking-wide text-mult-ink">Mult</p>
                 <p className="flex items-baseline gap-1 text-3xl font-bold text-mult-ink">
                   <span key={`mult-${anim.mult}`} className={cn("inline-block", anim.running && "anim-score-pop")}>
-                    {anim.running ? anim.mult : "—"}
+                    {anim.running ? anim.mult : 0}
                   </span>
                   {anim.multDelta && <span className="text-base font-bold text-mult-ink/80">{anim.multDelta}</span>}
                 </p>
