@@ -13,7 +13,7 @@ function CountNumber({ value, running }: { value: number; running: boolean }) {
     const step = (time: number) => {
       const progress = Math.min(1, (time - start) / 260);
       const interpolated = from + (value - from) * (1 - (1 - progress) ** 3);
-      setShown(Number.isInteger(value) ? Math.round(interpolated) : Math.round(interpolated * 10) / 10);
+      setShown((Number.isInteger(value) ? Math.round(interpolated) : Math.round(interpolated * 10) / 10) || 0);
       if (progress < 1) frame = requestAnimationFrame(step);
     };
     frame = requestAnimationFrame(step);
