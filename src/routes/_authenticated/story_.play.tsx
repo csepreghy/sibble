@@ -42,7 +42,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { StoryBoard } from "@/components/story/StoryBoard";
 import { StoryRack } from "@/components/story/StoryRack";
 import { PenSidebar } from "@/components/story/PenSidebar";
-import { Bookstore } from "@/components/story/Bookstore";
+import { Bookstore, BookstoreSummary } from "@/components/story/Bookstore";
 import {
   BagDialog,
   BlankPickerDialog,
@@ -519,7 +519,7 @@ function StoryPlay() {
             <p className="text-xs text-muted-foreground">Ink to beat</p>
             <p className="text-xl font-bold text-base-ink">{config.inkTarget.toLocaleString()}</p>
             <p className="mt-2 text-xs text-muted-foreground">Current Ink</p>
-            <p className="text-2xl font-bold">{story.phase === "bookstore" ? 0 : story.page.ink.toLocaleString()}</p>
+            <p className="text-2xl font-bold">{story.page.ink.toLocaleString()}</p>
           </div>
 
           <div className="rounded-lg border border-border bg-secondary/40 p-3">
@@ -528,7 +528,7 @@ function StoryPlay() {
                 <p className="text-[0.65rem] font-bold uppercase tracking-wide text-base-ink">Base</p>
                 <p className="flex items-baseline gap-1 text-3xl font-bold text-base-ink">
                   <span key={`base-${anim.base}`} className={cn("inline-block", anim.running && "anim-score-pop")}>
-                    {anim.running ? anim.base : story.phase === "bookstore" ? 0 : "—"}
+                    {anim.running ? anim.base : "—"}
                   </span>
                   {anim.baseDelta && <span className="text-base font-bold text-base-ink/80">{anim.baseDelta}</span>}
                 </p>
@@ -538,7 +538,7 @@ function StoryPlay() {
                 <p className="text-[0.65rem] font-bold uppercase tracking-wide text-mult-ink">Mult</p>
                 <p className="flex items-baseline gap-1 text-3xl font-bold text-mult-ink">
                   <span key={`mult-${anim.mult}`} className={cn("inline-block", anim.running && "anim-score-pop")}>
-                    {anim.running ? anim.mult : story.phase === "bookstore" ? 0 : "—"}
+                    {anim.running ? anim.mult : "—"}
                   </span>
                   {anim.multDelta && <span className="text-base font-bold text-mult-ink/80">{anim.multDelta}</span>}
                 </p>
