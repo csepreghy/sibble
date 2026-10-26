@@ -194,7 +194,8 @@ function StoryPlay() {
     return null;
   }
 
-  const rackTiles = story.page.rack.flatMap((id) => { const tile = tileById.get(id); return tile ? [tile] : []; });
+  const pendingIds = new Set(pending.map(p => p.tileId));
+  const rackTiles = story.page.rack.filter(id => !pendingIds.has(id)).flatMap((id) => { const tile = tileById.get(id); return tile ? [tile] : []; });
   const twist = config.plotTwist ? TWIST_INFO[config.plotTwist] : null;
   const busy = anim.running;
 
@@ -212,7 +213,7 @@ function StoryPlay() {
       if (tile) setDialog({ kind: "tile", tile });
       return;
     }
-    if (!selectedRackId) return;
+    if (!selectedRackId || pendingIds.has(selectedRackId)) return;
     const tile = tileById.get(selectedRackId);
     if (!tile) return;
     if (tile.letter === "?") {
@@ -276,6 +277,8 @@ function StoryPlay() {
       return;
     }
 
+    if (pendingIds.has(tileId) || !story.page.rack.includes(tileId)) return;
+
     if (blank) {
       setDialog({ kind: "blank", index: target, tileId });
       return;
@@ -286,7 +289,7 @@ function StoryPlay() {
 
   function handleRackPointerDown(tileId: string, event: React.PointerEvent) {
     const tile = tileById.get(tileId);
-    if (!tile) return;
+    if (!tile || pendingIds.has(tileId)) return;
     beginDrag(event, tile.id, tile.letter, tile.letter === "?", { type: "rack", tileId });
   }
 
@@ -300,7 +303,7 @@ function StoryPlay() {
   const draggingBoardIndex = drag?.source.type === "board" ? drag.source.index : null;
 
   function handleRackSelect(tileId: string) {
-    if (busy || !story || story.phase !== "play") return;
+    if (busy || !story || story.phase !== "play" || pendingIds.has(tileId)) return;
     if (discardMode) {
       const limit = story.upgrades.includes("flexible-fingers") ? 4 : 3;
       setDiscardSelection((current) =>
@@ -598,8 +601,7 @@ function StoryPlay() {
               letterUpgrades={story.letterUpgrades}
               activeIndex={anim.activeIndex}
               activeWord={anim.activeWord}
-              validIndices={busy ? [] : preview?.validIndices ?? []}
-              invalidIndices={busy ? [] : preview?.invalidIndices ?? []}
+              wordHighlights={busy ? [] : preview?.wordHighlights ?? []}
               disabled={busy || story.phase !== "play"}
               hoverIndex={hoverIndex}
               draggingIndex={draggingBoardIndex}
@@ -722,7 +724,7 @@ function StoryPlay() {
       {dialog?.kind === "blank" ? (
         <BlankPickerDialog
           onPick={(letter) => {
-            setPending([...pending, { index: dialog.index, tileId: dialog.tileId, letter, blank: true }]);
+            if (!pendingIds.has(dialog.tileId)) setPending([...pending, { index: dialog.index, tileId: dialog.tileId, letter, blank: true }]);
             setSelectedRackId(null);
             setDialog(null);
           }}

@@ -19,3 +19,8 @@ Source spec: uploaded `Sibble_-_Singleplayer_Story_Mode_pasted.md`. Multiplayer 
 - [x] Shared blue/orange number boxes, separate target/current score, and words-left near rack.
 - [x] Green/red pending-word highlights and pre-Pen Ink preview with invalid X tag.
 - [x] Verify preview scoring tests and mobile/desktop gameplay (7 tests pass; signed-in IT previews 8 Ink and scores 16 with its Pen; 393×664 and 393×852 controls fit; desktop verified).
+
+## Story refinements
+- [ ] Remove pending rack tiles and prevent duplicate use; verify return/drag/scoring.
+- [ ] Shop-style glowing owned Pen inspector without purchase price.
+- [ ] Whole-word validation outlines and side-by-side glossy pink/purple Ink containers.

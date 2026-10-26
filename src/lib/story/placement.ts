@@ -70,7 +70,10 @@ export function validateStoryMove(
 ): StoryMoveOk | StoryMoveError {
   if (placements.length === 0) return { error: "Place at least one tile." };
   const pending = new Map<number, PendingPlacement>();
+  const tileIds = new Set<string>();
   for (const placement of placements) {
+    if (tileIds.has(placement.tileId)) return { error: "A letter tile can only be used once." };
+    tileIds.add(placement.tileId);
     if (board[placement.index]) return { error: "A tile is already on that square." };
     if (pending.has(placement.index)) return { error: "Two tiles on the same square." };
     pending.set(placement.index, placement);

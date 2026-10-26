@@ -2,6 +2,7 @@ import { test } from "node:test";
 import { strict as assert } from "node:assert";
 import { inspectPlacement } from "./preview";
 import { scorePlacement } from "./scoring";
+import { validateStoryMove } from "./placement";
 
 const fixture = {
   size: 5, board: Array(25).fill(null),
@@ -25,4 +26,8 @@ test("invalid words have an X-ready error and invalid word indices, without Ink"
 test("pre-Pen preview retains tile enhancements and word-length upgrades", () => {
   const result = inspectPlacement({ ...fixture, tiles: [{ id: "i", letter: "I", enhancement: "TL" }, { id: "t", letter: "T", enhancement: null }], wordLengthUpgrades: { 2: 1 } }, () => true);
   assert.equal(result.ink, 24);
+});
+test("one physical letter cannot occupy two squares", () => {
+  const placements = [{ index: 12, tileId: "i", letter: "I", blank: false }, { index: 13, tileId: "i", letter: "I", blank: false }];
+  assert.deepEqual(validateStoryMove(fixture.board, 5, placements, () => true), { error: "A letter tile can only be used once." });
 });
