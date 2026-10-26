@@ -11,15 +11,8 @@ import { cn } from "@/lib/utils";
 import { penIcon } from "./PenSidebar";
 import { ScoreBoxes } from "./ScoreDisplay";
 import { ShopDetailTile } from "./ShopDetailTile";
+import { PenCurrentBonus, PenDescription } from "./PenDescription";
 
-const PEN_SHORT: Record<string, string> = {
-  minimalist: "3-letter words: +5 Base per letter.",
-  "vowel-power": "Vowels give double Base.",
-  crossword: "+2 Mult per extra word formed.",
-  "growing-vocabulary": "5-letter words: +1 Mult, forever.",
-  catnip: "3-letter words: +10 Mult.",
-  "echo-chamber": "Reused letters retrigger.",
-};
 const UPGRADE_SHORT: Record<string, string> = {
   "bigger-rack": "+1 rack tile.",
   "extra-chance": "+1 discard per Page.",
@@ -82,7 +75,7 @@ function lengthMult(offer: Extract<Offer, { kind: "word-length" }>, state: Story
   return offer.length + (state.wordLengthUpgrades[offer.length] ?? 0);
 }
 
-function shortText(offer: Offer, state: StoryState): string {
+function shortText(offer: Offer, state: StoryState): ReactNode {
   switch (offer.kind) {
     case "letter": {
       const b = letterBase(offer, state);
@@ -95,7 +88,7 @@ function shortText(offer: Offer, state: StoryState): string {
     case "enhancement":
       return ENH_SHORT[offer.enhancement];
     case "pen":
-      return PEN_SHORT[offer.penId] ?? penDef(offer.penId).description;
+      return <PenDescription penId={offer.penId} />;
     case "upgrade":
       return UPGRADE_SHORT[offer.upgradeId] ?? upgradeDef(offer.upgradeId).description;
   }
@@ -112,7 +105,7 @@ function fullText(offer: Offer, state: StoryState): ReactNode {
     case "enhancement":
       return `${ENH_FULL[offer.enhancement]} You'll choose which letter it lands on.`;
     case "pen":
-      return penDef(offer.penId).description;
+      return <PenDescription penId={offer.penId} />;
     case "upgrade":
       return upgradeDef(offer.upgradeId).description;
   }
@@ -209,7 +202,7 @@ export function Bookstore({ state, onBuy, compact }: BookstoreProps) {
               <span className={cn("self-start text-[0.55rem] font-bold uppercase tracking-widest", cat.text)}>{cat.label}</span>
               <OfferVisual offer={offer} state={state} small={!!compact} />
               <span className={cn("font-bold leading-tight", compact ? "line-clamp-2 text-xs" : "text-sm")}>{offerTitle(offer)}</span>
-              <span className={cn("leading-tight text-muted-foreground", compact ? "line-clamp-1 text-[0.65rem]" : "line-clamp-2 text-[0.7rem]")}>{shortText(offer, state)}</span>
+              {offer.kind !== "pen" && <span className={cn("leading-tight text-muted-foreground", compact ? "line-clamp-1 text-[0.65rem]" : "line-clamp-2 text-[0.7rem]")}>{shortText(offer, state)}</span>}
               <span className={cn("flex items-center gap-1 self-end rounded-full bg-gold/15 px-2 py-0.5 font-bold text-gold", compact ? "text-xs" : "text-sm", !affordable && "text-gold/60")}>
                 <Coins className="h-3.5 w-3.5" /> {price}
               </span>
@@ -228,6 +221,7 @@ export function Bookstore({ state, onBuy, compact }: BookstoreProps) {
               <OfferVisual offer={inspected} state={state} large />
               <DialogTitle className="text-xl font-bold leading-tight">{offerTitle(inspected)}</DialogTitle>
               <DialogDescription className="text-sm leading-snug">{fullText(inspected, state)}</DialogDescription>
+              {inspected.kind === "pen" && <PenCurrentBonus pen={state.pens.find((pen) => pen.penId === inspected.penId) ?? { penId: inspected.penId, bonus: 0 }} />}
               <div className="flex w-full items-center justify-between gap-2">
                 <Button
                   disabled={state.coins < inspectedPrice}

@@ -11,6 +11,7 @@
 
 ## Architecture rules
 
+- Pen explanations use a shared presentation component backed by the Pen definitions, with live scaling bonuses passed from Pen instances, so every inspector stays consistent without altering scoring.
 - Story mode (singleplayer roguelike) lives in `src/lib/story/` (engine, scoring, boards, pens, upgrades, placement, storage) with routes `src/routes/_authenticated/story.tsx` and `story_.play.tsx`. Run state persists in localStorage (`sibble:story:v1`), never in the database — it's per-device and needs no auth or sync.
 - Story scoring is separate from multiplayer scoring: `src/lib/story/scoring.ts` computes Base × Mult and returns an event list the UI animates step by step, so the animation always matches the maths. Multiplayer `src/lib/scrabble.ts` is untouched by Story mode.
 - Story scoring presentation delays each numeric update until its contribution flight arrives; flight coordinates use live visible board/score-box bounds, while count-up and arrival pulses remain presentation-only and respect reduced motion.
