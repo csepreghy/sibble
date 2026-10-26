@@ -71,6 +71,9 @@ interface AnimState {
   running: boolean;
   base: number;
   mult: number;
+  /** amount just added to Base / Mult, shown next to the number */
+  baseDelta: string | null;
+  multDelta: string | null;
   activeIndex: number | null;
   activePenId: string | null;
   activeWord: number[] | null;
@@ -81,13 +84,20 @@ const IDLE_ANIM: AnimState = {
   running: false,
   base: 0,
   mult: 0,
+  baseDelta: null,
+  multDelta: null,
   activeIndex: null,
   activePenId: null,
   activeWord: null,
   label: null,
 };
 
-const STEP_MS = 420;
+const STEP_MS = 750;
+
+function fmtDelta(diff: number): string {
+  const rounded = Math.round(diff);
+  return rounded >= 0 ? `+${rounded}` : `−${Math.abs(rounded)}`;
+}
 
 function StoryPlay() {
   const navigate = useNavigate();
