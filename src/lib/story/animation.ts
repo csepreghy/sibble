@@ -2,6 +2,7 @@ import type { ScoreEvent } from "./scoring";
 
 export type StoryAnimationMode = "normal" | "reduced";
 export const STORY_CONFETTI_MS = 800;
+export const STORY_TOTAL_COUNT_MS = 1500;
 const KEY = "sibble:story:animation-mode";
 
 export function getStoryAnimationMode(): StoryAnimationMode {

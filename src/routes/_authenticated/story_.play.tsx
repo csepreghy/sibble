@@ -34,7 +34,7 @@ import {
 } from "@/lib/story/engine";
 import { inspectPlacement } from "@/lib/story/preview";
 import { reorderPens } from "@/lib/story/pens";
-import { animationEvents, getStoryAnimationMode, setStoryAnimationMode, STORY_CONFETTI_MS, type StoryAnimationMode } from "@/lib/story/animation";
+import { animationEvents, getStoryAnimationMode, setStoryAnimationMode, STORY_CONFETTI_MS, STORY_TOTAL_COUNT_MS, type StoryAnimationMode } from "@/lib/story/animation";
 import { AnimationModeMenu } from "@/components/story/AnimationModeMenu";
 import { ScoreFlight, type ScoreFlightData } from "@/components/story/ScoreFlight";
 import { PenPurchaseFlight, type PenPurchaseFlightData } from "@/components/story/PenPurchaseFlight";
@@ -102,6 +102,7 @@ interface AnimState {
   multHidden?: boolean;
   popKey?: number;
   roundScore?: number | null;
+  growToTotal?: boolean;
 }
 
 const IDLE_ANIM: AnimState = {
@@ -428,7 +429,7 @@ function StoryPlay() {
     let popKey = 0;
     for (const event of animationEvents(result.score.events, animationMode)) {
       if (cancelAnim.current) return;
-      const next: AnimState = { ...current, running: true, activeIndex: null, activePenId: null, baseDelta: null, multDelta: null };
+      const next: AnimState = { ...current, running: true, activeIndex: null, activePenId: null, baseDelta: null, multDelta: null, growToTotal: false };
         switch (event.type) {
           case "word":
             next.activeWord = event.indices;
@@ -483,6 +484,7 @@ function StoryPlay() {
             if (animationMode === "reduced") {
               next.base = event.base;
               next.mult = event.mult;
+              next.growToTotal = true;
               // One simultaneous count from zero, without contribution tags or impacts.
               next.baseDelta = null;
               next.multDelta = null;
@@ -514,13 +516,14 @@ function StoryPlay() {
       }
       setAnim(next);
       current = next;
-      await delay();
+      if (next.growToTotal) await wait(STORY_TOTAL_COUNT_MS + 100);
+      else await delay();
       if (cancelAnim.current) return;
       if (event.type === "result") {
         // Mult -> Base: Base counts up to the word's Ink.
         await flyBox('[data-score-box="mult"]', '[data-score-box="base"]', "mult", `×${event.mult.toLocaleString(undefined, { maximumFractionDigits: 1 })}`);
         if (cancelAnim.current) return;
-        current = { ...current, multHidden: true, base: event.ink, baseDelta: `×${event.mult}`, activePenId: null };
+        current = { ...current, multHidden: true, base: event.ink, baseDelta: `×${event.mult}`, activePenId: null, growToTotal: false };
         setAnim(current);
         await delay();
         // Base -> Round score: purple box counts up.
@@ -683,7 +686,7 @@ function StoryPlay() {
         </div>
         {story.phase !== "bookstore" && <>
           <RoundScore target={config.inkTarget} current={busy && anim.roundScore != null ? anim.roundScore : story.page.ink} running={busy} />
-          <ScoreBoxes base={busy ? anim.base : 0} mult={busy ? anim.mult : 0} running={busy} baseDelta={anim.baseDelta} multDelta={anim.multDelta} baseHidden={busy && anim.baseHidden} multHidden={busy && anim.multHidden} popKey={busy ? anim.popKey : 0} />
+          <ScoreBoxes base={busy ? anim.base : 0} mult={busy ? anim.mult : 0} running={busy} baseDelta={anim.baseDelta} multDelta={anim.multDelta} baseHidden={busy && anim.baseHidden} multHidden={busy && anim.multHidden} popKey={busy ? anim.popKey : 0} growToTotal={busy && anim.growToTotal === true} />
           <div className="story-score-caption text-xs text-muted-foreground">{anim.label ?? ""}</div>
         </>}
       </header>}
@@ -717,7 +720,7 @@ function StoryPlay() {
           </div>
 
           <RoundScore target={config.inkTarget} current={busy && anim.roundScore != null ? anim.roundScore : story.page.ink} running={busy} />
-          <ScoreBoxes base={busy ? anim.base : 0} mult={busy ? anim.mult : 0} running={busy} baseDelta={anim.baseDelta} multDelta={anim.multDelta} baseHidden={busy && anim.baseHidden} multHidden={busy && anim.multHidden} popKey={busy ? anim.popKey : 0} />
+          <ScoreBoxes base={busy ? anim.base : 0} mult={busy ? anim.mult : 0} running={busy} baseDelta={anim.baseDelta} multDelta={anim.multDelta} baseHidden={busy && anim.baseHidden} multHidden={busy && anim.multHidden} popKey={busy ? anim.popKey : 0} growToTotal={busy && anim.growToTotal === true} />
           <p className="min-h-4 text-center text-xs text-muted-foreground">{anim.label ?? ""}</p>
 
 
