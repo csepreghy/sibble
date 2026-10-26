@@ -128,8 +128,8 @@ function fullText(offer: Offer, state: StoryState): string {
   }
 }
 
-function OfferVisual({ offer, state, large }: { offer: Offer; state: StoryState; large?: boolean }) {
-  const box = large ? "h-16 w-16" : "h-11 w-11";
+function OfferVisual({ offer, state, large, small }: { offer: Offer; state: StoryState; large?: boolean; small?: boolean }) {
+  const box = large ? "h-16 w-16" : small ? "h-9 w-9" : "h-11 w-11";
   switch (offer.kind) {
     case "letter":
       return (
