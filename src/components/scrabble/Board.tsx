@@ -295,7 +295,13 @@ export function GameBoard({
                       </span>
                     </>
                   ) : index === CENTER ? (
-                    <span className="text-[0.65rem] leading-none sm:text-base">★</span>
+                    <img
+                      src="/favicon.png"
+                      alt=""
+                      aria-hidden="true"
+                      draggable={false}
+                      className="pointer-events-none w-[62%] select-none"
+                    />
                   ) : premium ? (
                     <span className="px-0.5 text-center text-[0.45rem] uppercase tracking-tight sm:text-[0.8rem]">
                       {PREMIUM_LABEL[premium]}
