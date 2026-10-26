@@ -21,6 +21,7 @@ Source spec: uploaded `Sibble_-_Singleplayer_Story_Mode_pasted.md`. Multiplayer 
 - [x] Verify preview scoring tests and mobile/desktop gameplay (7 tests pass; signed-in IT previews 8 Ink and scores 16 with its Pen; 393×664 and 393×852 controls fit; desktop verified).
 
 ## Story refinements
+- [ ] Scoring contribution flights, arrival glow/pulse and fast count-up; inset Words/Discards counters together.
 - [x] Remove pending rack tiles and prevent duplicate use; verify return/drag/scoring (8 tests pass; signed-in drag/tap placement and rack return checked).
 - [x] Shop-style glowing owned Pen inspector without purchase price (shared detail shell, verified after opening animation).
 - [x] Whole-word validation outlines and side-by-side glossy pink/purple Ink containers (phone, short phone and desktop verified; scoring still previews 8 and commits 16 Ink with the Pen).
