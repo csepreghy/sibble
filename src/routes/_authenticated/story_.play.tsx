@@ -34,7 +34,7 @@ import {
 } from "@/lib/story/engine";
 import { inspectPlacement } from "@/lib/story/preview";
 import { reorderPens } from "@/lib/story/pens";
-import { animationEvents, getStoryAnimationMode, setStoryAnimationMode, STORY_CONFETTI_MS, STORY_TOTAL_COUNT_MS, type StoryAnimationMode } from "@/lib/story/animation";
+import { animationEvents, getStoryAnimationMode, setStoryAnimationMode, STORY_CONFETTI_MS, totalCountDuration, type StoryAnimationMode } from "@/lib/story/animation";
 import { AnimationModeMenu } from "@/components/story/AnimationModeMenu";
 import { ScoreFlight, type ScoreFlightData } from "@/components/story/ScoreFlight";
 import { PenPurchaseFlight, type PenPurchaseFlightData } from "@/components/story/PenPurchaseFlight";
@@ -516,7 +516,7 @@ function StoryPlay() {
       }
       setAnim(next);
       current = next;
-      if (next.growToTotal) await wait(STORY_TOTAL_COUNT_MS + 100);
+      if (next.growToTotal) await wait(Math.max(totalCountDuration(next.base), totalCountDuration(next.mult)) + 100);
       else await delay();
       if (cancelAnim.current) return;
       if (event.type === "result") {
