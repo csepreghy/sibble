@@ -31,3 +31,8 @@ Source spec: uploaded `Sibble_-_Singleplayer_Story_Mode_pasted.md`. Multiplayer 
 - [x] Compact header (Chapter/Page Complete, title, gold coins, settings), horizontal Pen row preserved.
 - [x] Compact ~123px two-column shop cards (small visual, one-line effect, price bottom-right); decorative SIBBLE rack above Continue, hidden on short screens; only the offer grid may scroll.
 - [x] Verify at 393×852 and 393×664: no outer scroll, no nested scrollbars, no overlap, purchase flow intact (7→6 offers, coins deducted).
+
+## Page-complete stats, pen color, Buy button
+- [x] Page Complete modal on reaching the Ink target: Ink scored, words played, best single-word Ink, coins earned (per-page stats tracked in PageState; verified 32 Ink / 1 word / 8 Ink / +20 coins screenshot).
+- [x] Pens always purple in the top bar/sidebar (shop-pen token, was orange primary).
+- [x] Buy button gold with white text, 25% larger (h-10, text-base; verified purchase still deducts coins).
