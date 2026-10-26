@@ -730,7 +730,7 @@ function StoryPlay() {
         </div>
       </footer>
 
-      {compact && story.phase === "bookstore" && <div className="story-continue"><Button className="w-full" onClick={() => setStory(continueToNextPage(story))}>Continue to Next Page <ArrowRight /></Button></div>}
+      {compact && story.phase === "bookstore" && <div className="story-continue"><Button className="tile-gloss px-6" onClick={() => setStory(continueToNextPage(story))}>Continue to Next Page <ArrowRight /></Button></div>}
       <Dialog open={themeOpen} onOpenChange={setThemeOpen}><DialogContent><DialogTitle>Story theme</DialogTitle><ThemeSelector /></DialogContent></Dialog>
       {/* Dialogs */}
       {showIntro ? <PageIntroDialog state={story} onStart={() => setIntroDismissed(story.pageIndex)} /> : null}

@@ -145,12 +145,19 @@ function OfferVisual({ offer, state, large, small }: { offer: Offer; state: Stor
           <span className="text-[0.6rem] leading-none">×{lengthMult(offer, state) + 1}</span>
         </span>
       );
-    case "enhancement":
+    case "enhancement": {
+      const enhStyles = {
+        DL: "border-shop-dl/50 bg-shop-dl/15 text-shop-dl",
+        TL: "border-shop-tl/50 bg-shop-tl/15 text-shop-tl",
+        DW: "border-shop-dw/50 bg-shop-dw/15 text-shop-dw",
+        TW: "border-shop-tw/50 bg-shop-tw/15 text-shop-tw",
+      } as const;
       return (
-        <span className={cn("flex items-center justify-center rounded-md font-bold", box, large ? "text-lg" : "text-sm", `tile-enh-${offer.enhancement.toLowerCase()}`)}>
+        <span className={cn("flex items-center justify-center rounded-md border font-bold", box, large ? "text-lg" : "text-sm", enhStyles[offer.enhancement])}>
           {offer.enhancement}
         </span>
       );
+    }
     case "pen": {
       const Icon = penIcon(offer.penId);
       return (
@@ -206,7 +213,7 @@ export function Bookstore({ state, onBuy, compact }: BookstoreProps) {
               onClick={() => setInspect(index)}
               style={{ ["--glow" as string]: glowVar(offer) }}
               className={cn(
-                "shop-card mb-1 flex h-auto flex-col items-center justify-between whitespace-normal rounded-lg border-2 text-center",
+                "shop-card mb-1 flex h-auto flex-col items-center justify-between whitespace-normal rounded-lg border-2 text-center hover:bg-transparent hover:text-foreground",
                 compact ? "gap-0.5 p-1.5" : "aspect-square gap-1 p-2",
                 !affordable && "opacity-70",
               )}
@@ -236,7 +243,7 @@ export function Bookstore({ state, onBuy, compact }: BookstoreProps) {
               <div className="flex w-full items-center justify-between gap-2">
                 <Button
                   disabled={state.coins < inspectedPrice}
-                  className="h-10 px-6 text-base font-bold bg-gold text-white hover:bg-gold/90"
+                  className="h-10 px-6 text-base font-bold bg-gold-button text-white hover:bg-gold-button/90"
                   onClick={() => {
                     const i = inspect;
                     if (i === null) return;
