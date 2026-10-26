@@ -1,4 +1,4 @@
-import { ArrowRight, CheckCircle2, Coins, Sparkles, Star } from "lucide-react";
+import { ArrowRight, CheckCircle2, Coins, Menu, Sparkles, Star } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { LETTER_VALUES } from "@/lib/scrabble";
 import type { Offer, StoryState } from "@/lib/story/types";
@@ -249,7 +249,7 @@ export function Bookstore({ state, onBuy, compact }: BookstoreProps) {
 }
 
 /** Left-sidebar Page Complete summary shown while shopping. */
-export function BookstoreSummary({ state, onContinue }: { state: StoryState; onContinue: () => void }) {
+export function BookstoreSummary({ state, onContinue, onOpenBag }: { state: StoryState; onContinue: () => void; onOpenBag: () => void }) {
   const done = PAGES[state.pageIndex];
   if (!done) return null;
   const next = PAGES[state.pageIndex + 1];
@@ -286,7 +286,8 @@ export function BookstoreSummary({ state, onContinue }: { state: StoryState; onC
           </p>
         </div>
       ) : null}
-      <div className="mt-auto flex items-center justify-between gap-3">
+      <div className="mt-auto flex flex-wrap items-center justify-between gap-3">
+        <Button variant="outline" size="icon" aria-label="Bag and completed pages" onClick={onOpenBag}><Menu className="h-4 w-4" /></Button>
         <span className="flex items-center gap-1.5 text-3xl font-black tabular-nums text-gold">
           <Coins className="h-7 w-7" /> {state.coins}
         </span>
