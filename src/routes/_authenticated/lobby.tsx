@@ -2,10 +2,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { User } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/hooks/useSession";
 import { createGame, displayNameOf, fetchMyGames, isAdmin } from "@/lib/games";
-import { Button } from "@/components/ui/button";
 import { AppNav } from "@/components/AppNav";
 import { BrandLogo } from "@/components/BrandLogo";
 import { GameCard, visibleGames } from "@/components/GameCard";
@@ -52,12 +50,6 @@ function Lobby() {
     onError: () => toast.error("Couldn't start the game. Please try again."),
   });
 
-  async function signOut() {
-    await queryClient.cancelQueries();
-    queryClient.clear();
-    await supabase.auth.signOut();
-    navigate({ to: "/", replace: true });
-  }
 
   const ongoing = visibleGames(games.data, userId).filter((game) => game.status !== "finished");
 
@@ -69,12 +61,7 @@ function Lobby() {
           <h1 className="text-3xl font-bold">Hi, {displayNameOf(user)}</h1>
           <p className="mt-1 text-sm text-muted-foreground">Ready for a game?</p>
         </div>
-        <div className="flex items-center gap-2">
-          <AppNav />
-          <Button variant="ghost" onClick={signOut}>
-            Sign out
-          </Button>
-        </div>
+        <AppNav />
       </header>
 
       {admin.data ? (
