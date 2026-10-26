@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import { strict as assert } from "node:assert";
-import { animationEvents } from "./animation";
+import { animationEvents, STORY_CONFETTI_MS } from "./animation";
 import type { ScoreEvent } from "./scoring";
 
 const events: ScoreEvent[] = [
@@ -12,6 +12,10 @@ const events: ScoreEvent[] = [
   { type: "word", word: "IT", indices: [6, 11] },
   { type: "result", word: "IT", base: 2, mult: 2, ink: 4 },
 ];
+
+test("page confetti uses its normal 0.8-second duration independently of scoring speed", () => {
+  assert.equal(STORY_CONFETTI_MS, 800);
+});
 
 test("Normal keeps every existing scoring animation event", () => {
   assert.equal(animationEvents(events, "normal"), events);
