@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import { strict as assert } from "node:assert";
 import { buyOffer, newStory } from "./engine";
+import type { PurchaseResult } from "./engine";
 import type { Enhancement, StoryState } from "./types";
 
 /** Bookstore with a single enhancement offer and enough Coins to buy it. */
@@ -13,6 +14,13 @@ function shopWith(enhancement: Enhancement): StoryState {
   };
 }
 
+/** Unwraps a successful purchase, failing the test otherwise. */
+function bought(result: PurchaseResult): StoryState {
+  if ("error" in result) throw new Error(result.error);
+  if ("needsLetter" in result) throw new Error("expected the purchase to commit, got a letter prompt");
+  return result;
+}
+
 test("an enhancement offer asks for a letter before any Coins are taken", () => {
   const state = shopWith("DL");
   const result = buyOffer(state, 0);
@@ -22,8 +30,7 @@ test("an enhancement offer asks for a letter before any Coins are taken", () => 
 
 test("buying an enhancement applies it to every tile of the chosen letter", () => {
   const state = shopWith("DL");
-  const result = buyOffer(state, 0, "S");
-  if ("error" in result) throw new Error(result.error);
+  const result = bought(buyOffer(state, 0, "S"));
   const sTiles = result.tiles.filter((tile) => tile.letter === "S");
   assert.equal(sTiles.length, 4, "the Story owns four S tiles");
   assert.ok(sTiles.every((tile) => tile.enhancement === "DL"), "every S tile is enhanced");
@@ -34,8 +41,7 @@ test("buying an enhancement applies it to every tile of the chosen letter", () =
 
 test("blanks keep no enhancement when a letter is enhanced", () => {
   const state = shopWith("TW");
-  const result = buyOffer(state, 0, "A");
-  if ("error" in result) throw new Error(result.error);
+  const result = bought(buyOffer(state, 0, "A"));
   assert.equal(result.tiles.filter((tile) => tile.letter === "?" && tile.enhancement).length, 0);
   assert.ok(result.tiles.filter((tile) => tile.letter === "A").every((tile) => tile.enhancement === "TW"));
 });
@@ -45,8 +51,7 @@ test("choosing an enhanced letter replaces its enhancement", () => {
     ...shopWith("DL"),
     tiles: newStory().tiles.map((tile) => (tile.letter === "E" ? { ...tile, enhancement: "TW" as const } : tile)),
   };
-  const result = buyOffer(state, 0, "E");
-  if ("error" in result) throw new Error(result.error);
+  const result = bought(buyOffer(state, 0, "E"));
   const eTiles = result.tiles.filter((tile) => tile.letter === "E");
   assert.equal(eTiles.length, 12, "the Story owns twelve E tiles");
   assert.ok(eTiles.every((tile) => tile.enhancement === "DL"));
