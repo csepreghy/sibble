@@ -34,7 +34,10 @@ interface StoryBoardProps {
   /** word currently being scored */
   activeWord?: number[] | null;
   disabled?: boolean;
+  hoverIndex?: number | null;
+  draggingIndex?: number | null;
   onCellClick: (index: number) => void;
+  onTilePointerDown?: (index: number, event: React.PointerEvent) => void;
 }
 
 export function StoryBoard({

@@ -48,6 +48,7 @@ export function StoryRack({
               tile.enhancement ? `${ENH_CLASS[tile.enhancement]} tile-gloss` : "tile-face tile-gloss",
               selectedId === tile.id && !discardMode && "-translate-y-1.5 ring-[1.5px] ring-primary",
               discardMode && discardSelection.includes(tile.id) && "-translate-y-1.5 ring-[1.5px] ring-accent",
+              draggingId === tile.id && "opacity-30",
             )}
             aria-label={`tile ${tile.letter}`}
           >
