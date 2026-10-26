@@ -225,6 +225,8 @@ export function buyOffer(state: StoryState, offerIndex: number, targetTileId?: s
   if (!offers) return { error: "The Bookstore is closed." };
   const offer = offers[offerIndex];
   if (!offer || offer.sold) return { error: "That offer is no longer available." };
+  // Enhancement offers ask for a tile first; Coins are only taken once it's picked.
+  if (offer.kind === "enhancement" && !targetTileId) return { needsTile: state, offerIndex };
   const price = priceFor(state.upgrades, offer.price);
   if (state.coins < price) return { error: "Not enough Coins." };
 
