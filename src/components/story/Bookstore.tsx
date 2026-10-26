@@ -6,7 +6,7 @@ import { penDef } from "@/lib/story/pens";
 import { priceFor, upgradeDef } from "@/lib/story/upgrades";
 import { PAGES, TWIST_INFO, pageLabel } from "@/lib/story/boards";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { penIcon } from "./PenSidebar";
 
@@ -200,19 +200,17 @@ export function Bookstore({ state, onBuy }: BookstoreProps) {
               key={index}
               type="button"
               onClick={() => setInspect(index)}
-              style={{ ["--glow" as string]: glowVar(offer), animationDelay: `${index * -0.45}s` }}
+              style={{ ["--glow" as string]: glowVar(offer) }}
               className={cn(
-                "shop-card mb-1 flex flex-col items-center gap-1.5 rounded-xl border-2 px-2 pb-2 pt-1.5 text-center",
+                "shop-card mb-1 flex aspect-square flex-col items-center justify-between rounded-xl border-2 p-2 text-center",
                 !affordable && "opacity-70",
               )}
             >
               <span className={cn("self-start text-[0.55rem] font-bold uppercase tracking-widest", cat.text)}>{cat.label}</span>
               <OfferVisual offer={offer} state={state} />
               <span className="text-sm font-bold leading-tight">{offerTitle(offer)}</span>
-              <span className="line-clamp-2 min-h-[2rem] text-[0.7rem] leading-tight text-muted-foreground">
-                {shortText(offer, state)}
-              </span>
-              <span className={cn("flex items-center gap-1 rounded-full bg-gold/15 px-2 py-0.5 text-sm font-bold text-gold", !affordable && !offer.sold && "text-gold/60")}>
+              <span className="line-clamp-2 text-[0.7rem] leading-tight text-muted-foreground">{shortText(offer, state)}</span>
+              <span className={cn("flex items-center gap-1 self-end rounded-full bg-gold/15 px-2 py-0.5 text-sm font-bold text-gold", !affordable && "text-gold/60")}>
                 <Coins className="h-3.5 w-3.5" /> {price}
               </span>
             </button>
@@ -221,34 +219,35 @@ export function Bookstore({ state, onBuy }: BookstoreProps) {
       </div>
 
       <Dialog open={!!inspected} onOpenChange={(open) => !open && setInspect(null)}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-xs border-0 bg-transparent p-0 shadow-none [&>button:last-child]:hidden">
           {inspected ? (
-            <>
-              <DialogHeader className="items-center text-center">
-                <span className={cn("text-[0.65rem] font-bold uppercase tracking-widest", category(inspected).text)}>
-                  {category(inspected).label}
-                </span>
-                <div className="py-2">
-                  <OfferVisual offer={inspected} state={state} large />
-                </div>
-                <DialogTitle>{offerTitle(inspected)}</DialogTitle>
-                <DialogDescription>{fullText(inspected, state)}</DialogDescription>
-              </DialogHeader>
-              <Button
-                size="lg"
-                disabled={inspected.sold || state.coins < inspectedPrice}
-                onClick={() => {
-                  const i = inspect!;
-                  setInspect(null);
-                  onBuy(i);
-                }}
-              >
-                {state.coins < inspectedPrice ? "Not enough Coins" : "Buy"}
-                <span className="ml-2 flex items-center gap-1 text-gold">
+            <div
+              style={{ ["--glow" as string]: glowVar(inspected) }}
+              className="shop-card shop-card-live flex aspect-square w-full flex-col items-center justify-between gap-2 rounded-2xl border-[3px] p-4 text-center"
+            >
+              <span className={cn("self-start text-xs font-bold uppercase tracking-widest", category(inspected).text)}>
+                {category(inspected).label}
+              </span>
+              <OfferVisual offer={inspected} state={state} large />
+              <DialogTitle className="text-xl font-bold leading-tight">{offerTitle(inspected)}</DialogTitle>
+              <DialogDescription className="text-sm leading-snug">{fullText(inspected, state)}</DialogDescription>
+              <div className="flex w-full items-center justify-between gap-2">
+                <Button
+                  size="sm"
+                  disabled={state.coins < inspectedPrice}
+                  onClick={() => {
+                    const i = inspect!;
+                    setInspect(null);
+                    onBuy(i);
+                  }}
+                >
+                  {state.coins < inspectedPrice ? "Not enough Coins" : "Buy"}
+                </Button>
+                <span className="flex items-center gap-1 rounded-full bg-gold/15 px-3 py-1 text-lg font-bold text-gold">
                   <Coins className="h-4 w-4" /> {inspectedPrice}
                 </span>
-              </Button>
-            </>
+              </div>
+            </div>
           ) : null}
         </DialogContent>
       </Dialog>

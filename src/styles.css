@@ -835,7 +835,7 @@
   background:
     radial-gradient(120% 80% at 50% 0%, color-mix(in oklab, var(--glow) 22%, transparent) 0%, transparent 60%),
     linear-gradient(180deg, color-mix(in oklab, var(--card) 85%, white) 0%, var(--card) 55%, color-mix(in oklab, var(--card) 80%, black) 100%);
-  animation: shop-glow-pulse 3.2s ease-in-out infinite;
+  box-shadow: var(--shop-depth);
   transition: transform 150ms ease;
   &::before {
     content: "";
@@ -853,5 +853,14 @@
   }
   &:active {
     transform: translateY(3px);
+  }
+}
+
+/* Inspected (modal) shop tile: glowing and slowly pulsing, no press motion. */
+@utility shop-card-live {
+  animation: shop-glow-pulse 3.2s ease-in-out infinite;
+  &:hover,
+  &:active {
+    transform: none;
   }
 }

@@ -632,14 +632,17 @@ function StoryPlay() {
 
       {/* Bottom — rack and actions */}
       <footer className="flex items-center justify-center gap-2 px-3 pb-3">
-        <div className="w-full max-w-md">
+        <div className={cn("w-full", story.phase === "bookstore" ? "max-w-2xl" : "max-w-md")}>
           {story.phase === "bookstore" ? (
-            <div className="flex justify-center gap-1">
-              {"SIBBLE".split("").map((l, i) => (
-                <span key={i} className="tile-face flex h-11 w-11 items-center justify-center rounded-md text-2xl font-bold">
-                  {l}
-                </span>
-              ))}
+            <div className="pointer-events-none">
+              <StoryRack
+                tiles={"SIBBLEBOOK".split("").map((letter, i) => ({ id: `deco-${i}`, letter, enhancement: null }))}
+                selectedId={null}
+                discardMode={false}
+                discardSelection={[]}
+                letterUpgrades={story.letterUpgrades}
+                onSelect={() => {}}
+              />
             </div>
           ) : (
           <StoryRack
