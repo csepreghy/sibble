@@ -77,7 +77,9 @@ export function StoryBoard({
   const outlineRadius = `${(100 / size) * 0.11}cqw`;
   const outlineGlow = `${(100 / size) * 0.24}cqw`;
   // Breathing room between the tile edges and the outline, proportional to tile size.
-  const outlineRoom = (100 / size) * 0.06;
+  // Sized so the border's inner edge clears the tile by ~1.5% of a tile.
+  const outlineRoom = (100 / size) * 0.09;
+
 
   // Tile highlights (flying-number sources) scale with tile size like the word outlines.
   const highlightWidth = `max(1px, ${(100 / size) * 0.074}cqw)`;
