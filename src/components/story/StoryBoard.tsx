@@ -73,8 +73,11 @@ export function StoryBoard({
   const labelFont = `${(100 / size) * 0.2}cqw`;
   // Word outlines scale with tile size so they look equally thick on every board
   // (≈3px on a phone-sized 7×7 board, where the original fixed width was tuned).
-  const outlineWidth = `max(1px, ${(100 / size) * 0.06}cqw)`;
+  const outlineWidth = `max(1px, ${(100 / size) * 0.066}cqw)`;
   const outlineRadius = `${(100 / size) * 0.09}cqw`;
+  const outlineGlow = `${(100 / size) * 0.16}cqw`;
+  // Tile highlights (flying-number sources) scale with tile size like the word outlines.
+  const highlightWidth = `max(1px, ${(100 / size) * 0.074}cqw)`;
 
   const viewportRef = useRef<HTMLDivElement>(null);
   const [zoom, setZoom] = useState(1);
@@ -228,13 +231,14 @@ export function StoryBoard({
                         : "tile-face tile-gloss"
                       : null,
                     placed && "z-10 shadow-md",
-                    isActive && "z-10 ring-4 ring-base-ink brightness-110 anim-tile-bump",
+                    isActive && "z-10 brightness-110 anim-tile-bump",
                     !isActive && inActiveWord && "brightness-110",
                     !letter && hoverIndex === index && "ring-[1.5px] ring-primary/70",
                     !letter && "hover:brightness-95",
                     draggingIndex === index && "opacity-30",
                     index === center && !letter && "overflow-hidden bg-transparent",
                   )}
+                  style={isActive ? { boxShadow: `0 0 0 ${highlightWidth} var(--color-base-ink)` } : undefined}
                   aria-label={
                     letter
                       ? `${letter} on square ${index + 1}`
@@ -284,7 +288,8 @@ export function StoryBoard({
                 const rows = word.indices.map(index => Math.floor(index / size));
                 const cols = word.indices.map(index => index % size);
                 if (!rows.length) return null;
-                return <div key={i} data-word-valid={word.valid} className={cn("border-solid", "scoring" in word ? "border-mult-ink" : word.valid ? "border-story-valid" : "border-destructive")} style={{ gridRow: `${Math.min(...rows) + 1} / ${Math.max(...rows) + 2}`, gridColumn: `${Math.min(...cols) + 1} / ${Math.max(...cols) + 2}`, borderWidth: outlineWidth, borderRadius: outlineRadius }} />;
+                const glowColor = "scoring" in word ? "var(--color-mult-ink)" : word.valid ? "var(--color-story-valid)" : "var(--color-destructive)";
+                return <div key={i} data-word-valid={word.valid} className={cn("border-solid", "scoring" in word ? "border-mult-ink" : word.valid ? "border-story-valid" : "border-destructive")} style={{ gridRow: `${Math.min(...rows) + 1} / ${Math.max(...rows) + 2}`, gridColumn: `${Math.min(...cols) + 1} / ${Math.max(...cols) + 2}`, borderWidth: outlineWidth, borderRadius: outlineRadius, boxShadow: `0 0 ${outlineGlow} color-mix(in srgb, ${glowColor}, transparent 30%)` }} />;
               })}
             </div>
           </div>
