@@ -854,12 +854,11 @@
 .story-remaining-counters { display: flex; align-items: center; justify-content: flex-end; margin-left: auto; gap: 10px; font-size: 12px; font-weight: 600; }
 .story-remaining-counters > span { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
 @keyframes story-number-flight {
-  0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
-  12% { opacity: 1; }
-  65% { opacity: 1; }
-  90%, 100% { transform: translate(calc(-50% + var(--flight-x)), calc(-50% + var(--flight-y))) scale(0.85); opacity: 0; }
+  0% { transform: translate(-50%, -50%) scale(0.9); }
+  100% { transform: translate(calc(-50% + var(--flight-x)), calc(-50% + var(--flight-y))) scale(1); }
 }
-.story-score-flight { position: fixed; z-index: 100; pointer-events: none; font-size: 28px; font-weight: 800; text-shadow: 0 2px 4px var(--background); animation: story-number-flight 580ms cubic-bezier(.3,.1,.5,1) both; }
+/* Ease-in: starts slow, hits the box at full speed, fully opaque the whole way. */
+.story-score-flight { position: fixed; z-index: 100; pointer-events: none; font-size: 28px; font-weight: 800; text-shadow: 0 2px 4px var(--background); animation: story-number-flight 500ms cubic-bezier(.55,0,1,.45) both; }
 @media (prefers-reduced-motion: reduce) { .story-score-flight { display: none; } }
 .story-board-status .story-preview-tag { margin-left: auto; flex-basis: 100%; }
 .story-preview-tag { display: flex; align-items: center; justify-content: center; gap: 4px; min-width: 0; max-width: 60%; border-radius: 4px; padding: 4px 7px; font-size: 14px; font-weight: 700; }
