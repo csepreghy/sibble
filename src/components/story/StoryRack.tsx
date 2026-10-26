@@ -68,7 +68,7 @@ export function StoryRack({
       if (!reduce && prev !== undefined && prev !== left) {
         el.animate(
           [{ transform: `translateX(${prev - left}px)` }, { transform: "translateX(0)" }],
-          { duration: 380, easing: "cubic-bezier(0.2,0.8,0.2,1)" },
+          { duration: 300, easing: "cubic-bezier(0.2,0.8,0.2,1)" },
         );
       }
     });
