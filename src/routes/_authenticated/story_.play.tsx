@@ -489,6 +489,10 @@ function StoryPlay() {
       <div className="flex min-h-0 flex-1 gap-3 p-3">
         {/* Left sidebar — run information */}
         <aside className="flex w-52 shrink-0 flex-col gap-3 overflow-y-auto rounded-xl border border-border bg-card/60 p-3 sm:w-60">
+          {story.phase === "bookstore" ? (
+            <BookstoreSummary state={story} onContinue={() => setStory(continueToNextPage(story))} />
+          ) : (
+          <>
           <div>
             <div className="flex items-center gap-1.5">
               <h1 className="text-sm font-bold">{pageLabel(config)}</h1>
@@ -562,12 +566,8 @@ function StoryPlay() {
           <div className="flex items-center justify-center gap-2 rounded-md bg-gold/15 px-2 py-2 text-3xl font-bold text-gold">
             <Coins className="h-7 w-7" /> {story.coins}
           </div>
-
-          {story.phase === "bookstore" ? (
-            <Button size="lg" className="w-full" onClick={() => setStory(continueToNextPage(story))}>
-              Continue to Next Page <ArrowRight className="ml-1 h-4 w-4" />
-            </Button>
-          ) : null}
+          </>
+          )}
 
           <div className="mt-auto flex gap-1.5">
             <Button variant="outline" size="sm" className="flex-1" onClick={() => setDialog({ kind: "run-info" })}>
