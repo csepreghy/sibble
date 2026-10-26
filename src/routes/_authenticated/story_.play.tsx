@@ -448,7 +448,7 @@ function StoryPlay() {
                   <Home className="mr-2 h-4 w-4" /> Back to Menu
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={startNewStory}>
-                  <SparklesIcon /> New Story
+                  <Sparkles className="mr-2 h-4 w-4" /> New Story
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => setStory({ ...story, phase: "defeat" })}
