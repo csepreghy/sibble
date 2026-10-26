@@ -14,3 +14,8 @@ Source spec: uploaded `Sibble_-_Singleplayer_Story_Mode_pasted.md`. Multiplayer 
 - [x] Compact HUD, horizontal Pens, fixed board viewport, rack/actions and overlay settings.
 - [x] Portrait Bookstore with scrolling two-column offers and accessible coins/Continue.
 - [x] Verify device layouts, multiple grid sizes, scoring, discards, purchases and orientation persistence (Chromium device emulation; physical Safari browser controls not available here).
+
+## Balatro-inspired Story score presentation
+- [ ] Shared blue/orange number boxes, separate target/current score, and words-left near rack.
+- [ ] Green/red pending-word highlights and pre-Pen Ink preview with invalid X tag.
+- [ ] Verify preview scoring tests and mobile/desktop gameplay.
