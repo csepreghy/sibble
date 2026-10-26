@@ -726,3 +726,49 @@
   --sidebar-border: oklch(0.31 0.07 285);
   --sidebar-ring: oklch(0.73 0.19 52);
 }
+
+/* --- Story mode ------------------------------------------------------- */
+
+:root {
+  /* Scoring panel language: blue = Base Ink, orange = Mult. */
+  --base-ink: oklch(0.72 0.14 235);
+  --mult-ink: oklch(0.78 0.16 60);
+}
+
+@theme inline {
+  --color-base-ink: var(--base-ink);
+  --color-mult-ink: var(--mult-ink);
+}
+
+/* Enhanced physical tiles keep their DL/TL/DW/TW colour identifiable,
+   with a soft glow so they read as special. */
+@utility tile-enh-dl {
+  background: linear-gradient(180deg, color-mix(in oklab, var(--dl) 92%, white) 0%, var(--dl) 100%);
+  color: var(--tile-foreground);
+  box-shadow: var(--shadow-tile), 0 0 10px color-mix(in oklab, var(--dl) 65%, transparent);
+}
+@utility tile-enh-tl {
+  background: linear-gradient(180deg, color-mix(in oklab, var(--tl) 88%, white) 0%, var(--tl) 100%);
+  color: var(--tile-foreground);
+  box-shadow: var(--shadow-tile), 0 0 12px color-mix(in oklab, var(--tl) 65%, transparent);
+}
+@utility tile-enh-dw {
+  background: linear-gradient(180deg, color-mix(in oklab, var(--dw) 92%, white) 0%, var(--dw) 100%);
+  color: var(--tile-foreground);
+  box-shadow: var(--shadow-tile), 0 0 10px color-mix(in oklab, var(--dw) 65%, transparent);
+}
+@utility tile-enh-tw {
+  background: linear-gradient(180deg, color-mix(in oklab, var(--tw) 88%, white) 0%, var(--tw) 100%);
+  color: var(--tile-foreground);
+  box-shadow: var(--shadow-tile), 0 0 12px color-mix(in oklab, var(--tw) 65%, transparent);
+}
+
+/* Story mode is landscape-first: small portrait screens get a rotate hint. */
+.story-rotate-hint {
+  display: none;
+}
+@media (orientation: portrait) and (max-width: 64rem) {
+  .story-rotate-hint {
+    display: flex;
+  }
+}
