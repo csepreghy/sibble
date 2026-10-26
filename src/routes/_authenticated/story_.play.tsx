@@ -639,7 +639,7 @@ function StoryPlay() {
             {twist && story.phase === "play" && <Popover><PopoverTrigger asChild><Button variant="ghost" size="sm" className="h-5 max-w-full justify-start px-0 text-xs text-accent hover:bg-transparent hover:text-accent" aria-label="Plot Twist rules"><Info className="h-3 w-3" />{twist.name}</Button></PopoverTrigger><PopoverContent><p className="font-bold">{twist.name}</p><p>{twist.description}</p></PopoverContent></Popover>}
             {story.phase === "bookstore" && <p className="text-xl font-bold">The Bookstore</p>}
           </div>
-          <DropdownMenu>
+          {story.phase !== "bookstore" && <DropdownMenu>
             <DropdownMenuTrigger asChild><Button variant="outline" size="icon" aria-label="Story settings"><Settings /></Button></DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => navigate({ to: "/lobby" })}><Home /> Return to main menu</DropdownMenuItem>
@@ -648,7 +648,7 @@ function StoryPlay() {
               <DropdownMenuItem onSelect={(e) => { e.preventDefault(); cycleSpeed(); }}><Gauge /> Animation speed: {speed}×</DropdownMenuItem>
               <DropdownMenuItem className="text-destructive" onClick={() => { if (window.confirm("End this Story? Your run will be over.")) setStory({ ...story, phase: "defeat" }); }}><Trash2 /> End this Story</DropdownMenuItem>
             </DropdownMenuContent>
-          </DropdownMenu>
+          </DropdownMenu>}
         </div>
         {story.phase !== "bookstore" && <>
           <RoundScore target={config.inkTarget} current={busy && anim.roundScore != null ? anim.roundScore : story.page.ink} running={busy} />
@@ -848,9 +848,21 @@ function StoryPlay() {
       </footer>
 
       {compact && story.phase === "bookstore" && <div className="story-continue">
-        <span className="flex items-center gap-1.5 text-3xl font-black tabular-nums text-gold"><Coins className="h-7 w-7" />{story.coins}</span>
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild><Button variant="outline" size="icon" aria-label="Story settings"><Settings /></Button></DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem onClick={() => navigate({ to: "/lobby" })}><Home /> Return to main menu</DropdownMenuItem>
+              <DropdownMenuItem onClick={startNewStory}><Sparkles /> Start new Story</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setDialog({ kind: "run-info" })}><Info /> Run Info</DropdownMenuItem>
+              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); cycleSpeed(); }}><Gauge /> Animation speed: {speed}×</DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive" onClick={() => { if (window.confirm("End this Story? Your run will be over.")) setStory({ ...story, phase: "defeat" }); }}><Trash2 /> End this Story</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <span className="flex items-center gap-1.5 text-3xl font-black tabular-nums text-gold"><Coins className="h-7 w-7" />{story.coins}</span>
+        </div>
         <Button variant="outline" size="icon" aria-label="Bag and completed pages" onClick={() => setDialog({ kind: "bag" })}><Layers className="h-4 w-4" /></Button>
-        <Button className="relative tile-gloss px-6" onClick={() => setStory(continueToNextPage(story))}>Next Page <ArrowRight /></Button>
+        <Button className="relative tile-gloss px-6" onClick={() => setStory(continueToNextPage(story))}>Continue Story <ArrowRight /></Button>
       </div>}
       {/* Dialogs */}
       {showIntro ? <PageIntroDialog state={story} onStart={() => setIntroDismissed(story.pageIndex)} /> : null}

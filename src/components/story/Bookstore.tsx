@@ -291,7 +291,7 @@ export function BookstoreSummary({ state, onContinue }: { state: StoryState; onC
           <Coins className="h-7 w-7" /> {state.coins}
         </span>
         <Button size="lg" className="relative tile-gloss" onClick={onContinue}>
-          Next Page <ArrowRight className="ml-1 h-4 w-4" />
+          Continue Story <ArrowRight className="ml-1 h-4 w-4" />
         </Button>
       </div>
     </div>
