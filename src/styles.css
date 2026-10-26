@@ -846,7 +846,7 @@
 .story-number-box strong { font-size: 32px; line-height: 1; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 .story-number-delta { position: absolute; right: 5px; top: 2px; font-size: 12px; font-weight: 700; z-index: 3; }
 .story-score-times { text-align: center; font-size: 32px; font-weight: 800; line-height: 1; }
-.story-round-score { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.story-round-score { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 8px; }
 .story-target-score, .story-current-score { position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 2px; min-width: 0; height: 68px; border-radius: 6px; color: var(--story-score-foreground); box-shadow: var(--shadow-tile); text-align: center; }
 .story-target-score { background: var(--story-target-bg); }
 .story-current-score { background: var(--story-current-bg); }
@@ -879,7 +879,8 @@
   padding: 2px 4px;
 }
 .story-compact .story-round-score { margin-block: 2px 6px; }
-.story-compact .story-number-box { height: 48px; }
+.story-compact .story-number-box { height: 44px; }
+.story-compact .story-target-score, .story-compact .story-current-score { height: 58px; }
 .story-score-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) minmax(0, 1fr);
@@ -895,8 +896,8 @@
 .story-compact .story-desktop-sidebar { display: none; }
 .story-compact .story-workspace {
   display: grid;
-  grid-template-rows: 46px minmax(0, 1fr);
-  gap: 6px;
+  grid-template-rows: 42px minmax(0, 1fr);
+  gap: 2px;
   padding: 0;
   width: 100%;
   max-width: 640px;
@@ -907,8 +908,8 @@
 .story-pens {
   grid-row: 1;
   grid-column: 1;
-  height: 46px;
-  padding: 2px 4px;
+  height: 42px;
+  padding: 1px 4px;
   flex-direction: row;
   align-items: center;
   justify-content: center;
@@ -929,7 +930,7 @@
   justify-content: center;
 }
 .story-board-square {
-  width: min(100%, max(200px, calc(var(--story-visible-height, 100dvh) - 452px - env(safe-area-inset-top) - env(safe-area-inset-bottom))));
+  width: min(100%, max(200px, calc(var(--story-visible-height, 100dvh) - 418px - env(safe-area-inset-top) - env(safe-area-inset-bottom))));
   max-width: 100%;
   aspect-ratio: 1;
   flex: none;

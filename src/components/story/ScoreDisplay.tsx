@@ -72,11 +72,12 @@ export function ScoreBoxes({ base = 0, mult = 0, running = false, baseDelta, mul
 export function RoundScore({ target, current, running = false }: { target: number; current: number; running?: boolean }) {
   return <div className="story-round-score tabular-nums">
     <div className="story-target-score tile-gloss">
-      <span className="text-xs">Score at least</span>
-      <span className="flex items-center justify-center gap-1.5 text-xl font-bold">{target.toLocaleString()}<Droplet className="h-4 w-4" aria-label="Ink" /></span>
+      <span className="text-xs">Score to beat</span>
+      <span className="flex items-center justify-center gap-1.5 text-3xl font-bold">{target.toLocaleString()}<Droplet className="h-5 w-5" aria-label="Ink" /></span>
     </div>
+    <span className="story-score-times" aria-hidden="true">/</span>
     <div className="story-current-score tile-gloss">
-      <span className="text-xs">Round score</span>
+      <span className="text-xs">Page score</span>
       <span className="flex items-center justify-center gap-1.5 text-3xl font-bold"><CountNumber value={current} running={running} /><Droplet className="h-5 w-5" aria-label="Ink" /></span>
     </div>
   </div>;
