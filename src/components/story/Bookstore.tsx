@@ -146,9 +146,14 @@ function OfferVisual({ offer, state, large, small }: { offer: Offer; state: Stor
         </span>
       );
     case "enhancement": {
-      const enh = offer.enhancement.toLowerCase();
+      const enhStyles = {
+        DL: "border-shop-dl/50 bg-shop-dl/15",
+        TL: "border-shop-tl/50 bg-shop-tl/15",
+        DW: "border-shop-dw/50 bg-shop-dw/15",
+        TW: "border-shop-tw/50 bg-shop-tw/15",
+      } as const;
       return (
-        <span className={cn("flex items-center justify-center rounded-md border font-bold", box, large ? "text-lg" : "text-sm", `tile-enh-${enh}`, `border-shop-${enh}/50 bg-shop-${enh}/15`)}>
+        <span className={cn("flex items-center justify-center rounded-md border font-bold", box, large ? "text-lg" : "text-sm", `tile-enh-${offer.enhancement.toLowerCase()}`, enhStyles[offer.enhancement])}>
           {offer.enhancement}
         </span>
       );
