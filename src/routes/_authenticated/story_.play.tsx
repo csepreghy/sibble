@@ -644,6 +644,13 @@ function StoryPlay() {
     setDialog(null);
   }
 
+  function endStory() {
+    if (!story) return;
+    if (!window.confirm("End this Story? Your run will be over.")) return;
+    saveStoryStats(recordStoryEnded(loadStoryStats(), story, false));
+    setStory({ ...story, phase: "defeat" });
+  }
+
   const showIntro = story.phase === "play" && introDismissed !== story.pageIndex;
   const showEnd = story.phase === "victory" || story.phase === "defeat";
 
