@@ -1,6 +1,9 @@
 import { Droplet } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+// Count-up waits for the impact flash so it begins only after the hit.
+const IMPACT_MS = 80;
+
 function CountNumber({ value, running }: { value: number; running: boolean }) {
   const [shown, setShown] = useState(value);
   const previous = useRef(value);
@@ -9,8 +12,9 @@ function CountNumber({ value, running }: { value: number; running: boolean }) {
     previous.current = value;
     if (!running || value === 0 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) { setShown(value); return; }
     let frame = 0;
-    const start = performance.now();
+    const start = performance.now() + IMPACT_MS;
     const step = (time: number) => {
+      if (time < start) { frame = requestAnimationFrame(step); return; }
       const progress = Math.min(1, (time - start) / 260);
       const interpolated = from + (value - from) * (1 - (1 - progress) ** 3);
       setShown((Number.isInteger(value) ? Math.round(interpolated) : Math.round(interpolated * 10) / 10) || 0);
@@ -33,7 +37,16 @@ export function ScoreBoxes({ base = 0, mult = 0, running = false, baseDelta, mul
       const box = root.current?.querySelector(`[data-score-box="${kind}"]`);
       if (!box) continue;
       const color = getComputedStyle(box).backgroundColor;
-      box.animate([{ transform: "scale(1)", boxShadow: `0 0 0 ${color}` }, { transform: "scale(1.09)", boxShadow: `0 0 24px ${color}` }, { transform: "scale(1)", boxShadow: `0 0 0 ${color}` }], { duration: 320, easing: "ease-out" });
+      // Impact: quick jolt + brief scale pulse (visual transforms only).
+      box.animate([
+        { transform: "translate(0,0) scale(1)" },
+        { transform: "translate(-3px,1px) scale(1.1)", offset: 0.15 },
+        { transform: "translate(3px,-1px) scale(1.09)", offset: 0.3 },
+        { transform: "translate(-2px,0) scale(1.05)", offset: 0.45 },
+        { transform: "translate(0,0) scale(1)" },
+      ], { duration: 320, easing: "ease-out" });
+      // Solid white flash, snapping back to the box colour.
+      box.animate([{ backgroundColor: "white", boxShadow: `0 0 24px ${color}` }, { backgroundColor: color, boxShadow: `0 0 0 ${color}` }], { duration: IMPACT_MS + 10, easing: "ease-in" });
     }
   }, [base, mult, baseDelta, multDelta, running]);
   return <div ref={root} className="story-score-boxes tabular-nums" aria-label={`Base ${base} times Mult ${mult}`}>

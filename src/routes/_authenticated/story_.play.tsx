@@ -440,7 +440,7 @@ function StoryPlay() {
           const x = (Math.min(...rects.map(r => r.left)) + Math.max(...rects.map(r => r.right))) / 2;
           const y = Math.min(...rects.map(r => r.top)) + 8;
           setFlight({ id: ++flightId.current, kind, text: (kind === "base" ? next.baseDelta : next.multDelta) ?? "", x, y, dx: target.left + target.width / 2 - x, dy: target.top + target.height / 2 - y });
-          await new Promise(resolve => setTimeout(resolve, 580));
+          await new Promise(resolve => setTimeout(resolve, 500));
           if (cancelAnim.current) return;
         }
         setFlight(null);
