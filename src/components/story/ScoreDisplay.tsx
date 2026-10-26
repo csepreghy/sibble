@@ -20,7 +20,7 @@ export function impactBox(box: Element) {
   box.animate([{ backgroundColor: `color-mix(in srgb, ${color}, white 50%)`, boxShadow: `0 0 28px ${color}` }, { backgroundColor: color, boxShadow: `0 0 0 ${color}` }], { duration: scaled(IMPACT_MS + 10), easing: "ease-out" });
 }
 
-export function CountNumber({ value, running, growToTotal = false }: { value: number; running: boolean; growToTotal?: boolean }) {
+export function CountNumber({ value, running, growToTotal = false, byDelta = false }: { value: number; running: boolean; growToTotal?: boolean; byDelta?: boolean }) {
   const [shown, setShown] = useState(value);
   const previous = useRef(value);
   const number = useRef<HTMLElement>(null);
@@ -29,7 +29,7 @@ export function CountNumber({ value, running, growToTotal = false }: { value: nu
     previous.current = value;
     if (!running || value === 0 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) { setShown(value); return; }
     let frame = 0;
-    const duration = scaled(growToTotal ? totalCountDuration(value) : 260);
+    const duration = scaled(growToTotal ? totalCountDuration(byDelta ? value - from : value) : 260);
     const start = performance.now() + (growToTotal ? 0 : scaled(IMPACT_MS));
     const growth = growToTotal ? number.current?.animate([
       { transform: "scale(0.72)" },
@@ -44,7 +44,7 @@ export function CountNumber({ value, running, growToTotal = false }: { value: nu
     };
     frame = requestAnimationFrame(step);
     return () => { cancelAnimationFrame(frame); growth?.cancel(); };
-  }, [value, running, growToTotal]);
+  }, [value, running, growToTotal, byDelta]);
   return <strong ref={number} className="inline-block">{shown.toLocaleString(undefined, { maximumFractionDigits: 1 })}</strong>;
 }
 
@@ -86,7 +86,7 @@ export function RoundScore({ target, current, running = false }: { target: numbe
     <span className="story-score-times" aria-hidden="true">/</span>
     <div className="story-current-score tile-gloss">
       <span className="text-xs">Page score</span>
-      <span className="flex items-center justify-center gap-1.5 text-3xl font-bold"><CountNumber value={current} running={running} /><Droplet className="h-5 w-5" aria-label="Ink" /></span>
+      <span className="flex items-center justify-center gap-1.5 text-3xl font-bold"><CountNumber value={current} running={running} growToTotal byDelta /><Droplet className="h-5 w-5" aria-label="Ink" /></span>
     </div>
   </div>;
 }
