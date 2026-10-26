@@ -774,6 +774,14 @@
   --color-base-ink: var(--base-ink);
   --color-mult-ink: var(--mult-ink);
   --color-gold: var(--gold);
+  --color-shop-letter: oklch(0.68 0.15 245);
+  --color-shop-length: oklch(0.74 0.16 55);
+  --color-shop-dl: oklch(0.8 0.1 225);
+  --color-shop-tl: oklch(0.6 0.19 255);
+  --color-shop-dw: oklch(0.74 0.13 20);
+  --color-shop-tw: oklch(0.6 0.21 25);
+  --color-shop-pen: oklch(0.66 0.2 305);
+  --color-shop-upgrade: oklch(0.72 0.13 170);
 }
 
 /* Enhanced physical tiles keep their DL/TL/DW/TW colour identifiable,

@@ -42,7 +42,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { StoryBoard } from "@/components/story/StoryBoard";
 import { StoryRack } from "@/components/story/StoryRack";
 import { PenSidebar } from "@/components/story/PenSidebar";
-import { Bookstore } from "@/components/story/Bookstore";
+import { Bookstore, BookstoreSummary } from "@/components/story/Bookstore";
 import {
   BagDialog,
   BlankPickerDialog,
@@ -489,6 +489,10 @@ function StoryPlay() {
       <div className="flex min-h-0 flex-1 gap-3 p-3">
         {/* Left sidebar — run information */}
         <aside className="flex w-52 shrink-0 flex-col gap-3 overflow-y-auto rounded-xl border border-border bg-card/60 p-3 sm:w-60">
+          {story.phase === "bookstore" ? (
+            <BookstoreSummary state={story} onContinue={() => setStory(continueToNextPage(story))} />
+          ) : (
+          <>
           <div>
             <div className="flex items-center gap-1.5">
               <h1 className="text-sm font-bold">{pageLabel(config)}</h1>
@@ -515,7 +519,7 @@ function StoryPlay() {
             <p className="text-xs text-muted-foreground">Ink to beat</p>
             <p className="text-xl font-bold text-base-ink">{config.inkTarget.toLocaleString()}</p>
             <p className="mt-2 text-xs text-muted-foreground">Current Ink</p>
-            <p className="text-2xl font-bold">{story.phase === "bookstore" ? 0 : story.page.ink.toLocaleString()}</p>
+            <p className="text-2xl font-bold">{story.page.ink.toLocaleString()}</p>
           </div>
 
           <div className="rounded-lg border border-border bg-secondary/40 p-3">
@@ -524,7 +528,7 @@ function StoryPlay() {
                 <p className="text-[0.65rem] font-bold uppercase tracking-wide text-base-ink">Base</p>
                 <p className="flex items-baseline gap-1 text-3xl font-bold text-base-ink">
                   <span key={`base-${anim.base}`} className={cn("inline-block", anim.running && "anim-score-pop")}>
-                    {anim.running ? anim.base : story.phase === "bookstore" ? 0 : "—"}
+                    {anim.running ? anim.base : "—"}
                   </span>
                   {anim.baseDelta && <span className="text-base font-bold text-base-ink/80">{anim.baseDelta}</span>}
                 </p>
@@ -534,7 +538,7 @@ function StoryPlay() {
                 <p className="text-[0.65rem] font-bold uppercase tracking-wide text-mult-ink">Mult</p>
                 <p className="flex items-baseline gap-1 text-3xl font-bold text-mult-ink">
                   <span key={`mult-${anim.mult}`} className={cn("inline-block", anim.running && "anim-score-pop")}>
-                    {anim.running ? anim.mult : story.phase === "bookstore" ? 0 : "—"}
+                    {anim.running ? anim.mult : "—"}
                   </span>
                   {anim.multDelta && <span className="text-base font-bold text-mult-ink/80">{anim.multDelta}</span>}
                 </p>
@@ -562,12 +566,8 @@ function StoryPlay() {
           <div className="flex items-center justify-center gap-2 rounded-md bg-gold/15 px-2 py-2 text-3xl font-bold text-gold">
             <Coins className="h-7 w-7" /> {story.coins}
           </div>
-
-          {story.phase === "bookstore" ? (
-            <Button size="lg" className="w-full" onClick={() => setStory(continueToNextPage(story))}>
-              Continue to Next Page <ArrowRight className="ml-1 h-4 w-4" />
-            </Button>
-          ) : null}
+          </>
+          )}
 
           <div className="mt-auto flex gap-1.5">
             <Button variant="outline" size="sm" className="flex-1" onClick={() => setDialog({ kind: "run-info" })}>
@@ -600,7 +600,7 @@ function StoryPlay() {
         {/* Center — board or Bookstore */}
         <main className="flex min-w-0 flex-1 flex-col justify-center overflow-y-auto rounded-xl border border-border bg-card/30 p-3">
           {story.phase === "bookstore" ? (
-            <Bookstore state={story} onBuy={handleBuy} onContinue={() => setStory(continueToNextPage(story))} />
+            <Bookstore state={story} onBuy={handleBuy} />
           ) : (
             <StoryBoard
               size={config.size}
@@ -654,7 +654,7 @@ function StoryPlay() {
           />
           )}
         </div>
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className={cn("flex flex-wrap items-center gap-1.5", story.phase === "bookstore" && "hidden")}>
           <Button variant="outline" size="sm" onClick={shuffleRack} disabled={busy || story.phase !== "play"}>
             <Shuffle className="mr-1 h-4 w-4" /> Shuffle
           </Button>
