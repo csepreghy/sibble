@@ -212,7 +212,7 @@ export function Bookstore({ state, onBuy, compact }: BookstoreProps) {
               )}
             >
               <span className={cn("self-start text-[0.55rem] font-bold uppercase tracking-widest", cat.text)}>{cat.label}</span>
-              <OfferVisual offer={offer} state={state} small={compact} />
+              <OfferVisual offer={offer} state={state} small={!!compact} />
               <span className={cn("font-bold leading-tight", compact ? "line-clamp-2 text-xs" : "text-sm")}>{offerTitle(offer)}</span>
               <span className={cn("leading-tight text-muted-foreground", compact ? "line-clamp-1 text-[0.65rem]" : "line-clamp-2 text-[0.7rem]")}>{shortText(offer, state)}</span>
               <span className={cn("flex items-center gap-1 self-end rounded-full bg-gold/15 px-2 py-0.5 font-bold text-gold", compact ? "text-xs" : "text-sm", !affordable && "text-gold/60")}>
