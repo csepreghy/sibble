@@ -32,6 +32,7 @@ import {
   sellPen,
 } from "@/lib/story/engine";
 import { inspectPlacement } from "@/lib/story/preview";
+import { ScoreFlight, type ScoreFlightData } from "@/components/story/ScoreFlight";
 import { RoundScore, ScoreBoxes } from "@/components/story/ScoreDisplay";
 import { loadStory, saveStory } from "@/lib/story/storage";
 import { useStoryLayout } from "@/hooks/useStoryLayout";
@@ -132,6 +133,8 @@ function StoryPlay() {
     | null
   >(null);
   const cancelAnim = useRef(false);
+  const [flight, setFlight] = useState<ScoreFlightData | null>(null);
+  const flightId = useRef(0);
 
   // --- drag and drop (mirrors the multiplayer game) -------------------------
   type DragSource = { type: "rack"; tileId: string } | { type: "board"; index: number };
@@ -357,12 +360,12 @@ function StoryPlay() {
     }
 
     // Animate the scoring step by step, then commit the new state.
-    setAnim({ ...IDLE_ANIM, running: true });
+    let current = { ...IDLE_ANIM, running: true };
+    setAnim(current);
     const delay = () => new Promise((resolve) => setTimeout(resolve, STEP_MS));
     for (const event of result.score.events) {
       if (cancelAnim.current) return;
-      setAnim((current) => {
-        const next = { ...current, running: true };
+      const next = { ...current, running: true, activeIndex: null, activePenId: null, baseDelta: null, multDelta: null };
         switch (event.type) {
           case "word":
             next.activeWord = event.indices;
@@ -397,7 +400,7 @@ function StoryPlay() {
             break;
           case "mult-init":
             next.mult = event.value;
-            next.multDelta = null;
+            next.multDelta = `+${event.value}`;
             next.activeIndex = null;
             next.label = null;
             break;
@@ -408,7 +411,7 @@ function StoryPlay() {
             next.label = event.text;
             break;
           case "word-mult":
-            next.activeIndex = event.index;
+            next.activeIndex = null;
             next.multDelta = `×${event.factor}`;
             next.mult = event.runningMult;
             next.label = event.label;
@@ -421,10 +424,26 @@ function StoryPlay() {
             next.label = `${event.word}: ${event.ink} Ink`;
             break;
         }
-        return next;
-      });
+      const kind = next.base !== current.base && next.baseDelta ? "base" : next.mult !== current.mult && next.multDelta ? "mult" : null;
+      if (kind) {
+        const selectors = kind === "base" && next.activeIndex !== null ? [`[data-cell-index="${next.activeIndex}"]`] : (next.activeWord ?? []).map(index => `[data-cell-index="${index}"]`);
+        const rects = selectors.flatMap(selector => { const rect = document.querySelector(selector)?.getBoundingClientRect(); return rect ? [rect] : []; });
+        const boxes = [...document.querySelectorAll(`[data-score-box="${kind}"]`)];
+        const target = boxes.map(box => box.getBoundingClientRect()).find(rect => rect.width > 0 && rect.height > 0);
+        setAnim({ ...next, base: current.base, mult: current.mult, baseDelta: null, multDelta: null });
+        if (target && rects.length && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          const x = (Math.min(...rects.map(r => r.left)) + Math.max(...rects.map(r => r.right))) / 2;
+          const y = Math.min(...rects.map(r => r.top)) + 8;
+          setFlight({ id: ++flightId.current, kind, text: (kind === "base" ? next.baseDelta : next.multDelta) ?? "", x, y, dx: target.left + target.width / 2 - x, dy: target.top + target.height / 2 - y });
+          await new Promise(resolve => setTimeout(resolve, 580));
+          if (cancelAnim.current) return;
+        }
+        setFlight(null);
+      }
+      setAnim(next);
+      current = next;
       await delay();
-      setAnim((current) => ({ ...current, activePenId: null }));
+      setAnim(value => ({ ...value, activePenId: null }));
     }
     await delay();
 
@@ -510,7 +529,7 @@ function StoryPlay() {
           </DropdownMenu>
         </div>
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 text-xs">
-          <p className="min-w-0 truncate text-muted-foreground">Discards: <strong className="text-foreground">{story.page.discardsLeft}</strong></p>
+          <span />
           <span className="flex items-center gap-1 text-xl font-bold tabular-nums text-gold"><Coins className="h-4 w-4" />{story.coins}</span>
         </div>
         {story.phase !== "bookstore" && <RoundScore target={config.inkTarget} current={story.page.ink} />}
@@ -549,7 +568,7 @@ function StoryPlay() {
           <RoundScore target={config.inkTarget} current={story.page.ink} />
           <ScoreBoxes base={busy ? anim.base : 0} mult={busy ? anim.mult : 0} running={busy} baseDelta={anim.baseDelta} multDelta={anim.multDelta} />
           <p className="min-h-4 text-center text-xs text-muted-foreground">{anim.label ?? ""}</p>
-          <div className="text-center text-sm text-muted-foreground">Discards <strong className="text-lg text-foreground">{story.page.discardsLeft}</strong></div>
+
 
           <div className="flex items-center justify-center gap-2 rounded-md bg-gold/15 px-2 py-2 text-3xl font-bold text-gold">
             <Coins className="h-7 w-7" /> {story.coins}
@@ -610,7 +629,7 @@ function StoryPlay() {
             />
           )}
           {story.phase === "play" && <div className="story-board-status" aria-live="polite">
-            <span className="shrink-0 text-base font-semibold">Words left <strong className="ml-1 text-2xl tabular-nums text-base-ink">{story.page.wordsLeft}</strong></span>
+            <div className="story-remaining-counters"><span>Words left <strong className="text-xl tabular-nums text-base-ink">{story.page.wordsLeft}</strong></span><span>Discards left <strong className="text-xl tabular-nums text-mult-ink">{story.page.discardsLeft}</strong></span></div>
             {!busy && preview && <span className={cn("story-preview-tag", preview.error ? "bg-destructive/15 text-destructive" : "bg-story-valid/15 text-story-valid")} title={preview.error ?? "Ink before Pens"}>
               {preview.error ? <><X className="h-4 w-4 shrink-0" /><span className="truncate">{preview.error}</span></> : <><span>+{preview.ink?.toLocaleString()}</span><Droplet className="h-4 w-4" aria-label="Ink before Pens" /></>}
             </span>}
@@ -740,6 +759,7 @@ function StoryPlay() {
         />
       ) : null}
 
+      <ScoreFlight flight={flight} />
       {drag ? (
         <div
           className="pointer-events-none fixed z-50"
