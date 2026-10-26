@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from "react";
 import { LETTER_VALUES } from "@/lib/scrabble";
 import type { Enhancement, StoryTile } from "@/lib/story/types";
 import { cn } from "@/lib/utils";
@@ -38,8 +39,30 @@ export function StoryRack({
   capacity = 7,
   gloss = true,
 }: StoryRackProps) {
+  const rackRef = useRef<HTMLDivElement>(null);
+  const positions = useRef(new Map<string, number>());
+  const order = tiles.map((t) => t.id).join(",");
+  useLayoutEffect(() => {
+    const root = rackRef.current;
+    if (!root) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const next = new Map<string, number>();
+    root.querySelectorAll<HTMLElement>("[data-rack-tile-id]").forEach((el) => {
+      const id = el.dataset.rackTileId!;
+      const left = el.offsetLeft;
+      next.set(id, left);
+      const prev = positions.current.get(id);
+      if (!reduce && prev !== undefined && prev !== left) {
+        el.animate(
+          [{ transform: `translateX(${prev - left}px)` }, { transform: "translateX(0)" }],
+          { duration: 380, easing: "cubic-bezier(0.2,0.8,0.2,1)" },
+        );
+      }
+    });
+    positions.current = next;
+  }, [order]);
   return (
-    <div aria-label="Letter rack" className={cn("flex items-center justify-center gap-1 rounded-xl border border-border bg-secondary/60 p-1.5 sm:gap-1.5 sm:p-2", compact && "story-rack")} style={compact ? { ["--rack-capacity" as string]: capacity } : undefined}>
+    <div ref={rackRef} aria-label="Letter rack" className={cn("relative flex items-center justify-center gap-1 rounded-xl border border-border bg-secondary/60 p-1.5 sm:gap-1.5 sm:p-2", compact && "story-rack")} style={compact ? { ["--rack-capacity" as string]: capacity } : undefined}>
       {tiles.length === 0 ? (
         <span className="px-2 py-3 text-sm text-muted-foreground">No tiles left</span>
       ) : (
@@ -49,6 +72,7 @@ export function StoryRack({
             type="button"
             variant="ghost"
             data-draggable-tile="true"
+            data-rack-tile-id={tile.id}
             style={{ touchAction: "none" }}
             onClick={() => onSelect(tile.id)}
             onPointerDown={(event) => onTilePointerDown?.(tile.id, event)}
