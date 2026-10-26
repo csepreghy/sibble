@@ -730,7 +730,7 @@ function StoryPlay() {
             <div className="story-remaining-counters"><span>Words left <strong className="text-xl tabular-nums text-base-ink">{story.page.wordsLeft}</strong></span><span>Discards left <strong className="text-xl tabular-nums text-mult-ink">{story.page.discardsLeft}</strong></span></div>
             {!busy && preview && <span className="story-preview-tag-slot">
               <span className={cn("story-preview-tag", preview.error ? "bg-destructive/15 text-destructive" : "bg-story-valid/15 text-story-valid")} title={preview.error ?? "Ink before Pens"}>
-                {preview.error ? <><X className="h-4 w-4 shrink-0" /><span className="truncate">{preview.error}</span></> : <><span>+{preview.ink?.toLocaleString()}</span><Droplet className="h-4 w-4" aria-label="Ink before Pens" /></>}
+                {preview.error ? <><X className="h-4 w-4 shrink-0" /><span className="truncate">{preview.error}</span></> : <><span>+{preview.ink?.toLocaleString()}</span><Droplet className="-mr-[2px] h-4 w-4" aria-label="Ink before Pens" /></>}
               </span>
             </span>}
           </div>}
