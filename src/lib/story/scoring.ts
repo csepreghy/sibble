@@ -6,6 +6,14 @@ import { LETTER_VALUES } from "@/lib/scrabble";
 import type { StoryWord } from "./placement";
 import type { BoardTile, PageState, PendingPlacement, PenInstance, PlotTwist, StoryTile } from "./types";
 
+/** Accelerating starting Mult by word length (before purchased upgrades). */
+const WORD_LENGTH_MULT: Record<number, number> = {
+  2: 2, 3: 3, 4: 5, 5: 9, 6: 16, 7: 28, 8: 45, 9: 70, 10: 105, 11: 154, 12: 220, 13: 308, 14: 420, 15: 560,
+};
+export const baseWordMult = (length: number) => WORD_LENGTH_MULT[length] ?? length;
+export const wordLengthMult = (length: number, upgrades: Record<number, number>) =>
+  baseWordMult(length) + (upgrades[length] ?? 0);
+
 export const VOWELS = new Set(["A", "E", "I", "O", "U"]);
 
 export type ScoreEvent =
@@ -139,23 +147,24 @@ export function scorePlacement(args: {
       });
     }
 
-    // DL/TL: permanent tile enhancement + newly activated board square.
+    // DL/TL: permanent tile enhancement × newly activated board square (multiplicative).
     for (const letter of letters) {
       const factors: { label: string; factor: number }[] = [];
       if (letter.enhancement === "DL") factors.push({ label: "DL tile", factor: 2 });
       if (letter.enhancement === "TL") factors.push({ label: "TL tile", factor: 3 });
       if (letter.boardPremium === "DL") factors.push({ label: "DL square", factor: 2 });
       if (letter.boardPremium === "TL") factors.push({ label: "TL square", factor: 3 });
+      const silenced =
+        !letter.blank &&
+        ((plotTwist === "silent-vowels" && VOWELS.has(letter.letter)) ||
+          (plotTwist === "silent-consonants" && !VOWELS.has(letter.letter)));
+      const raw = letter.blank
+        ? 0
+        : (LETTER_VALUES[letter.letter] ?? 0) + (letterUpgrades[letter.letter] ?? 0);
+      let current = silenced ? 0 : raw;
       for (const { label, factor } of factors) {
-        const silenced =
-          !letter.blank &&
-          ((plotTwist === "silent-vowels" && VOWELS.has(letter.letter)) ||
-            (plotTwist === "silent-consonants" && !VOWELS.has(letter.letter)));
-        const raw = letter.blank
-          ? 0
-          : (LETTER_VALUES[letter.letter] ?? 0) + (letterUpgrades[letter.letter] ?? 0);
-        const contribution = silenced ? 0 : raw * (factor - 1);
-        base += contribution;
+        base += current * (factor - 1);
+        current *= factor;
         events.push({ type: "letter-mult", index: letter.index, label, factor, runningBase: base });
       }
     }
@@ -213,7 +222,7 @@ export function scorePlacement(args: {
     }
 
     // --- Mult -----------------------------------------------------------
-    let mult = length + (wordLengthUpgrades[length] ?? 0);
+    let mult = wordLengthMult(length, wordLengthUpgrades);
     events.push({ type: "mult-init", value: mult });
 
     for (let run = 0; run < penRuns; run++) {
@@ -256,6 +265,19 @@ export function scorePlacement(args: {
       for (const { label, factor } of factors) {
         mult *= factor;
         events.push({ type: "word-mult", index: letter.index, label, factor, runningMult: mult });
+      }
+    }
+
+    // Echo Chamber: reused letters' DW/TW enhancements trigger again (never board squares).
+    if (hasPen("echo-chamber")) {
+      for (let run = 0; run < penRuns; run++) {
+        for (const letter of letters) {
+          if (letter.isNew) continue;
+          const factor = letter.enhancement === "DW" ? 2 : letter.enhancement === "TW" ? 3 : 0;
+          if (!factor) continue;
+          mult *= factor;
+          events.push({ type: "pen-mult", penId: "echo-chamber", text: `×${factor} Mult`, runningMult: mult });
+        }
       }
     }
 

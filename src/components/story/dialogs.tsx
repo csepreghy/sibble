@@ -1,3 +1,4 @@
+import { wordLengthMult } from "@/lib/story/scoring";
 import { Coins, Home, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
@@ -17,7 +18,7 @@ import { PenCurrentBonus, PenDescription } from "./PenDescription";
 // --- Page intro ----------------------------------------------------------
 
 const FIRST_PAGE_TIPS = [
-  "Create a word through the centre star.",
+  "Create a word through the centre star — it's the mandatory starting square and gives no scoring bonus.",
   "Letters add Base Ink. Longer words increase Mult.",
   "Base × Mult = Ink. Reach the target before you run out of words.",
   "You can discard tiles to draw replacements.",
@@ -124,7 +125,7 @@ export function RunInfoDialog({ state, onClose }: { state: StoryState; onClose: 
               <div className="flex flex-wrap gap-1.5">
                 {upgradedLengths.map((length) => (
                   <span key={length} className="rounded-md bg-secondary px-2 py-1 font-semibold">
-                    {length} letters <span className="text-mult-ink">×{length + state.wordLengthUpgrades[length]!}</span>
+                    {length} letters <span className="text-mult-ink">×{wordLengthMult(length, state.wordLengthUpgrades)}</span>
                   </span>
                 ))}
               </div>

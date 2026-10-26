@@ -27,3 +27,4 @@
 - Story completed-page reviews use immutable board, tile, upgrade and scored-word snapshots captured at completion in the per-device run; reviewing a snapshot must never mutate the live page or its pending placements.
 - Story statistics live in `src/lib/story/stats.ts`, persisted per device in localStorage (`sibble:story:stats:v1`) and recorded from the play route after commits — never in the database, never recalculated from presentation state.
 - App navigation is mode-aware: `AppNav` picks Sibble vs Story Mode from the path, shows each mode's Home/History/Statistics tabs plus a primary start button, and only offers the theme selector in Sibble mode.
+- Story word-length starting Mult comes only from `wordLengthMult()` in `src/lib/story/scoring.ts`; UI must never assume Mult equals word length, so balance changes stay in one table.

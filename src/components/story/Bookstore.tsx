@@ -1,3 +1,4 @@
+import { wordLengthMult } from "@/lib/story/scoring";
 import { ArrowRight, CheckCircle2, Coins, Menu, Sparkles, Star } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { LETTER_VALUES } from "@/lib/scrabble";
@@ -72,7 +73,7 @@ function letterBase(offer: Extract<Offer, { kind: "letter" }>, state: StoryState
   return (LETTER_VALUES[offer.letter] ?? 0) + (state.letterUpgrades[offer.letter] ?? 0);
 }
 function lengthMult(offer: Extract<Offer, { kind: "word-length" }>, state: StoryState) {
-  return offer.length + (state.wordLengthUpgrades[offer.length] ?? 0);
+  return wordLengthMult(offer.length, state.wordLengthUpgrades);
 }
 
 function shortText(offer: Offer, state: StoryState): ReactNode {

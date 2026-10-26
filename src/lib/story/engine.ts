@@ -193,7 +193,13 @@ export function discardTiles(state: StoryState, tileIds: string[]): StoryState |
 
 // --- Bookstore -----------------------------------------------------------
 
-const ENHANCEMENT_PRICES = { DL: 4, TL: 6, DW: 7, TW: 10 } as const;
+const ENHANCEMENT_PRICES = { DL: 6, TL: 9, DW: 12, TW: 16 } as const;
+
+/** Longest word-length upgrade offered, based on the next Page's board. */
+export function maxOfferLength(pageIndex: number): number {
+  const size = PAGES[Math.min(pageIndex + 1, LAST_PAGE_INDEX)]!.size;
+  return size <= 9 ? Math.min(8, size) : size;
+}
 
 function pickRandom<T>(items: T[], count: number): T[] {
   return shuffle(items).slice(0, count);
@@ -205,17 +211,17 @@ export function generateOffers(state: Pick<StoryState, "tiles" | "pens" | "upgra
 
   // Letter base upgrades: favour letters actually in the tile collection.
   const letters = [...new Set(state.tiles.filter((t) => t.letter !== "?").map((t) => t.letter))];
+  // One common letter, then any letter (all 26 eligible) except the first.
   const common = letters.filter((l) => "AEIOULNRST".includes(l));
-  const rare = letters.filter((l) => !common.includes(l));
-  const letterPicks = [...pickRandom(common, 2), ...pickRandom(rare, 1)].slice(0, 2);
+  const first = pickRandom(common.length ? common : letters, 1)[0];
+  const second = pickRandom(letters.filter((l) => l !== first), 1)[0];
+  const letterPicks = [first, second].filter((l): l is string => !!l);
   for (const letter of letterPicks) offers.push({ kind: "letter", letter, price: 3, sold: false });
 
   const enhancement = pickRandom(["DL", "TL", "DW", "TW"] as const, 1)[0]!;
   offers.push({ kind: "enhancement", enhancement, price: ENHANCEMENT_PRICES[enhancement], sold: false });
 
-  const size = PAGES[state.pageIndex]!.size;
-  const maxLength = Math.min(8, size);
-  const length = 2 + Math.floor(Math.random() * (maxLength - 1));
+  const length = 2 + Math.floor(Math.random() * (maxOfferLength(state.pageIndex) - 1));
   offers.push({ kind: "word-length", length, price: 5, sold: false });
 
   const ownedPens = new Set(state.pens.map((pen) => pen.penId));
