@@ -210,6 +210,82 @@ function StoryPlay() {
     setSelectedRackId(null);
   }
 
+  function beginDrag(event: React.PointerEvent, tileId: string, letter: string, blank: boolean, source: DragSource) {
+    if (busy || story?.phase !== "play" || discardMode) return;
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    dragStart.current = { x: event.clientX, y: event.clientY };
+    movedRef.current = false;
+
+    const onMove = (moveEvent: PointerEvent) => {
+      const origin = dragStart.current;
+      if (!origin) return;
+      if (!movedRef.current) {
+        if (Math.hypot(moveEvent.clientX - origin.x, moveEvent.clientY - origin.y) < 6) return;
+        movedRef.current = true;
+      }
+      moveEvent.preventDefault();
+      setDrag({ tileId, letter, blank, source, x: moveEvent.clientX, y: moveEvent.clientY });
+      setHoverIndex(cellUnder(moveEvent.clientX, moveEvent.clientY));
+    };
+
+    const onUp = (upEvent: PointerEvent) => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+      const wasDragging = movedRef.current;
+      dragStart.current = null;
+      movedRef.current = false;
+      setDrag(null);
+      setHoverIndex(null);
+      if (wasDragging) dropTile(tileId, letter, blank, source, upEvent.clientX, upEvent.clientY);
+    };
+
+    window.addEventListener("pointermove", onMove, { passive: false });
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+  }
+
+  function dropTile(tileId: string, letter: string, blank: boolean, source: DragSource, x: number, y: number) {
+    if (!story || story.phase !== "play") return;
+    const target = cellUnder(x, y);
+    const withoutSource =
+      source.type === "board" ? pending.filter((item) => item.index !== source.index) : pending;
+
+    if (target === null) {
+      // Dropped off the board: a pending tile goes back to the rack.
+      if (source.type === "board") setPending(withoutSource);
+      return;
+    }
+    if (story.page.board[target] || withoutSource.some((item) => item.index === target)) return;
+
+    if (source.type === "board") {
+      setPending([...withoutSource, { index: target, tileId, letter, blank }]);
+      return;
+    }
+
+    if (blank) {
+      setDialog({ kind: "blank", index: target, tileId });
+      return;
+    }
+    setPending([...pending, { index: target, tileId, letter, blank: false }]);
+    setSelectedRackId(null);
+  }
+
+  function handleRackPointerDown(tileId: string, event: React.PointerEvent) {
+    const tile = tileById.get(tileId);
+    if (!tile) return;
+    beginDrag(event, tile.id, tile.letter, tile.letter === "?", { type: "rack", tileId });
+  }
+
+  function handleBoardTilePointerDown(index: number, event: React.PointerEvent) {
+    const placement = pending.find((item) => item.index === index);
+    if (!placement) return;
+    beginDrag(event, placement.tileId, placement.letter, placement.blank, { type: "board", index });
+  }
+
+  const draggingRackId = drag?.source.type === "rack" ? drag.source.tileId : null;
+  const draggingBoardIndex = drag?.source.type === "board" ? drag.source.index : null;
+
   function handleRackSelect(tileId: string) {
     if (busy || !story || story.phase !== "play") return;
     if (discardMode) {
