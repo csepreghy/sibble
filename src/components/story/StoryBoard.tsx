@@ -51,7 +51,10 @@ export function StoryBoard({
   activeIndex,
   activeWord,
   disabled,
+  hoverIndex,
+  draggingIndex,
   onCellClick,
+  onTilePointerDown,
 }: StoryBoardProps) {
   const pendingMap = new Map(pending.map((p) => [p.index, p]));
   const tileById = new Map(tiles.map((t) => [t.id, t]));
@@ -116,7 +119,10 @@ export function StoryBoard({
       pinch.current = { distance: Math.hypot(a!.x - b!.x, a!.y - b!.y) };
       pan.current = null;
     } else if (pointers.current.size === 1 && viewRef.current.zoom > 1) {
-      pan.current = { x: event.clientX, y: event.clientY, offset: viewRef.current.offset };
+      const target = event.target as HTMLElement;
+      if (!target.closest("[data-draggable-tile]")) {
+        pan.current = { x: event.clientX, y: event.clientY, offset: viewRef.current.offset };
+      }
     }
   }
 
