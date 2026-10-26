@@ -576,7 +576,10 @@ function StoryPlay() {
               activeIndex={anim.activeIndex}
               activeWord={anim.activeWord}
               disabled={busy || story.phase !== "play"}
+              hoverIndex={hoverIndex}
+              draggingIndex={draggingBoardIndex}
               onCellClick={handleCellClick}
+              onTilePointerDown={handleBoardTilePointerDown}
             />
           )}
         </main>
@@ -599,7 +602,9 @@ function StoryPlay() {
             discardMode={discardMode}
             discardSelection={discardSelection}
             letterUpgrades={story.letterUpgrades}
+            draggingId={draggingRackId}
             onSelect={handleRackSelect}
+            onTilePointerDown={handleRackPointerDown}
           />
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
