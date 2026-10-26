@@ -68,7 +68,7 @@ export function StoryRack({
       if (!reduce && prev !== undefined && prev !== left) {
         el.animate(
           [{ transform: `translateX(${prev - left}px)` }, { transform: "translateX(0)" }],
-          { duration: 380, easing: "cubic-bezier(0.2,0.8,0.2,1)" },
+          { duration: 300, easing: "cubic-bezier(0.2,0.8,0.2,1)" },
         );
       }
     });
@@ -117,13 +117,14 @@ export function StoryRack({
         const sy = 1 + remaining * (from.height / to.height - 1);
         return { transform: `translate(${x}px, ${y}px) scale(${sx}, ${sy})`, opacity: 1, offset: t };
       });
-      const animation = clone.animate(keyframes, { duration: 660, easing: "cubic-bezier(.3,.1,.5,1)", fill: "both" });
+      // Fixed timing: the rack-return flight ignores the animation-speed setting.
+      const animation = clone.animate(keyframes, { duration: 420, easing: "cubic-bezier(.3,.1,.5,1)", fill: "both" });
       flights.current.set(returning.tileId, { clone, animation });
       animation.finished.then(() => {
         clone.remove();
         flights.current.delete(returning.tileId);
         returnEnd.current?.(returning.tileId);
-        target.animate([{ transform: "scale(1.12)" }, { transform: "scale(1)" }], { duration: 240, easing: "ease-out" });
+        target.animate([{ transform: "scale(1.12)" }, { transform: "scale(1)" }], { duration: 180, easing: "ease-out" });
       }).catch(() => {});
     }
   }, [returningTiles]);
