@@ -6,12 +6,14 @@ import type { PlayResult } from "./engine";
 
 function completeFirstPage(): PlayResult {
   const state = newStory();
-  state.page.rack = ["C-0", "A-0", "T-0"];
+  state.page.rack = ["S-0", "T-0", "A-0", "R-0", "E-0"];
   const result = playPlacement(state, [
-    { index: 11, tileId: "C-0", letter: "C", blank: false },
+    { index: 10, tileId: "S-0", letter: "S", blank: false },
+    { index: 11, tileId: "T-0", letter: "T", blank: false },
     { index: 12, tileId: "A-0", letter: "A", blank: false },
-    { index: 13, tileId: "T-0", letter: "T", blank: false },
-  ], word => word === "CAT");
+    { index: 13, tileId: "R-0", letter: "R", blank: false },
+    { index: 14, tileId: "E-0", letter: "E", blank: false },
+  ], word => word === "STARE");
   if ("error" in result) throw new Error(result.error);
   return result;
 }
@@ -22,11 +24,11 @@ test("completed pages preserve the board, played words and all four page stats",
   assert.ok(page);
   assert.equal(page.pageIndex, 0);
   assert.equal(page.board[12]?.letter, "A");
-  assert.deepEqual(page.playedWords, [{ word: "CAT", base: 5, mult: 6, ink: 30, move: 1 }]);
-  assert.equal(page.ink, 30);
+  assert.deepEqual(page.playedWords, [{ word: "STARE", base: 5, mult: 9, ink: 45, move: 1 }]);
+  assert.equal(page.ink, 45);
   assert.equal(page.words, 1);
-  assert.equal(page.bestWordInk, 30);
-  assert.equal(page.coins, 20);
+  assert.equal(page.bestWordInk, 45);
+  assert.equal(page.coins, 16);
 });
 
 test("page review survives next page and future upgrades without changing its original board", () => {
@@ -48,7 +50,7 @@ test("older saves recover a still-available completed page, never invent earlier
   delete state.completedPages;
   const restored = restorePageHistory(state);
   assert.equal(restored.completedPages?.length, 1);
-  assert.equal(restored.completedPages?.[0]?.ink, 30);
+  assert.equal(restored.completedPages?.[0]?.ink, 45);
   assert.equal(restorePageHistory(restored).completedPages?.length, 1);
   delete state.completedPages;
   const playing = continueToNextPage(state);
