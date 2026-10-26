@@ -25,3 +25,9 @@ Source spec: uploaded `Sibble_-_Singleplayer_Story_Mode_pasted.md`. Multiplayer 
 - [x] Remove pending rack tiles and prevent duplicate use; verify return/drag/scoring (8 tests pass; signed-in drag/tap placement and rack return checked).
 - [x] Shop-style glowing owned Pen inspector without purchase price (shared detail shell, verified after opening animation).
 - [x] Whole-word validation outlines and side-by-side glossy pink/purple Ink containers (phone, short phone and desktop verified; scoring still previews 8 and commits 16 Ink with the Pen).
+
+## Mobile Bookstore layout correction
+- [x] Remove gameplay-only elements from compact Bookstore (Base/Mult boxes, score caption, Play/Shuffle/Discard/Bag, words/discards counters).
+- [x] Compact header (Chapter/Page Complete, title, gold coins, settings), horizontal Pen row preserved.
+- [x] Compact ~123px two-column shop cards (small visual, one-line effect, price bottom-right); decorative SIBBLE rack above Continue, hidden on short screens; only the offer grid may scroll.
+- [x] Verify at 393×852 and 393×664: no outer scroll, no nested scrollbars, no overlap, purchase flow intact (7→6 offers, coins deducted).

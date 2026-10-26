@@ -128,8 +128,8 @@ function fullText(offer: Offer, state: StoryState): string {
   }
 }
 
-function OfferVisual({ offer, state, large }: { offer: Offer; state: StoryState; large?: boolean }) {
-  const box = large ? "h-16 w-16" : "h-11 w-11";
+function OfferVisual({ offer, state, large, small }: { offer: Offer; state: StoryState; large?: boolean; small?: boolean }) {
+  const box = large ? "h-16 w-16" : small ? "h-9 w-9" : "h-11 w-11";
   switch (offer.kind) {
     case "letter":
       return (
@@ -155,14 +155,14 @@ function OfferVisual({ offer, state, large }: { offer: Offer; state: StoryState;
       const Icon = penIcon(offer.penId);
       return (
         <span className={cn("flex items-center justify-center rounded-full border border-shop-pen/50 bg-shop-pen/15", box)}>
-          <Icon className={cn("text-shop-pen", large ? "h-8 w-8" : "h-6 w-6")} />
+          <Icon className={cn("text-shop-pen", large ? "h-8 w-8" : small ? "h-5 w-5" : "h-6 w-6")} />
         </span>
       );
     }
     case "upgrade":
       return (
-        <span className={cn("flex items-center justify-center rounded-md border border-shop-upgrade/50 bg-shop-upgrade/15 rotate-45", large ? "h-12 w-12" : "h-9 w-9")}>
-          <Star className={cn("-rotate-45 text-shop-upgrade", large ? "h-6 w-6" : "h-4 w-4")} />
+        <span className={cn("flex items-center justify-center rounded-md border border-shop-upgrade/50 bg-shop-upgrade/15 rotate-45", large ? "h-12 w-12" : small ? "h-7 w-7" : "h-9 w-9")}>
+          <Star className={cn("-rotate-45 text-shop-upgrade", large ? "h-6 w-6" : small ? "h-3.5 w-3.5" : "h-4 w-4")} />
         </span>
       );
   }
@@ -206,15 +206,16 @@ export function Bookstore({ state, onBuy, compact }: BookstoreProps) {
               onClick={() => setInspect(index)}
               style={{ ["--glow" as string]: glowVar(offer) }}
               className={cn(
-                "shop-card mb-1 flex h-auto aspect-square flex-col items-center justify-between gap-1 whitespace-normal rounded-lg border-2 p-2 text-center",
+                "shop-card mb-1 flex h-auto flex-col items-center justify-between whitespace-normal rounded-lg border-2 text-center",
+                compact ? "gap-0.5 p-1.5" : "aspect-square gap-1 p-2",
                 !affordable && "opacity-70",
               )}
             >
               <span className={cn("self-start text-[0.55rem] font-bold uppercase tracking-widest", cat.text)}>{cat.label}</span>
-              <OfferVisual offer={offer} state={state} />
-              <span className="text-sm font-bold leading-tight">{offerTitle(offer)}</span>
-              <span className="line-clamp-2 text-[0.7rem] leading-tight text-muted-foreground">{shortText(offer, state)}</span>
-              <span className={cn("flex items-center gap-1 self-end rounded-full bg-gold/15 px-2 py-0.5 text-sm font-bold text-gold", !affordable && "text-gold/60")}>
+              <OfferVisual offer={offer} state={state} small={!!compact} />
+              <span className={cn("font-bold leading-tight", compact ? "line-clamp-2 text-xs" : "text-sm")}>{offerTitle(offer)}</span>
+              <span className={cn("leading-tight text-muted-foreground", compact ? "line-clamp-1 text-[0.65rem]" : "line-clamp-2 text-[0.7rem]")}>{shortText(offer, state)}</span>
+              <span className={cn("flex items-center gap-1 self-end rounded-full bg-gold/15 px-2 py-0.5 font-bold text-gold", compact ? "text-xs" : "text-sm", !affordable && "text-gold/60")}>
                 <Coins className="h-3.5 w-3.5" /> {price}
               </span>
             </Button>
