@@ -4,6 +4,7 @@ import { BookOpen, Coins, Feather, Play, Sparkles } from "lucide-react";
 import { newStory } from "@/lib/story/engine";
 import { loadStory, saveStory } from "@/lib/story/storage";
 import { AppNav } from "@/components/AppNav";
+import { useStoryTheme } from "@/hooks/useStoryTheme";
 import { BrandLogo } from "@/components/BrandLogo";
 import { Button } from "@/components/ui/button";
 
@@ -29,6 +30,7 @@ export const Route = createFileRoute("/_authenticated/story")({
 });
 
 function StoryIntro() {
+  useStoryTheme();
   const navigate = useNavigate();
   const [saved] = useState(() => loadStory());
 

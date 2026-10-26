@@ -16,6 +16,7 @@ import {
   Sparkles,
   Trash2,
   Settings,
+  Gauge,
   Smartphone,
 } from "lucide-react";
 import { loadWordList } from "@/lib/words";
@@ -36,6 +37,8 @@ import { PenPurchaseFlight, type PenPurchaseFlightData } from "@/components/stor
 import { RoundScore, ScoreBoxes, impactBox } from "@/components/story/ScoreDisplay";
 import { loadStory, saveStory } from "@/lib/story/storage";
 import { useStoryLayout } from "@/hooks/useStoryLayout";
+import { useStoryTheme } from "@/hooks/useStoryTheme";
+import { getStorySpeed, nextStorySpeed, scaled, setStorySpeed } from "@/lib/story/speed";
 import { penSlots } from "@/lib/story/upgrades";
 import type { PendingPlacement, PenInstance, StoryState, StoryTile } from "@/lib/story/types";
 import { Button } from "@/components/ui/button";
@@ -123,6 +126,10 @@ function StoryPlay() {
   const [pending, setPending] = useState<PendingPlacement[]>([]);
   const [selectedRackId, setSelectedRackId] = useState<string | null>(null);
   const [discardMode, setDiscardMode] = useState(false);
+  useStoryTheme();
+  const [speed, setSpeed] = useState(1);
+  useEffect(() => setSpeed(getStorySpeed()), []);
+  const cycleSpeed = () => { const v = nextStorySpeed(speed); setStorySpeed(v); setSpeed(v); };
   const [discardSelection, setDiscardSelection] = useState<string[]>([]);
   const discardOutRef = useRef(false);
   const [anim, setAnim] = useState<AnimState>(IDLE_ANIM);
@@ -615,6 +622,7 @@ function StoryPlay() {
               <DropdownMenuItem onClick={() => navigate({ to: "/lobby" })}><Home /> Return to main menu</DropdownMenuItem>
               <DropdownMenuItem onClick={startNewStory}><Sparkles /> Start new Story</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setDialog({ kind: "run-info" })}><Info /> Run Info</DropdownMenuItem>
+              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); cycleSpeed(); }}><Gauge /> Animation speed: {speed}×</DropdownMenuItem>
               <DropdownMenuItem className="text-destructive" onClick={() => { if (window.confirm("End this Story? Your run will be over.")) setStory({ ...story, phase: "defeat" }); }}><Trash2 /> End this Story</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -678,6 +686,9 @@ function StoryPlay() {
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={startNewStory}>
                   <Sparkles className="mr-2 h-4 w-4" /> New Story
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={(e) => { e.preventDefault(); cycleSpeed(); }}>
+                  <Gauge className="mr-2 h-4 w-4" /> Animation speed: {speed}×
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => { if (window.confirm("End this Story? Your run will be over.")) setStory({ ...story, phase: "defeat" }); }}
