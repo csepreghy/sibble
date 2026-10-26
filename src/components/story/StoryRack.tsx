@@ -89,6 +89,7 @@ export function StoryRack({
       const to = target.getBoundingClientRect();
       const from = returning.from;
       const clone = target.cloneNode(true) as HTMLElement;
+      clone.removeAttribute("disabled");
       clone.removeAttribute("data-rack-tile-id");
       clone.removeAttribute("data-draggable-tile");
       clone.setAttribute("aria-hidden", "true");

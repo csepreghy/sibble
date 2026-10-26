@@ -260,7 +260,7 @@ export function StoryBoard({
                     </>
                   ) : index === center ? (
                     <img
-                      src="/icon-512.png"
+                      src="/icon-board.png"
                       alt=""
                       aria-hidden="true"
                       draggable={false}
