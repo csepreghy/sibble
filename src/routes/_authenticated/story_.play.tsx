@@ -34,7 +34,7 @@ import {
 import { inspectPlacement } from "@/lib/story/preview";
 import { ScoreFlight, type ScoreFlightData } from "@/components/story/ScoreFlight";
 import { PenPurchaseFlight, type PenPurchaseFlightData } from "@/components/story/PenPurchaseFlight";
-import { RoundScore, ScoreBoxes } from "@/components/story/ScoreDisplay";
+import { RoundScore, ScoreBoxes, impactBox } from "@/components/story/ScoreDisplay";
 import { loadStory, saveStory } from "@/lib/story/storage";
 import { useStoryLayout } from "@/hooks/useStoryLayout";
 import { ThemeSelector } from "@/components/ThemeSelector";
@@ -92,6 +92,10 @@ interface AnimState {
   activePenId: string | null;
   activeWord: number[] | null;
   label: string | null;
+  baseHidden?: boolean;
+  multHidden?: boolean;
+  popKey?: number;
+  roundScore?: number | null;
 }
 
 const IDLE_ANIM: AnimState = {
@@ -370,6 +374,21 @@ function StoryPlay() {
     let current = { ...IDLE_ANIM, running: true };
     setAnim(current);
     const delay = () => new Promise((resolve) => setTimeout(resolve, STEP_MS));
+    const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+    const visible = (selector: string) => [...document.querySelectorAll(selector)].find(el => el.getBoundingClientRect().width > 0);
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Fly a number from one score box into another (presentation only).
+    const flyBox = async (from: string, to: string, kind: "base" | "mult", text: string) => {
+      const a = visible(from)?.getBoundingClientRect();
+      const b = visible(to)?.getBoundingClientRect();
+      if (!a || !b || reduced) return;
+      const x = a.left + a.width / 2, y = a.top + a.height / 2;
+      setFlight({ id: ++flightId.current, kind, text, x, y, dx: b.left + b.width / 2 - x, dy: b.top + b.height / 2 - y });
+      await wait(500);
+      setFlight(null);
+    };
+    let roundShown = story.page.ink;
+    let popKey = 0;
     for (const event of result.score.events) {
       if (cancelAnim.current) return;
       const next: AnimState = { ...current, running: true, activeIndex: null, activePenId: null, baseDelta: null, multDelta: null };
@@ -450,6 +469,28 @@ function StoryPlay() {
       setAnim(next);
       current = next;
       await delay();
+      if (cancelAnim.current) return;
+      if (event.type === "result") {
+        // Mult -> Base: Base counts up to the word's Ink.
+        await flyBox('[data-score-box="mult"]', '[data-score-box="base"]', "mult", `×${event.mult.toLocaleString(undefined, { maximumFractionDigits: 1 })}`);
+        if (cancelAnim.current) return;
+        current = { ...current, multHidden: true, base: event.ink, baseDelta: `×${event.mult}`, activePenId: null };
+        setAnim(current);
+        await delay();
+        // Base -> Round score: purple box counts up.
+        await flyBox('[data-score-box="base"]', ".story-current-score", "base", event.ink.toLocaleString());
+        if (cancelAnim.current) return;
+        roundShown += event.ink;
+        current = { ...current, baseHidden: true, baseDelta: null, roundScore: roundShown };
+        setAnim(current);
+        const purple = visible(".story-current-score");
+        if (purple) impactBox(purple);
+        await delay();
+        // Empty boxes regrow their zeros.
+        current = { ...current, base: 0, mult: 0, baseHidden: false, multHidden: false, popKey: ++popKey };
+        setAnim(current);
+        await wait(300);
+      }
       setAnim(value => ({ ...value, activePenId: null }));
     }
     await delay();
@@ -562,8 +603,8 @@ function StoryPlay() {
           </DropdownMenu>
         </div>
         {story.phase !== "bookstore" && <>
-          <RoundScore target={config.inkTarget} current={story.page.ink} />
-          <ScoreBoxes base={busy ? anim.base : 0} mult={busy ? anim.mult : 0} running={busy} baseDelta={anim.baseDelta} multDelta={anim.multDelta} />
+          <RoundScore target={config.inkTarget} current={busy && anim.roundScore != null ? anim.roundScore : story.page.ink} running={busy} />
+          <ScoreBoxes base={busy ? anim.base : 0} mult={busy ? anim.mult : 0} running={busy} baseDelta={anim.baseDelta} multDelta={anim.multDelta} baseHidden={busy && anim.baseHidden} multHidden={busy && anim.multHidden} popKey={busy ? anim.popKey : 0} />
           <div className="story-score-caption text-xs text-muted-foreground">{anim.label ?? ""}</div>
         </>}
       </header>}
@@ -596,8 +637,8 @@ function StoryPlay() {
             </p>
           </div>
 
-          <RoundScore target={config.inkTarget} current={story.page.ink} />
-          <ScoreBoxes base={busy ? anim.base : 0} mult={busy ? anim.mult : 0} running={busy} baseDelta={anim.baseDelta} multDelta={anim.multDelta} />
+          <RoundScore target={config.inkTarget} current={busy && anim.roundScore != null ? anim.roundScore : story.page.ink} running={busy} />
+          <ScoreBoxes base={busy ? anim.base : 0} mult={busy ? anim.mult : 0} running={busy} baseDelta={anim.baseDelta} multDelta={anim.multDelta} baseHidden={busy && anim.baseHidden} multHidden={busy && anim.multHidden} popKey={busy ? anim.popKey : 0} />
           <p className="min-h-4 text-center text-xs text-muted-foreground">{anim.label ?? ""}</p>
 
 
