@@ -33,7 +33,10 @@ test("counting accelerates gradually and finishes at the exact authoritative tot
   assert.equal(totalCountProgress(0), 0);
   assert.equal(totalCountProgress(1), 1);
   const increments = [0.25, 0.5, 0.75, 1].map(p => totalCountProgress(p) - totalCountProgress(p - 0.25));
-  for (let i = 1; i < increments.length; i++) assert.ok(increments[i] > increments[i - 1]);
+  increments.forEach((increment, i) => {
+    const previous = increments[i - 1];
+    if (previous !== undefined) assert.ok(increment > previous);
+  });
   assert.equal(1000 * totalCountProgress(1), 1000);
 });
 
