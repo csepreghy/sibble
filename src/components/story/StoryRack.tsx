@@ -48,7 +48,7 @@ export function StoryRack({
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const next = new Map<string, number>();
     root.querySelectorAll<HTMLElement>("[data-rack-tile-id]").forEach((el) => {
-      const id = el.dataset.rackTileId!;
+      const id = el.dataset["rackTileId"]!;
       const left = el.offsetLeft;
       next.set(id, left);
       const prev = positions.current.get(id);
