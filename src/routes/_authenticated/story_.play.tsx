@@ -452,8 +452,8 @@ function StoryPlay() {
         }
       const kind = next.base !== current.base && next.baseDelta ? "base" : next.mult !== current.mult && next.multDelta ? "mult" : null;
       if (kind) {
-        const selectors = kind === "base" && next.activeIndex !== null ? [`[data-cell-index="${next.activeIndex}"]`] : (next.activeWord ?? []).map(index => `[data-cell-index="${index}"]`);
-        const rects = selectors.flatMap(selector => { const rect = document.querySelector(selector)?.getBoundingClientRect(); return rect ? [rect] : []; });
+        const selectors = next.activePenId ? [`[data-owned-pen="${next.activePenId}"]`] : kind === "base" && next.activeIndex !== null ? [`[data-cell-index="${next.activeIndex}"]`] : (next.activeWord ?? []).map(index => `[data-cell-index="${index}"]`);
+        const rects = selectors.flatMap(selector => { const rect = [...document.querySelectorAll(selector)].map(el => el.getBoundingClientRect()).find(r => r.width > 0); return rect ? [rect] : []; });
         const boxes = [...document.querySelectorAll(`[data-score-box="${kind}"]`)];
         const target = boxes.map(box => box.getBoundingClientRect()).find(rect => rect.width > 0 && rect.height > 0);
         setAnim({ ...next, base: current.base, mult: current.mult, baseDelta: null, multDelta: null });

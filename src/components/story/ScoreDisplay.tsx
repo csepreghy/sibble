@@ -15,7 +15,7 @@ export function impactBox(box: Element) {
     { transform: "translate(-2px,0) scale(1.11)", offset: 0.26 },
     { transform: "translate(0,0) scale(1)" },
   ], { duration: 380, easing: "cubic-bezier(.2,.7,.3,1)" });
-  box.animate([{ backgroundColor: "white", boxShadow: `0 0 28px ${color}` }, { backgroundColor: color, boxShadow: `0 0 0 ${color}` }], { duration: IMPACT_MS + 10, easing: "ease-out" });
+  box.animate([{ backgroundColor: `color-mix(in srgb, ${color}, white 50%)`, boxShadow: `0 0 28px ${color}` }, { backgroundColor: color, boxShadow: `0 0 0 ${color}` }], { duration: IMPACT_MS + 10, easing: "ease-out" });
 }
 
 export function CountNumber({ value, running }: { value: number; running: boolean }) {
