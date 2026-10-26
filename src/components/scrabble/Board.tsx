@@ -264,7 +264,7 @@ export function GameBoard({
                   }}
                   className={cn(
                     "relative flex aspect-square items-center justify-center rounded-[4px] bg-board-cell text-[0.5rem] font-bold leading-none transition-all duration-150 sm:rounded-md sm:text-[0.6rem]",
-                    premium && !content && PREMIUM_CLASS[premium],
+                    premium && index !== CENTER && !content && PREMIUM_CLASS[premium],
                     content
                       ? isNaughty
                         ? "tile-pink-fill tile-gloss"
@@ -276,6 +276,7 @@ export function GameBoard({
                     !content && hoverIndex === index && "ring-[1.5px] ring-primary/70",
                     !content && "hover:brightness-95",
                     isDragged && "opacity-30",
+                    index === CENTER && !content && "overflow-hidden bg-transparent",
                   )}
                   aria-label={
                     content
@@ -300,7 +301,7 @@ export function GameBoard({
                       alt=""
                       aria-hidden="true"
                       draggable={false}
-                      className="pointer-events-none absolute inset-0 h-full w-full rounded-[inherit] object-cover select-none"
+                      className="pointer-events-none absolute inset-0 h-full w-full scale-[1.12] rounded-[inherit] object-cover select-none"
                     />
                   ) : premium ? (
                     <span className="px-0.5 text-center text-[0.45rem] uppercase tracking-tight sm:text-[0.8rem]">

@@ -99,18 +99,25 @@ export function StoryRack({
         position: "fixed", left: `${to.left}px`, top: `${to.top}px`,
         width: `${to.width}px`, height: `${to.height}px`, margin: "0",
         visibility: "visible", pointerEvents: "none", zIndex: "100",
-        transition: "none", transformOrigin: "center",
+        transition: "none", transformOrigin: "center", opacity: "1",
       });
       root.appendChild(clone);
       const dx = from.left + from.width / 2 - to.left - to.width / 2;
       const dy = from.top + from.height / 2 - to.top - to.height / 2;
-      const start = `translate(${dx}px, ${dy}px) scale(${from.width / to.width}, ${from.height / to.height})`;
-      const animation = clone.animate([
-        { transform: start, offset: 0 },
-        { transform: start, offset: 0.12 },
-        { transform: `translate(${dx * 0.55}px, ${dy * 0.55 - 28}px) scale(1.08)`, offset: 0.5 },
-        { transform: "translate(0, 0) scale(1)", offset: 1 },
-      ], { duration: 660, easing: "cubic-bezier(.3,.1,.5,1)", fill: "both" });
+      const distance = Math.hypot(dx, dy);
+      const bend = Math.min(42, distance * 0.12);
+      const controlX = dx / 2 + (distance ? -dy / distance * bend : 0);
+      const controlY = dy / 2 + (distance ? dx / distance * bend : 0);
+      const keyframes = Array.from({ length: 25 }, (_, step) => {
+        const t = step / 24;
+        const remaining = 1 - t;
+        const x = remaining * remaining * dx + 2 * remaining * t * controlX;
+        const y = remaining * remaining * dy + 2 * remaining * t * controlY;
+        const sx = 1 + remaining * (from.width / to.width - 1);
+        const sy = 1 + remaining * (from.height / to.height - 1);
+        return { transform: `translate(${x}px, ${y}px) scale(${sx}, ${sy})`, opacity: 1, offset: t };
+      });
+      const animation = clone.animate(keyframes, { duration: 660, easing: "cubic-bezier(.3,.1,.5,1)", fill: "both" });
       flights.current.set(returning.tileId, { clone, animation });
       animation.finished.then(() => {
         clone.remove();

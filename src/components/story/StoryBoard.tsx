@@ -216,7 +216,7 @@ export function StoryBoard({
                   }}
                   className={cn(
                     "relative flex aspect-square items-center justify-center rounded-[4px] bg-board-cell font-bold leading-none transition-all duration-150 sm:rounded-md",
-                    premium && !letter && !premiumUsed && PREMIUM_CLASS[premium],
+                    premium && index !== center && !letter && !premiumUsed && PREMIUM_CLASS[premium],
                     premium && !letter && premiumUsed && "bg-board-cell opacity-80",
                     letter
                       ? enhancement
@@ -229,6 +229,7 @@ export function StoryBoard({
                     !letter && hoverIndex === index && "ring-[1.5px] ring-primary/70",
                     !letter && "hover:brightness-95",
                     draggingIndex === index && "opacity-30",
+                    index === center && !letter && "overflow-hidden bg-transparent",
                   )}
                   aria-label={
                     letter
@@ -264,7 +265,7 @@ export function StoryBoard({
                       alt=""
                       aria-hidden="true"
                       draggable={false}
-                      className="pointer-events-none absolute inset-0 h-full w-full rounded-[inherit] object-cover select-none"
+                      className="pointer-events-none absolute inset-0 h-full w-full scale-[1.12] rounded-[inherit] object-cover select-none"
                     />
                   ) : premium && !premiumUsed ? (
                     <span className="px-0.5 text-center uppercase tracking-tight" style={{ fontSize: labelFont }}>
