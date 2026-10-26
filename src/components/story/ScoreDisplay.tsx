@@ -1,7 +1,7 @@
 import { Droplet } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { scaled } from "@/lib/story/speed";
-import { STORY_TOTAL_COUNT_MS } from "@/lib/story/animation";
+import { totalCountDuration, totalCountProgress } from "@/lib/story/animation";
 
 // Count-up waits for the impact flash so it begins only after the hit.
 const IMPACT_MS = 80;
@@ -29,7 +29,7 @@ export function CountNumber({ value, running, growToTotal = false }: { value: nu
     previous.current = value;
     if (!running || value === 0 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) { setShown(value); return; }
     let frame = 0;
-    const duration = scaled(growToTotal ? STORY_TOTAL_COUNT_MS : 260);
+    const duration = scaled(growToTotal ? totalCountDuration(value) : 260);
     const start = performance.now() + (growToTotal ? 0 : scaled(IMPACT_MS));
     const growth = growToTotal ? number.current?.animate([
       { transform: "scale(0.72)" },
@@ -38,7 +38,7 @@ export function CountNumber({ value, running, growToTotal = false }: { value: nu
     const step = (time: number) => {
       if (time < start) { frame = requestAnimationFrame(step); return; }
       const progress = Math.min(1, (time - start) / duration);
-      const interpolated = from + (value - from) * (growToTotal ? progress : 1 - (1 - progress) ** 3);
+      const interpolated = from + (value - from) * (growToTotal ? totalCountProgress(progress) : 1 - (1 - progress) ** 3);
       setShown((Number.isInteger(value) ? Math.round(interpolated) : Math.round(interpolated * 10) / 10) || 0);
       if (progress < 1) frame = requestAnimationFrame(step);
     };
