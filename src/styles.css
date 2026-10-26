@@ -846,7 +846,7 @@
 .story-number-box strong { font-size: 32px; line-height: 1; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 .story-number-delta { position: absolute; right: 5px; top: 2px; font-size: 12px; font-weight: 700; z-index: 3; }
 .story-score-times { text-align: center; font-size: 32px; font-weight: 800; line-height: 1; }
-.story-round-score { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 8px; }
+.story-round-score { display: grid; grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr); align-items: center; gap: 6px; }
 .story-target-score, .story-current-score { position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 2px; min-width: 0; height: 68px; border-radius: 6px; color: var(--story-score-foreground); box-shadow: var(--shadow-tile); text-align: center; }
 .story-target-score { background: var(--story-target-bg); }
 .story-current-score { background: var(--story-current-bg); }
@@ -910,12 +910,13 @@
 .story-pens {
   grid-row: 1;
   grid-column: 1;
-  height: 42px;
-  padding: 1px 4px;
+  height: 46px;
+  padding: 2px 4px;
   flex-direction: row;
   align-items: center;
   justify-content: center;
   overflow-x: auto;
+  overflow-y: hidden;
   border-radius: 6px;
 }
 .story-pen-slot { width: 44px; height: 40px; flex: 0 0 44px; gap: 0; }
