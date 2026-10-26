@@ -817,6 +817,27 @@
   box-shadow: var(--shadow-tile), 0 0 12px color-mix(in oklab, var(--tw) 65%, transparent);
 }
 
+/* Bookstore enhancement tiles: a pink tile body whatever effect it grants,
+   with the tactile bevel + shine used by the other shop tiles. Only the
+   DL/TL/DW/TW label keeps its own colour. */
+@utility shop-enh-tile {
+  border-color: color-mix(in oklab, var(--naughty-deep) 65%, black);
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--naughty) 86%, white) 0%,
+    var(--naughty) 45%,
+    var(--naughty-deep) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 hsl(0 0% 100% / 0.3),
+    inset 0 -2px 0 color-mix(in oklab, var(--naughty-deep) 60%, black),
+    0 3px 0 color-mix(in oklab, var(--naughty-deep) 75%, black),
+    0 6px 12px -4px hsl(0 0% 0% / 0.6),
+    0 0 12px color-mix(in oklab, var(--naughty) 50%, transparent);
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.55), 0 0 6px rgb(0 0 0 / 0.35);
+}
+
+
 /* One mounted Story, with a viewport-sized compact presentation. */
 .story-rotate-hint { z-index: 100; }
 .story-compact {
