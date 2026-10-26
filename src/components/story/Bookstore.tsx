@@ -1,4 +1,4 @@
-import { ArrowRight, Check, CheckCircle2, Coins, Sparkles, Star } from "lucide-react";
+import { ArrowRight, CheckCircle2, Coins, Sparkles, Star } from "lucide-react";
 import { useState } from "react";
 import { LETTER_VALUES } from "@/lib/scrabble";
 import type { Offer, StoryState } from "@/lib/story/types";
@@ -34,6 +34,14 @@ const ENH_FULL = {
   DW: "One tile doubles the Mult of every word it joins.",
   TW: "One tile triples the Mult of every word it joins.",
 };
+
+function glowVar(offer: Offer): string {
+  if (offer.kind === "letter") return "var(--color-shop-letter)";
+  if (offer.kind === "word-length") return "var(--color-shop-length)";
+  if (offer.kind === "pen") return "var(--color-shop-pen)";
+  if (offer.kind === "upgrade") return "var(--color-shop-upgrade)";
+  return `var(--color-shop-${offer.enhancement.toLowerCase()})`;
+}
 
 function category(offer: Offer): { label: string; border: string; text: string } {
   switch (offer.kind) {
@@ -183,6 +191,7 @@ export function Bookstore({ state, onBuy }: BookstoreProps) {
 
       <div className="grid grid-cols-2 content-start gap-3 overflow-y-auto sm:grid-cols-3 lg:grid-cols-4">
         {offers.map((offer, index) => {
+          if (offer.sold) return null;
           const price = priceFor(state.upgrades, offer.price);
           const affordable = state.coins >= price;
           const cat = category(offer);
@@ -190,13 +199,11 @@ export function Bookstore({ state, onBuy }: BookstoreProps) {
             <button
               key={index}
               type="button"
-              disabled={offer.sold}
               onClick={() => setInspect(index)}
+              style={{ ["--glow" as string]: glowVar(offer), animationDelay: `${index * -0.45}s` }}
               className={cn(
-                "relative flex flex-col items-center gap-1.5 rounded-xl border-2 bg-card px-2 pb-2 pt-1.5 text-center transition-all",
-                cat.border,
-                !offer.sold && "hover:-translate-y-0.5 hover:shadow-panel",
-                !offer.sold && !affordable && "opacity-70",
+                "shop-card mb-1 flex flex-col items-center gap-1.5 rounded-xl border-2 px-2 pb-2 pt-1.5 text-center",
+                !affordable && "opacity-70",
               )}
             >
               <span className={cn("self-start text-[0.55rem] font-bold uppercase tracking-widest", cat.text)}>{cat.label}</span>
@@ -208,13 +215,6 @@ export function Bookstore({ state, onBuy }: BookstoreProps) {
               <span className={cn("flex items-center gap-1 rounded-full bg-gold/15 px-2 py-0.5 text-sm font-bold text-gold", !affordable && !offer.sold && "text-gold/60")}>
                 <Coins className="h-3.5 w-3.5" /> {price}
               </span>
-              {offer.sold ? (
-                <span className="absolute inset-0 flex items-center justify-center rounded-[10px] bg-background/55">
-                  <span className="flex items-center gap-1 rounded-full bg-secondary px-3 py-1 text-xs font-bold uppercase tracking-wide">
-                    <Check className="h-3.5 w-3.5" /> Sold
-                  </span>
-                </span>
-              ) : null}
             </button>
           );
         })}
@@ -277,6 +277,17 @@ export function BookstoreSummary({ state, onContinue }: { state: StoryState; onC
         <p className="flex items-center justify-center gap-1 text-lg font-bold text-gold">
           +{done.coins + (state.upgrades.includes("golden-payday") ? 2 : 0)} <Coins className="h-4 w-4" />
         </p>
+      </div>
+      <div className="flex items-end justify-between rounded-lg border border-border bg-secondary/40 p-3">
+        <div>
+          <p className="text-[0.65rem] font-bold uppercase tracking-wide text-base-ink">Base</p>
+          <p className="text-3xl font-bold text-base-ink">0</p>
+        </div>
+        <span className="pb-1 text-lg text-muted-foreground">×</span>
+        <div>
+          <p className="text-[0.65rem] font-bold uppercase tracking-wide text-mult-ink">Mult</p>
+          <p className="text-3xl font-bold text-mult-ink">0</p>
+        </div>
       </div>
       {next ? (
         <div className="rounded-lg border border-border bg-secondary/40 p-3">
