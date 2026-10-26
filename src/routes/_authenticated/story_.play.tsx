@@ -360,45 +360,56 @@ function StoryPlay() {
             next.activeWord = event.indices;
             next.base = 0;
             next.mult = 0;
+            next.baseDelta = null;
+            next.multDelta = null;
             next.label = event.word;
             break;
           case "letter":
             next.activeIndex = event.index;
+            next.baseDelta = fmtDelta(event.base);
             next.base = event.runningBase;
             next.label = null;
             break;
           case "letter-mult":
             next.activeIndex = event.index;
+            next.baseDelta = fmtDelta(event.runningBase - current.base);
             next.base = event.runningBase;
             next.label = event.label;
             break;
           case "pen-base":
             next.activePenId = event.penId;
+            next.baseDelta = fmtDelta(event.runningBase - current.base);
             next.base = event.runningBase;
             next.label = event.text;
             break;
           case "twist":
+            next.baseDelta = fmtDelta(event.runningBase - current.base);
             next.base = event.runningBase;
             next.label = event.text;
             break;
           case "mult-init":
             next.mult = event.value;
+            next.multDelta = null;
             next.activeIndex = null;
             next.label = null;
             break;
           case "pen-mult":
             next.activePenId = event.penId;
+            next.multDelta = fmtDelta(event.runningMult - current.mult);
             next.mult = event.runningMult;
             next.label = event.text;
             break;
           case "word-mult":
             next.activeIndex = event.index;
+            next.multDelta = `×${event.factor}`;
             next.mult = event.runningMult;
             next.label = event.label;
             break;
           case "result":
             next.activeIndex = null;
             next.activePenId = null;
+            next.baseDelta = null;
+            next.multDelta = null;
             next.label = `${event.word}: ${event.ink} Ink`;
             break;
         }
@@ -509,14 +520,22 @@ function StoryPlay() {
             <div className="flex items-end justify-between">
               <div>
                 <p className="text-[0.65rem] font-bold uppercase tracking-wide text-base-ink">Base</p>
-                <p className="text-xl font-bold text-base-ink">
-                  {anim.running ? anim.base : (preview && "ink" in preview ? "—" : "—")}
+                <p className="flex items-baseline gap-1 text-3xl font-bold text-base-ink">
+                  <span key={`base-${anim.base}`} className={cn("inline-block", anim.running && "anim-score-pop")}>
+                    {anim.running ? anim.base : "—"}
+                  </span>
+                  {anim.baseDelta && <span className="text-base font-bold text-base-ink/80">{anim.baseDelta}</span>}
                 </p>
               </div>
-              <span className="pb-1 text-muted-foreground">×</span>
+              <span className="pb-1 text-lg text-muted-foreground">×</span>
               <div>
                 <p className="text-[0.65rem] font-bold uppercase tracking-wide text-mult-ink">Mult</p>
-                <p className="text-xl font-bold text-mult-ink">{anim.running ? anim.mult : "—"}</p>
+                <p className="flex items-baseline gap-1 text-3xl font-bold text-mult-ink">
+                  <span key={`mult-${anim.mult}`} className={cn("inline-block", anim.running && "anim-score-pop")}>
+                    {anim.running ? anim.mult : "—"}
+                  </span>
+                  {anim.multDelta && <span className="text-base font-bold text-mult-ink/80">{anim.multDelta}</span>}
+                </p>
               </div>
             </div>
             <p className="mt-1 min-h-4 text-center text-xs text-muted-foreground">
