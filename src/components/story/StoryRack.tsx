@@ -15,7 +15,9 @@ interface StoryRackProps {
   discardMode: boolean;
   discardSelection: string[];
   letterUpgrades: Record<string, number>;
+  draggingId?: string | null;
   onSelect: (tileId: string) => void;
+  onTilePointerDown?: (tileId: string, event: React.PointerEvent) => void;
 }
 
 export function StoryRack({
@@ -24,7 +26,9 @@ export function StoryRack({
   discardMode,
   discardSelection,
   letterUpgrades,
+  draggingId,
   onSelect,
+  onTilePointerDown,
 }: StoryRackProps) {
   return (
     <div className="flex items-center justify-center gap-1 rounded-xl border border-border bg-secondary/60 p-1.5 sm:gap-1.5 sm:p-2">
@@ -35,7 +39,10 @@ export function StoryRack({
           <button
             key={tile.id}
             type="button"
+            data-draggable-tile="true"
+            style={{ touchAction: "none" }}
             onClick={() => onSelect(tile.id)}
+            onPointerDown={(event) => onTilePointerDown?.(tile.id, event)}
             className={cn(
               "relative flex aspect-square w-10 items-center justify-center rounded-[4px] text-lg font-bold transition-all duration-150 hover:-translate-y-1 hover:shadow-lg active:scale-95 sm:w-12 sm:rounded-md sm:text-xl",
               tile.enhancement ? `${ENH_CLASS[tile.enhancement]} tile-gloss` : "tile-face tile-gloss",
