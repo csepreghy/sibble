@@ -73,9 +73,14 @@ export function StoryBoard({
   const labelFont = `${(100 / size) * 0.2}cqw`;
   // Word outlines scale with tile size so they look equally thick on every board
   // (≈3px on a phone-sized 7×7 board, where the original fixed width was tuned).
-  const outlineWidth = `max(1px, ${(100 / size) * 0.066}cqw)`;
-  const outlineRadius = `${(100 / size) * 0.09}cqw`;
-  const outlineGlow = `${(100 / size) * 0.16}cqw`;
+  const outlineWidth = `max(1px, ${(100 / size) * 0.073}cqw)`;
+  const outlineRadius = `${(100 / size) * 0.11}cqw`;
+  const outlineGlow = `${(100 / size) * 0.24}cqw`;
+  // Breathing room between the tile edges and the outline, proportional to tile size.
+  // Sized so the border's inner edge clears the tile by ~1.5% of a tile.
+  const outlineRoom = (100 / size) * 0.09;
+
+
   // Tile highlights (flying-number sources) scale with tile size like the word outlines.
   const highlightWidth = `max(1px, ${(100 / size) * 0.074}cqw)`;
 
@@ -289,7 +294,7 @@ export function StoryBoard({
                 const cols = word.indices.map(index => index % size);
                 if (!rows.length) return null;
                 const glowColor = "scoring" in word ? "var(--color-mult-ink)" : word.valid ? "var(--color-story-valid)" : "var(--color-destructive)";
-                return <div key={i} data-word-valid={word.valid} className={cn("border-solid", "scoring" in word ? "border-mult-ink" : word.valid ? "border-story-valid" : "border-destructive")} style={{ gridRow: `${Math.min(...rows) + 1} / ${Math.max(...rows) + 2}`, gridColumn: `${Math.min(...cols) + 1} / ${Math.max(...cols) + 2}`, borderWidth: outlineWidth, borderRadius: outlineRadius, boxShadow: `0 0 ${outlineGlow} color-mix(in srgb, ${glowColor}, transparent 30%)` }} />;
+                return <div key={i} data-word-valid={word.valid} className={cn("border-solid", "scoring" in word ? "border-mult-ink" : word.valid ? "border-story-valid" : "border-destructive")} style={{ gridRow: `${Math.min(...rows) + 1} / ${Math.max(...rows) + 2}`, gridColumn: `${Math.min(...cols) + 1} / ${Math.max(...cols) + 2}`, margin: `-${outlineRoom}cqw`, borderWidth: outlineWidth, borderRadius: outlineRadius, boxShadow: `0 0 ${outlineGlow} color-mix(in srgb, ${glowColor}, transparent 25%), 0 0 calc(${outlineGlow} * 2) color-mix(in srgb, ${glowColor}, transparent 55%)` }} />;
               })}
             </div>
           </div>
