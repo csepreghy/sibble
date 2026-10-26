@@ -31,10 +31,10 @@ const UPGRADE_SHORT: Record<string, string> = {
 };
 const ENH_SHORT = { DL: "×2 letter Base.", TL: "×3 letter Base.", DW: "×2 Word Mult.", TW: "×3 Word Mult." };
 const ENH_FULL = {
-  DL: "Double one tile's Base Ink, every time it scores.",
-  TL: "Triple one tile's Base Ink, every time it scores.",
-  DW: "One tile doubles the Mult of every word it joins.",
-  TW: "One tile triples the Mult of every word it joins.",
+  DL: "Doubles the Base Ink of every tile of one letter, every time it scores.",
+  TL: "Triples the Base Ink of every tile of one letter, every time it scores.",
+  DW: "Every tile of one letter doubles the Mult of every word it joins.",
+  TW: "Every tile of one letter triples the Mult of every word it joins.",
 };
 
 function glowVar(offer: Offer): string {
@@ -110,7 +110,7 @@ function fullText(offer: Offer, state: StoryState): ReactNode {
       return `Words of exactly ${offer.length} letters start with +1 Mult (×${m} → ×${m + 1}) for the rest of this Story.`;
     }
     case "enhancement":
-      return `${ENH_FULL[offer.enhancement]} You'll choose which tile after buying.`;
+      return `${ENH_FULL[offer.enhancement]} You'll choose which letter after buying.`;
     case "pen":
       return penDef(offer.penId).description;
     case "upgrade":

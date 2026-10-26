@@ -553,8 +553,8 @@ function StoryPlay() {
       toast.error(result.error);
       return;
     }
-    if ("needsTile" in result) {
-      const offer = result.needsTile.offers?.[offerIndex];
+    if ("needsLetter" in result) {
+      const offer = result.needsLetter.offers?.[offerIndex];
       if (offer?.kind === "enhancement") {
         setDialog({ kind: "enhance", offerIndex, enhancement: offer.enhancement });
       }
@@ -575,17 +575,17 @@ function StoryPlay() {
     toast.success("Purchased!");
   }
 
-  function handleEnhancePick(tileId: string) {
+  function handleEnhancePick(letter: string) {
     if (!story || dialog?.kind !== "enhance") return;
-    const result = buyOffer(story, dialog.offerIndex, tileId);
+    const result = buyOffer(story, dialog.offerIndex, letter);
     setDialog(null);
     if ("error" in result) {
       toast.error(result.error);
       return;
     }
-    if ("needsTile" in result) return;
+    if ("needsLetter" in result) return;
     setStory(result);
-    toast.success("Tile enhanced!");
+    toast.success(`Every ${letter} tile is now ${dialog.enhancement}!`);
   }
 
   function startNewStory() {
