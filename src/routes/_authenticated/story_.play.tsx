@@ -110,7 +110,7 @@ const IDLE_ANIM: AnimState = {
   label: null,
 };
 
-const STEP_MS = 750;
+const STEP_MS = 600;
 
 function fmtDelta(diff: number): string {
   const rounded = Math.round(diff);

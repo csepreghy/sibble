@@ -1,5 +1,5 @@
 import { ArrowRight, CheckCircle2, Coins, Sparkles, Star } from "lucide-react";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { LETTER_VALUES } from "@/lib/scrabble";
 import type { Offer, StoryState } from "@/lib/story/types";
 import { penDef } from "@/lib/story/pens";
@@ -60,10 +60,10 @@ function category(offer: Offer): { label: string; border: string; text: string }
   }
 }
 
-function offerTitle(offer: Offer): string {
+function offerTitle(offer: Offer): ReactNode {
   switch (offer.kind) {
     case "letter":
-      return `Upgrade ${offer.letter}`;
+      return <>Upgrade {offer.letter} <span className="text-base-ink">+ 1</span></>;
     case "word-length":
       return `${offer.length}-letter words`;
     case "enhancement":
@@ -101,12 +101,10 @@ function shortText(offer: Offer, state: StoryState): string {
   }
 }
 
-function fullText(offer: Offer, state: StoryState): string {
+function fullText(offer: Offer, state: StoryState): ReactNode {
   switch (offer.kind) {
-    case "letter": {
-      const b = letterBase(offer, state);
-      return `Every ${offer.letter} tile permanently scores +1 Base Ink (${b} → ${b + 1}) for the rest of this Story.`;
-    }
+    case "letter":
+      return <>Every {offer.letter} tile permanently scores <span className="text-base-ink">+1</span> Base Ink.</>;
     case "word-length": {
       const m = lengthMult(offer, state);
       return `Words of exactly ${offer.length} letters start with +1 Mult (×${m} → ×${m + 1}) for the rest of this Story.`;
@@ -127,7 +125,7 @@ function OfferVisual({ offer, state, large, small }: { offer: Offer; state: Stor
       return (
         <span className={cn("tile-face relative flex items-center justify-center rounded-md font-bold", box, large ? "text-3xl" : "text-xl")}>
           {offer.letter}
-          <span className="absolute bottom-0.5 right-1 text-[0.6rem] font-bold">{letterBase(offer, state) + 1}</span>
+          <span className="absolute bottom-0.5 right-1 text-[0.6rem] font-bold">{letterBase(offer, state)}→{letterBase(offer, state) + 1}</span>
         </span>
       );
     case "word-length":
