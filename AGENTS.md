@@ -8,3 +8,9 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+## Architecture rules
+
+- Story mode (singleplayer roguelike) lives in `src/lib/story/` (engine, scoring, boards, pens, upgrades, placement, storage) with routes `src/routes/_authenticated/story.tsx` and `story_.play.tsx`. Run state persists in localStorage (`sibble:story:v1`), never in the database — it's per-device and needs no auth or sync.
+- Story scoring is separate from multiplayer scoring: `src/lib/story/scoring.ts` computes Base × Mult and returns an event list the UI animates step by step, so the animation always matches the maths. Multiplayer `src/lib/scrabble.ts` is untouched by Story mode.
+- Story boards are size-parameterized (5×5–15×15); don't reuse `SIZE`-bound helpers from `src/lib/scrabble.ts` there — use `src/lib/story/placement.ts`.
