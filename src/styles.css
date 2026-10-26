@@ -765,12 +765,14 @@
 
 :root {
   /* Scoring panel language: blue = Base Ink, orange = Mult. */
+  --story-grid-line: oklch(1 0 0);
   --base-ink: oklch(0.72 0.14 235);
   --mult-ink: oklch(0.78 0.16 60);
   --gold: oklch(0.84 0.16 88);
 }
 
 @theme inline {
+  --color-story-grid-line: var(--story-grid-line);
   --color-base-ink: var(--base-ink);
   --color-mult-ink: var(--mult-ink);
   --color-gold: var(--gold);
@@ -902,7 +904,7 @@
 .story-compact .story-actions svg { margin: 0; }
 .story-shopping.story-compact .story-workspace { flex: 1 1 0; min-height: 0; }
 .story-shopping.story-compact .story-main { min-height: 0; overflow: hidden; align-items: stretch; }
-.story-shop-offers { min-height: 0; padding: 2px 3px 12px; overscroll-behavior: contain; }
+.story-shop-offers { min-height: 0; flex: 1; grid-auto-rows: max-content; padding: 2px 3px 12px; overscroll-behavior: contain; }
 .story-shop-offers > button { min-width: 0; max-width: 250px; width: 100%; justify-self: center; }
 .story-shopping.story-compact .story-footer { flex: 0 0 56px; min-height: 56px; order: 4; }
 .story-continue { flex: 0 0 44px; width: 100%; max-width: 640px; margin-inline: auto; }
@@ -927,6 +929,7 @@
     0 5px 0 color-mix(in oklab, var(--glow) 35%, black),
     0 10px 18px -6px hsl(0 0% 0% / 0.6);
   position: relative;
+  color: var(--foreground);
   overflow: hidden;
   border-color: color-mix(in oklab, var(--glow) 80%, transparent);
   background:

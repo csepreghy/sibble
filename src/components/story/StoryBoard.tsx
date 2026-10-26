@@ -183,7 +183,7 @@ export function StoryBoard({
           }}
         >
           <div
-            className="grid gap-[3px] overflow-hidden rounded-[4px] bg-board-line p-[3px] sm:rounded-md"
+            className="grid gap-[3px] overflow-hidden rounded-[4px] bg-story-grid-line p-[3px] sm:rounded-md"
             style={{
               gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
               containerType: "inline-size",

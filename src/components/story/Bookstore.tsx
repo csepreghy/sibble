@@ -152,7 +152,7 @@ function OfferVisual({ offer, state, large }: { offer: Offer; state: StoryState;
     case "pen": {
       const Icon = penIcon(offer.penId);
       return (
-        <span className={cn("flex items-center justify-center rounded-full border border-shop-pen/50 bg-shop-pen/15 shadow-[0_0_14px_color-mix(in_oklab,var(--color-shop-pen)_35%,transparent)]", box)}>
+        <span className={cn("flex items-center justify-center rounded-full border border-shop-pen/50 bg-shop-pen/15", box)}>
           <Icon className={cn("text-shop-pen", large ? "h-8 w-8" : "h-6 w-6")} />
         </span>
       );
