@@ -390,8 +390,8 @@ function StoryPlay() {
     // Animate the scoring step by step, then commit the new state.
     let current = { ...IDLE_ANIM, running: true };
     setAnim(current);
-    const delay = () => new Promise((resolve) => setTimeout(resolve, STEP_MS));
-    const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+    const delay = () => new Promise((resolve) => setTimeout(resolve, scaled(STEP_MS)));
+    const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, scaled(ms)));
     const visible = (selector: string) => [...document.querySelectorAll(selector)].find(el => el.getBoundingClientRect().width > 0);
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     // Fly a number from one score box into another (presentation only).
@@ -479,7 +479,7 @@ function StoryPlay() {
           const x = (Math.min(...rects.map(r => r.left)) + Math.max(...rects.map(r => r.right))) / 2;
           const y = Math.min(...rects.map(r => r.top)) + 8;
           setFlight({ id: ++flightId.current, kind, text: (kind === "base" ? next.baseDelta : next.multDelta) ?? "", x, y, dx: target.left + target.width / 2 - x, dy: target.top + target.height / 2 - y });
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await wait(500);
           if (cancelAnim.current) return;
         }
         setFlight(null);
@@ -517,7 +517,7 @@ function StoryPlay() {
       const box = [...document.querySelectorAll(".story-current-score")].map(el => el.getBoundingClientRect()).find(r => r.width > 0);
       if (box && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
         setConfetti({ id: ++flightId.current, x: box.left + box.width / 2, y: box.top + box.height / 2 });
-        await new Promise(resolve => setTimeout(resolve, 800));
+        await wait(800);
         setConfetti(null);
       }
     }

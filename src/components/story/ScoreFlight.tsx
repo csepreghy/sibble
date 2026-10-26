@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { scaled } from "@/lib/story/speed";
 
 export interface ScoreFlightData {
   id: number;
@@ -16,5 +17,5 @@ export function ScoreFlight({ flight }: { flight: ScoreFlightData | null }) {
   const tone = flight.white ? "text-story-score-foreground" : flight.kind === "base" ? "text-base-ink" : "text-mult-ink";
   return <span key={flight.id} aria-hidden="true" data-score-flight={flight.kind}
     className={`story-score-flight ${tone}`}
-    style={{ left: flight.x, top: flight.y, "--flight-x": `${flight.dx}px`, "--flight-y": `${flight.dy}px` } as CSSProperties}>{flight.text}</span>;
+    style={{ animationDuration: `${scaled(500)}ms`, left: flight.x, top: flight.y, "--flight-x": `${flight.dx}px`, "--flight-y": `${flight.dy}px` } as CSSProperties}>{flight.text}</span>;
 }
