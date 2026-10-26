@@ -14,6 +14,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { loadWordList } from "@/lib/words";
+import { cn } from "@/lib/utils";
 import { LETTER_VALUES } from "@/lib/scrabble";
 import { PAGES, TWIST_INFO, pageLabel } from "@/lib/story/boards";
 import {
