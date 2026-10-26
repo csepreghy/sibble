@@ -2,6 +2,11 @@
 
 Source spec: uploaded `Sibble_-_Singleplayer_Story_Mode_pasted.md`. Multiplayer stays untouched.
 
+## Returning letters and centre logo
+- [ ] Animate tapped pending Story letters back into their rack slot while other rack letters make space.
+- [ ] Use the sharpest matching centre logo edge-to-edge on both boards.
+- [ ] Verify returns, reduced motion, and logo sizing in gameplay.
+
 ## Story statistics and mode navigation
 - [x] Persist per-device Story stats (longest word, best single word, highest page score, top 3 letters, stories started/won/lost, finished-story history) in localStorage.
 - [x] Record stats on every committed word, page completion, story start and story end (including manual End this Story).
