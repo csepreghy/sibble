@@ -654,7 +654,7 @@ function StoryPlay() {
           />
           )}
         </div>
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className={cn("flex flex-wrap items-center gap-1.5", story.phase === "bookstore" && "hidden")}>
           <Button variant="outline" size="sm" onClick={shuffleRack} disabled={busy || story.phase !== "play"}>
             <Shuffle className="mr-1 h-4 w-4" /> Shuffle
           </Button>
