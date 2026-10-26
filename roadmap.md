@@ -3,9 +3,9 @@
 Source spec: uploaded `Sibble_-_Singleplayer_Story_Mode_pasted.md`. Multiplayer stays untouched.
 
 ## Bookstore controls and Pen ordering
-- [ ] Restore settings top-right; bottom controls ordered page/bag menu, coins, Continue Story.
-- [ ] Drag-reorder owned Pens in shopping and gameplay, preserving bonuses and saved order.
-- [ ] Verify touch/mouse ordering, inspectors, persistence and layout; run Story tests.
+- [x] Restore settings top-right; bottom controls ordered page/bag menu, coins, Continue Story.
+- [x] Drag-reorder owned Pens in shopping and gameplay, preserving bonuses and saved order.
+- [x] Verify phone touch and desktop mouse ordering, inspectors, reload persistence and layout; 20 Story tests pass and build clean.
 
 ## Pen explanation update
 - [x] Replace all ten descriptions with the supplied text; share inline scoring colors and separate live scaling bonuses across shop/details/Run Info.
