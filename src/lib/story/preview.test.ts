@@ -21,6 +21,6 @@ test("invalid words have an X-ready error and invalid word indices, without Ink"
   assert.ok(result.error);
 });
 test("pre-Pen preview retains tile enhancements and word-length upgrades", () => {
-  const result = inspectPlacement({ ...fixture, tiles: [{ id: "i", letter: "I", enhancement: "TL" }, fixture.tiles[1]], wordLengthUpgrades: { 2: 1 } }, () => true);
+  const result = inspectPlacement({ ...fixture, tiles: [{ id: "i", letter: "I", enhancement: "TL" }, { id: "t", letter: "T", enhancement: null }], wordLengthUpgrades: { 2: 1 } }, () => true);
   assert.equal(result.ink, 24);
 });

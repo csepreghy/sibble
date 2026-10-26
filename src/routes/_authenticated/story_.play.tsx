@@ -598,8 +598,8 @@ function StoryPlay() {
               letterUpgrades={story.letterUpgrades}
               activeIndex={anim.activeIndex}
               activeWord={anim.activeWord}
-              validIndices={busy ? [] : preview?.validIndices}
-              invalidIndices={busy ? [] : preview?.invalidIndices}
+              validIndices={busy ? [] : preview?.validIndices ?? []}
+              invalidIndices={busy ? [] : preview?.invalidIndices ?? []}
               disabled={busy || story.phase !== "play"}
               hoverIndex={hoverIndex}
               draggingIndex={draggingBoardIndex}
