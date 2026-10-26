@@ -155,14 +155,14 @@ function OfferVisual({ offer, state, large, small }: { offer: Offer; state: Stor
       const Icon = penIcon(offer.penId);
       return (
         <span className={cn("flex items-center justify-center rounded-full border border-shop-pen/50 bg-shop-pen/15", box)}>
-          <Icon className={cn("text-shop-pen", large ? "h-8 w-8" : "h-6 w-6")} />
+          <Icon className={cn("text-shop-pen", large ? "h-8 w-8" : small ? "h-5 w-5" : "h-6 w-6")} />
         </span>
       );
     }
     case "upgrade":
       return (
-        <span className={cn("flex items-center justify-center rounded-md border border-shop-upgrade/50 bg-shop-upgrade/15 rotate-45", large ? "h-12 w-12" : "h-9 w-9")}>
-          <Star className={cn("-rotate-45 text-shop-upgrade", large ? "h-6 w-6" : "h-4 w-4")} />
+        <span className={cn("flex items-center justify-center rounded-md border border-shop-upgrade/50 bg-shop-upgrade/15 rotate-45", large ? "h-12 w-12" : small ? "h-7 w-7" : "h-9 w-9")}>
+          <Star className={cn("-rotate-45 text-shop-upgrade", large ? "h-6 w-6" : small ? "h-3.5 w-3.5" : "h-4 w-4")} />
         </span>
       );
   }
