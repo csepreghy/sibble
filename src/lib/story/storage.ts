@@ -1,6 +1,7 @@
 // Story runs are singleplayer and live in localStorage.
 
 import type { StoryState } from "./types";
+import { restorePageHistory } from "./history";
 
 const KEY = "sibble:story:v1";
 
@@ -10,7 +11,7 @@ export function loadStory(): StoryState | null {
     if (!raw) return null;
     const parsed = JSON.parse(raw) as StoryState;
     if (parsed.version !== 1 || !parsed.page) return null;
-    return parsed;
+    return restorePageHistory(parsed);
   } catch {
     return null;
   }

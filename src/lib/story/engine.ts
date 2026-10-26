@@ -6,6 +6,7 @@ import { scorePlacement, type PlacementScore } from "./scoring";
 import type { Offer, PageState, PendingPlacement, StoryState, StoryTile } from "./types";
 import { PENS } from "./pens";
 import { UPGRADES, discardsPerPage, penSlots, priceFor, rackCapacity } from "./upgrades";
+import { snapshotPage } from "./history";
 
 const DISTRIBUTION: Record<string, number> = {
   A: 9, B: 2, C: 2, D: 4, E: 12, F: 2, G: 3, H: 2, I: 9, J: 1, K: 1, L: 4, M: 2,
@@ -48,6 +49,7 @@ export function startPage(state: Omit<StoryState, "page"> & { page?: PageState }
     longestWord: 0,
     wordsPlayed: 0,
     bestWordInk: 0,
+    playedWords: [],
     usedPremiums: [],
   };
   return { ...state, pageIndex, page, phase: "play", offers: null };
@@ -68,6 +70,7 @@ export function newStory(): StoryState {
     phase: "play" as const,
     offers: null,
     pagesCompleted: 0,
+    completedPages: [],
   };
   return startPage(base, 0);
 }
@@ -160,12 +163,16 @@ export function playPlacement(
       longestWord: score.longest,
       wordsPlayed: (state.page.wordsPlayed ?? 0) + 1,
       bestWordInk: Math.max(state.page.bestWordInk ?? 0, ...score.words.map((word) => word.ink)),
+      playedWords: [...(state.page.playedWords ?? []), ...score.words.map(word => ({ ...word, move: (state.page.wordsPlayed ?? 0) + 1 }))],
       usedPremiums,
     },
     phase: storyWon ? "victory" : defeated ? "defeat" : pageCompleted ? "bookstore" : "play",
     offers: pageCompleted && !storyWon ? generateOffers({ ...state, pens }) : null,
   };
 
+  if (pageCompleted) {
+    next.completedPages = [...(state.completedPages ?? []).filter(page => page.pageIndex !== state.pageIndex), snapshotPage(next, coinReward)];
+  }
   return { state: next, score, pageCompleted, storyWon, defeated, coinReward };
 }
 

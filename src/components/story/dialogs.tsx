@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { cn } from "@/lib/utils";
 import { penIcon } from "./PenSidebar";
 import { ShopDetailTile } from "./ShopDetailTile";
+import { CompletedPages } from "./CompletedPages";
 
 // --- Page intro ----------------------------------------------------------
 
@@ -97,6 +98,7 @@ export function RunInfoDialog({ state, onClose }: { state: StoryState; onClose: 
           <DialogTitle>Run Info</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 text-sm">
+          <CompletedPages state={state} />
           <section>
             <h3 className="mb-1 font-bold">Letter Base upgrades</h3>
             {upgradedLetters.length === 0 ? (
@@ -206,7 +208,7 @@ export function BagDialog({
   );
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[85dvh] max-w-sm overflow-y-auto">
+      <DialogContent className="max-h-[85dvh] max-w-lg overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Bag — {state.page.bag.length} tiles left this Page</DialogTitle>
         </DialogHeader>
@@ -219,6 +221,7 @@ export function BagDialog({
             </div>
           ))}
         </div>
+        <CompletedPages state={state} />
       </DialogContent>
     </Dialog>
   );

@@ -20,3 +20,4 @@
 - Story live word inspection uses the existing placement validator and scoring pipeline with no Pens; shared score-display components keep gameplay and Bookstore score presentation consistent without changing committed scoring.
 - Story rack presentation excludes pending tile IDs; placement validation rejects duplicate physical IDs, and whole-word overlays use grid tracks so they stay aligned while zooming. Owned Pen and shop inspectors share the same detail-tile shell to keep their appearance consistent.
 - Any element given the `tile-gloss` shine must also be `relative` (or otherwise positioned): its shine is an absolutely positioned pseudo-element and escapes to the viewport otherwise, painting a sheen over the whole screen.
+- Story completed-page reviews use immutable board, tile, upgrade and scored-word snapshots captured at completion in the per-device run; reviewing a snapshot must never mutate the live page or its pending placements.
