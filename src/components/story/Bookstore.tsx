@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { penIcon } from "./PenSidebar";
+import { ScoreBoxes } from "./ScoreDisplay";
 
 const PEN_SHORT: Record<string, string> = {
   minimalist: "3-letter words: +5 Base per letter.",
@@ -281,17 +282,7 @@ export function BookstoreSummary({ state, onContinue }: { state: StoryState; onC
           +{done.coins + (state.upgrades.includes("golden-payday") ? 2 : 0)} <Coins className="h-4 w-4" />
         </p>
       </div>
-      <div className="flex items-end justify-between rounded-lg border border-border bg-secondary/40 p-3">
-        <div>
-          <p className="text-[0.65rem] font-bold uppercase tracking-wide text-base-ink">Base</p>
-          <p className="text-3xl font-bold text-base-ink">0</p>
-        </div>
-        <span className="pb-1 text-lg text-muted-foreground">×</span>
-        <div>
-          <p className="text-[0.65rem] font-bold uppercase tracking-wide text-mult-ink">Mult</p>
-          <p className="text-3xl font-bold text-mult-ink">0</p>
-        </div>
-      </div>
+      <ScoreBoxes />
       {next ? (
         <div className="rounded-lg border border-border bg-secondary/40 p-3">
           <p className="text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">Up next</p>
