@@ -238,7 +238,7 @@ export function Bookstore({ state, onBuy, compact }: BookstoreProps) {
               <div className="flex w-full items-center justify-between gap-2">
                 <Button
                   disabled={state.coins < inspectedPrice}
-                  className="h-10 px-6 text-base font-bold bg-gold-button text-white hover:bg-gold-button/90"
+                  className="relative tile-gloss h-10 px-6 text-base font-bold bg-gold-button text-background hover:bg-gold-button/90"
                   onClick={() => {
                     const i = inspect;
                     if (i === null) return;

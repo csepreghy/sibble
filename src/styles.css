@@ -769,7 +769,7 @@
   --base-ink: oklch(0.72 0.14 235);
   --mult-ink: oklch(0.78 0.16 60);
   --gold: oklch(0.84 0.16 88);
-  --gold-button: oklch(0.72 0.19 68);
+  --gold-button: oklch(0.84 0.19 88);
   --story-valid: oklch(0.78 0.19 145);
   --story-score-foreground: oklch(1 0 0);
   --story-target-bg: oklch(0.57 0.22 350);
