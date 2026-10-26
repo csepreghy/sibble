@@ -32,14 +32,14 @@ test("completed pages preserve the board, played words and all four page stats",
 test("page review survives next page and future upgrades without changing its original board", () => {
   const state = completeFirstPage().state;
   const next = continueToNextPage(state);
-  next.letterUpgrades.A = 9;
+  next.letterUpgrades["A"] = 9;
   const tile = next.tiles.find(tile => tile.id === "A-0");
   if (tile) tile.enhancement = "TW";
   assert.equal(next.pageIndex, 1);
   assert.equal(next.page.board.length, 49);
   assert.ok(next.page.board.every(cell => cell === null));
   assert.equal(next.completedPages?.[0]?.board.length, 25);
-  assert.equal(next.completedPages?.[0]?.letterUpgrades.A, undefined);
+  assert.equal(next.completedPages?.[0]?.letterUpgrades["A"], undefined);
   assert.equal(next.completedPages?.[0]?.tiles.find(tile => tile.id === "A-0")?.enhancement, null);
 });
 
