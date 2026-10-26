@@ -38,15 +38,16 @@ export function ScoreBoxes({ base = 0, mult = 0, running = false, baseDelta, mul
       if (!box) continue;
       const color = getComputedStyle(box).backgroundColor;
       // Impact: quick jolt + brief scale pulse (visual transforms only).
+      // Impact: snap up fast, settle slowly, with a quick jolt (visual transforms only).
       box.animate([
         { transform: "translate(0,0) scale(1)" },
-        { transform: "translate(-3px,1px) scale(1.1)", offset: 0.15 },
-        { transform: "translate(3px,-1px) scale(1.09)", offset: 0.3 },
-        { transform: "translate(-2px,0) scale(1.05)", offset: 0.45 },
+        { transform: "translate(-4px,1px) scale(1.16)", offset: 0.08 },
+        { transform: "translate(3px,-1px) scale(1.14)", offset: 0.16 },
+        { transform: "translate(-2px,0) scale(1.11)", offset: 0.26 },
         { transform: "translate(0,0) scale(1)" },
-      ], { duration: 320, easing: "ease-out" });
-      // Solid white flash, snapping back to the box colour.
-      box.animate([{ backgroundColor: "white", boxShadow: `0 0 24px ${color}` }, { backgroundColor: color, boxShadow: `0 0 0 ${color}` }], { duration: IMPACT_MS + 10, easing: "ease-in" });
+      ], { duration: 380, easing: "cubic-bezier(.2,.7,.3,1)" });
+      // Starts solid white on impact, then fades back to the box colour.
+      box.animate([{ backgroundColor: "white", boxShadow: `0 0 28px ${color}` }, { backgroundColor: color, boxShadow: `0 0 0 ${color}` }], { duration: IMPACT_MS + 10, easing: "ease-out" });
     }
   }, [base, mult, baseDelta, multDelta, running]);
   return <div ref={root} className="story-score-boxes tabular-nums" aria-label={`Base ${base} times Mult ${mult}`}>

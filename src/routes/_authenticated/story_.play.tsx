@@ -53,6 +53,7 @@ import { StoryBoard } from "@/components/story/StoryBoard";
 import { StoryRack } from "@/components/story/StoryRack";
 import { PenSidebar } from "@/components/story/PenSidebar";
 import { Bookstore, BookstoreSummary } from "@/components/story/Bookstore";
+import { ScoreConfetti, type ScoreConfettiData } from "@/components/story/ScoreConfetti";
 import { PageCompleteDialog, type PageStats } from "@/components/story/PageCompleteDialog";
 import {
   BagDialog,
@@ -140,6 +141,7 @@ function StoryPlay() {
   const [arrivingPenId, setArrivingPenId] = useState<string | null>(null);
   const [pageStats, setPageStats] = useState<PageStats | null>(null);
   const flightId = useRef(0);
+  const [confetti, setConfetti] = useState<ScoreConfettiData | null>(null);
 
   // --- drag and drop (mirrors the multiplayer game) -------------------------
   type DragSource = { type: "rack"; tileId: string } | { type: "board"; index: number };
@@ -451,6 +453,15 @@ function StoryPlay() {
       setAnim(value => ({ ...value, activePenId: null }));
     }
     await delay();
+
+    if (result.pageCompleted && !cancelAnim.current) {
+      const box = [...document.querySelectorAll(".story-current-score")].map(el => el.getBoundingClientRect()).find(r => r.width > 0);
+      if (box && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        setConfetti({ id: ++flightId.current, x: box.left + box.width / 2, y: box.top + box.height / 2 });
+        await new Promise(resolve => setTimeout(resolve, 800));
+        setConfetti(null);
+      }
+    }
 
     setStory(result.state);
     setPending([]);
@@ -785,6 +796,7 @@ function StoryPlay() {
       ) : null}
 
       <ScoreFlight flight={flight} />
+      <ScoreConfetti burst={confetti} />
       <PenPurchaseFlight flight={penFlight} onArrive={() => { setArrivingPenId(penFlight?.penId ?? null); setPenFlight(null); }} />
       {drag ? (
         <div
