@@ -217,8 +217,8 @@ export function StoryBoard({
                         : "tile-face tile-gloss"
                       : null,
                     placed && "z-10 shadow-md",
-                    isActive && "z-10 ring-2 ring-primary brightness-110",
-                    !isActive && inActiveWord && "ring-1 ring-primary/60",
+                    isActive && "z-10 ring-4 ring-base-ink brightness-110 anim-tile-bump",
+                    !isActive && inActiveWord && "ring-[3px] ring-mult-ink anim-tile-bump",
                     !letter && hoverIndex === index && "ring-[1.5px] ring-primary/70",
                     !letter && "hover:brightness-95",
                     draggingIndex === index && "opacity-30",
