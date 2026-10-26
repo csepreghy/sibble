@@ -42,6 +42,10 @@ export interface PageState {
   discardsLeft: number;
   ink: number;
   longestWord: number;
+  /** words committed this Page (page-complete stats) */
+  wordsPlayed: number;
+  /** highest single-word Ink this Page (page-complete stats) */
+  bestWordInk: number;
   /** board indices whose premium square was already activated */
   usedPremiums: number[];
 }

@@ -46,6 +46,8 @@ export function startPage(state: Omit<StoryState, "page"> & { page?: PageState }
     discardsLeft: discardsPerPage(state.upgrades),
     ink: 0,
     longestWord: 0,
+    wordsPlayed: 0,
+    bestWordInk: 0,
     usedPremiums: [],
   };
   return { ...state, pageIndex, page, phase: "play", offers: null };
@@ -156,6 +158,8 @@ export function playPlacement(
       ink,
       wordsLeft,
       longestWord: score.longest,
+      wordsPlayed: (state.page.wordsPlayed ?? 0) + 1,
+      bestWordInk: Math.max(state.page.bestWordInk ?? 0, ...score.words.map((word) => word.ink)),
       usedPremiums,
     },
     phase: storyWon ? "victory" : defeated ? "defeat" : pageCompleted ? "bookstore" : "play",

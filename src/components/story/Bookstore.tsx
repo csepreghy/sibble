@@ -235,8 +235,8 @@ export function Bookstore({ state, onBuy, compact }: BookstoreProps) {
               <DialogDescription className="text-sm leading-snug">{fullText(inspected, state)}</DialogDescription>
               <div className="flex w-full items-center justify-between gap-2">
                 <Button
-                  size="sm"
                   disabled={state.coins < inspectedPrice}
+                  className="h-10 px-6 text-base font-bold bg-gold text-white hover:bg-gold/90"
                   onClick={() => {
                     const i = inspect;
                     if (i === null) return;

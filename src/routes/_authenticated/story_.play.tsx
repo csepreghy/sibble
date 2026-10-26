@@ -52,6 +52,7 @@ import { StoryBoard } from "@/components/story/StoryBoard";
 import { StoryRack } from "@/components/story/StoryRack";
 import { PenSidebar } from "@/components/story/PenSidebar";
 import { Bookstore, BookstoreSummary } from "@/components/story/Bookstore";
+import { PageCompleteDialog, type PageStats } from "@/components/story/PageCompleteDialog";
 import {
   BagDialog,
   BlankPickerDialog,
@@ -134,6 +135,7 @@ function StoryPlay() {
   >(null);
   const cancelAnim = useRef(false);
   const [flight, setFlight] = useState<ScoreFlightData | null>(null);
+  const [pageStats, setPageStats] = useState<PageStats | null>(null);
   const flightId = useRef(0);
 
   // --- drag and drop (mirrors the multiplayer game) -------------------------
@@ -453,7 +455,12 @@ function StoryPlay() {
     if (result.storyWon) {
       toast.success("Story complete!");
     } else if (result.pageCompleted) {
-      toast.success(`Page complete! +${result.coinReward} Coins`);
+      setPageStats({
+        ink: result.state.page.ink,
+        words: result.state.page.wordsPlayed ?? 0,
+        bestWordInk: result.state.page.bestWordInk ?? 0,
+        coins: result.coinReward,
+      });
     } else if (result.defeated) {
       toast.error("Out of words — the Story ends here.");
     }
@@ -728,6 +735,7 @@ function StoryPlay() {
       {/* Dialogs */}
       {showIntro ? <PageIntroDialog state={story} onStart={() => setIntroDismissed(story.pageIndex)} /> : null}
       {showEnd ? <StoryEndDialog state={story} won={story.phase === "victory"} onNewStory={startNewStory} /> : null}
+      {pageStats ? <PageCompleteDialog stats={pageStats} onClose={() => setPageStats(null)} /> : null}
       {dialog?.kind === "run-info" ? <RunInfoDialog state={story} onClose={() => setDialog(null)} /> : null}
       {dialog?.kind === "bag" ? <BagDialog state={story} onClose={() => setDialog(null)} /> : null}
       {dialog?.kind === "tile" ? <TileInspectDialog tile={dialog.tile} state={story} onClose={() => setDialog(null)} /> : null}

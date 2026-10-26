@@ -71,16 +71,16 @@ export function PenSidebar({ pens, slots, activePenId, onInspect, horizontal }: 
             title={def.name}
             aria-label={def.name}
             className={cn(
-              "flex h-auto flex-col items-center justify-center gap-1 whitespace-normal rounded-lg border border-border bg-secondary/70 p-1 text-center transition-all duration-200 hover:border-primary",
+              "flex h-auto flex-col items-center justify-center gap-1 whitespace-normal rounded-lg border border-shop-pen/50 bg-shop-pen/10 p-1 text-center transition-all duration-200 hover:border-shop-pen",
               horizontal ? "story-pen-slot" : "aspect-[3/4]",
               activePenId === pen.penId &&
-                "border-primary bg-primary/20 shadow-[0_0_14px_color-mix(in_oklab,var(--primary)_60%,transparent)] scale-105",
+                "border-shop-pen bg-shop-pen/25 shadow-[0_0_14px_color-mix(in_oklab,var(--color-shop-pen)_60%,transparent)] scale-105",
             )}
           >
-            <Icon className="h-5 w-5 text-primary" />
+            <Icon className="h-5 w-5 text-shop-pen" />
             {!horizontal && <span className="text-[0.6rem] font-bold leading-tight">{def.name}</span>}
             {def.scaling ? (
-              <span className="rounded-full bg-primary/20 px-1.5 text-[0.55rem] font-bold text-primary">
+              <span className="rounded-full bg-shop-pen/20 px-1.5 text-[0.55rem] font-bold text-shop-pen">
                 +{pen.bonus} Mult
               </span>
             ) : null}
