@@ -110,7 +110,7 @@ function fullText(offer: Offer, state: StoryState): ReactNode {
       return `Words of exactly ${offer.length} letters start with +1 Mult (×${m} → ×${m + 1}) for the rest of this Story.`;
     }
     case "enhancement":
-      return `${ENH_FULL[offer.enhancement]} You'll choose which letter after buying.`;
+      return `${ENH_FULL[offer.enhancement]} You'll choose which letter it lands on.`;
     case "pen":
       return penDef(offer.penId).description;
     case "upgrade":
@@ -240,7 +240,7 @@ export function Bookstore({ state, onBuy, compact }: BookstoreProps) {
                     onBuy(i, source);
                   }}
                 >
-                  {state.coins < inspectedPrice ? "Not enough Coins" : "Buy"}
+                  {state.coins < inspectedPrice ? "Not enough Coins" : inspected.kind === "enhancement" ? "Pick Letter" : "Buy"}
                 </Button>
                 <span className="flex items-center gap-1 rounded-full bg-gold/15 px-3 py-1 text-lg font-bold text-gold">
                   <Coins className="h-4 w-4" /> {inspectedPrice}

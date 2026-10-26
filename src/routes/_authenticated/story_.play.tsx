@@ -40,7 +40,7 @@ import { loadStory, saveStory } from "@/lib/story/storage";
 import { useStoryLayout } from "@/hooks/useStoryLayout";
 import { useStoryTheme } from "@/hooks/useStoryTheme";
 import { getStorySpeed, nextStorySpeed, scaled, setStorySpeed } from "@/lib/story/speed";
-import { penSlots } from "@/lib/story/upgrades";
+import { penSlots, priceFor } from "@/lib/story/upgrades";
 import type { Offer, PendingPlacement, PenInstance, StoryState, StoryTile } from "@/lib/story/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -883,6 +883,7 @@ function StoryPlay() {
         <EnhancePickerDialog
           state={story}
           enhancement={dialog.enhancement}
+          price={priceFor(story.upgrades, story.offers?.[dialog.offerIndex]?.price ?? 0)}
           onPick={handleEnhancePick}
           onClose={() => setDialog(null)}
         />

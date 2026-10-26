@@ -1,4 +1,5 @@
 import { Coins, Home, Sparkles } from "lucide-react";
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { LETTER_VALUES } from "@/lib/scrabble";
 import { PAGES, TWIST_INFO, pageLabel } from "@/lib/story/boards";
@@ -7,6 +8,7 @@ import { upgradeDef } from "@/lib/story/upgrades";
 import type { PenInstance, StoryState, StoryTile } from "@/lib/story/types";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 import { penIcon } from "./PenSidebar";
 import { ShopDetailTile } from "./ShopDetailTile";
 
