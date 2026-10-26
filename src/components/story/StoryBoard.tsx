@@ -288,7 +288,8 @@ export function StoryBoard({
                 const rows = word.indices.map(index => Math.floor(index / size));
                 const cols = word.indices.map(index => index % size);
                 if (!rows.length) return null;
-                return <div key={i} data-word-valid={word.valid} className={cn("border-solid", "scoring" in word ? "border-mult-ink" : word.valid ? "border-story-valid" : "border-destructive")} style={{ gridRow: `${Math.min(...rows) + 1} / ${Math.max(...rows) + 2}`, gridColumn: `${Math.min(...cols) + 1} / ${Math.max(...cols) + 2}`, borderWidth: outlineWidth, borderRadius: outlineRadius }} />;
+                const glowColor = "scoring" in word ? "var(--color-mult-ink)" : word.valid ? "var(--color-story-valid)" : "var(--color-destructive)";
+                return <div key={i} data-word-valid={word.valid} className={cn("border-solid", "scoring" in word ? "border-mult-ink" : word.valid ? "border-story-valid" : "border-destructive")} style={{ gridRow: `${Math.min(...rows) + 1} / ${Math.max(...rows) + 2}`, gridColumn: `${Math.min(...cols) + 1} / ${Math.max(...cols) + 2}`, borderWidth: outlineWidth, borderRadius: outlineRadius, boxShadow: `0 0 ${outlineGlow} color-mix(in srgb, ${glowColor}, transparent 30%)` }} />;
               })}
             </div>
           </div>
