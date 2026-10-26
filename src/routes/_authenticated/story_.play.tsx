@@ -128,6 +128,7 @@ function StoryPlay() {
   const [selectedRackId, setSelectedRackId] = useState<string | null>(null);
   const [discardMode, setDiscardMode] = useState(false);
   const [discardSelection, setDiscardSelection] = useState<string[]>([]);
+  const discardOutRef = useRef(false);
   const [anim, setAnim] = useState<AnimState>(IDLE_ANIM);
   const [introDismissed, setIntroDismissed] = useState(-1);
   const [dialog, setDialog] = useState<
@@ -350,12 +351,32 @@ function StoryPlay() {
     setStory({ ...story, page: { ...story.page, rack } });
   }
 
-  function confirmDiscard() {
-    if (!story) return;
+  async function confirmDiscard() {
+    if (!story || discardOutRef.current) return;
     const result = discardTiles(story, discardSelection);
     if ("error" in result) {
       toast.error(result.error);
       return;
+    }
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!reduce) {
+      discardOutRef.current = true;
+      const animations = discardSelection.flatMap((id, i) => {
+        const el = document.querySelector<HTMLElement>(`[data-rack-tile-id="${CSS.escape(id)}"]`);
+        if (!el) return [];
+        const dx = window.innerWidth - el.getBoundingClientRect().left + 40;
+        return [
+          el.animate(
+            [
+              { transform: "translateY(-6px)", opacity: 1 },
+              { transform: `translate(${dx}px, -30px) rotate(25deg)`, opacity: 1 },
+            ],
+            { duration: 450, delay: i * 60, easing: "cubic-bezier(0.5,0,0.9,0.5)", fill: "forwards" },
+          ).finished.catch(() => undefined),
+        ];
+      });
+      await Promise.all(animations);
+      discardOutRef.current = false;
     }
     setStory(result);
     setDiscardSelection([]);
