@@ -201,8 +201,12 @@ export function StoryBoard({
                   key={index}
                   type="button"
                   data-cell-index={index}
+                  data-draggable-tile={placed ? "true" : undefined}
                   disabled={disabled}
                   onClick={() => onCellClick(index)}
+                  onPointerDown={(event) => {
+                    if (placed) onTilePointerDown?.(index, event);
+                  }}
                   className={cn(
                     "relative flex aspect-square items-center justify-center rounded-[4px] bg-board-cell font-bold leading-none transition-all duration-150 sm:rounded-md",
                     premium && !letter && !premiumUsed && PREMIUM_CLASS[premium],
@@ -215,7 +219,9 @@ export function StoryBoard({
                     placed && "z-10 shadow-md tile-placing tile-gloss",
                     isActive && "z-10 ring-2 ring-primary brightness-110",
                     !isActive && inActiveWord && "ring-1 ring-primary/60",
+                    !letter && hoverIndex === index && "ring-[1.5px] ring-primary/70",
                     !letter && "hover:brightness-95",
+                    draggingIndex === index && "opacity-30",
                   )}
                   aria-label={
                     letter
