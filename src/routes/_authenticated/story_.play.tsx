@@ -17,7 +17,6 @@ import {
   Trash2,
   Settings,
   Smartphone,
-  Palette,
 } from "lucide-react";
 import { loadWordList } from "@/lib/words";
 import { cn } from "@/lib/utils";
@@ -37,8 +36,6 @@ import { PenPurchaseFlight, type PenPurchaseFlightData } from "@/components/stor
 import { RoundScore, ScoreBoxes, impactBox } from "@/components/story/ScoreDisplay";
 import { loadStory, saveStory } from "@/lib/story/storage";
 import { useStoryLayout } from "@/hooks/useStoryLayout";
-import { ThemeSelector } from "@/components/ThemeSelector";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { penSlots } from "@/lib/story/upgrades";
 import type { PendingPlacement, PenInstance, StoryState, StoryTile } from "@/lib/story/types";
 import { Button } from "@/components/ui/button";
@@ -121,7 +118,6 @@ function StoryPlay() {
   const navigate = useNavigate();
   const layout = useStoryLayout();
   const compact = layout !== "desktop";
-  const [themeOpen, setThemeOpen] = useState(false);
   const [story, setStory] = useState<StoryState | null>(() => loadStory());
   const [words, setWords] = useState<Set<string> | null>(null);
   const [pending, setPending] = useState<PendingPlacement[]>([]);
@@ -619,7 +615,6 @@ function StoryPlay() {
               <DropdownMenuItem onClick={() => navigate({ to: "/lobby" })}><Home /> Return to main menu</DropdownMenuItem>
               <DropdownMenuItem onClick={startNewStory}><Sparkles /> Start new Story</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setDialog({ kind: "run-info" })}><Info /> Run Info</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setThemeOpen(true)}><Palette /> Theme</DropdownMenuItem>
               <DropdownMenuItem className="text-destructive" onClick={() => { if (window.confirm("End this Story? Your run will be over.")) setStory({ ...story, phase: "defeat" }); }}><Trash2 /> End this Story</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -820,7 +815,6 @@ function StoryPlay() {
         <span className="flex items-center gap-1.5 text-3xl font-black tabular-nums text-gold"><Coins className="h-7 w-7" />{story.coins}</span>
         <Button className="relative tile-gloss px-6" onClick={() => setStory(continueToNextPage(story))}>Next Page <ArrowRight /></Button>
       </div>}
-      <Dialog open={themeOpen} onOpenChange={setThemeOpen}><DialogContent><DialogTitle>Story theme</DialogTitle><ThemeSelector /></DialogContent></Dialog>
       {/* Dialogs */}
       {showIntro ? <PageIntroDialog state={story} onStart={() => setIntroDismissed(story.pageIndex)} /> : null}
       {showEnd ? <StoryEndDialog state={story} won={story.phase === "victory"} onNewStory={startNewStory} /> : null}
