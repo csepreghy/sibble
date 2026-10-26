@@ -25,13 +25,24 @@ function CountNumber({ value, running }: { value: number; running: boolean }) {
 export function ScoreBoxes({ base = 0, mult = 0, running = false, baseDelta, multDelta }: {
   base?: number; mult?: number; running?: boolean; baseDelta?: string | null; multDelta?: string | null;
 }) {
-  return <div className="story-score-boxes tabular-nums" aria-label={`Base ${base} times Mult ${mult}`}>
-    <div key={`base-${base}-${baseDelta}`} data-score-box="base" className={cn("story-number-box bg-base-ink", running && baseDelta && "story-box-arrival story-box-base")}>
+  const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!running || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    for (const [kind, delta] of [["base", baseDelta], ["mult", multDelta]]) {
+      if (!delta) continue;
+      const box = root.current?.querySelector(`[data-score-box="${kind}"]`);
+      if (!box) continue;
+      const color = getComputedStyle(box).backgroundColor;
+      box.animate([{ transform: "scale(1)", boxShadow: `0 0 0 ${color}` }, { transform: "scale(1.09)", boxShadow: `0 0 24px ${color}` }, { transform: "scale(1)", boxShadow: `0 0 0 ${color}` }], { duration: 320, easing: "ease-out" });
+    }
+  }, [base, mult, baseDelta, multDelta, running]);
+  return <div ref={root} className="story-score-boxes tabular-nums" aria-label={`Base ${base} times Mult ${mult}`}>
+    <div data-score-box="base" className="story-number-box bg-base-ink">
       <CountNumber value={base} running={running} />
       {baseDelta && <span className="story-number-delta">{baseDelta}</span>}
     </div>
     <span className="story-score-times" aria-hidden="true">×</span>
-    <div key={`mult-${mult}-${multDelta}`} data-score-box="mult" className={cn("story-number-box bg-mult-ink", running && multDelta && "story-box-arrival story-box-mult")}>
+    <div data-score-box="mult" className="story-number-box bg-mult-ink">
       <CountNumber value={mult} running={running} />
       {multDelta && <span className="story-number-delta">{multDelta}</span>}
     </div>
