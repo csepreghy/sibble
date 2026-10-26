@@ -163,6 +163,9 @@
       var(--glow) 0%,
       var(--color-background) 60%
     );
+    /* Pin the glow to the viewport so it covers the whole screen evenly,
+       instead of fading out at the bottom edge of short content. */
+    background-attachment: fixed;
     color: var(--color-foreground);
     font-family: var(--font-sans);
   }

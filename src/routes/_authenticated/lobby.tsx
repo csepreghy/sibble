@@ -82,13 +82,10 @@ function Lobby() {
           type="button"
           disabled={start.isPending}
           onClick={() => start.mutate(false)}
-          className="flex flex-col items-start gap-3 rounded-lg bg-primary p-5 text-left text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60 sm:col-span-3"
+          className="flex items-center gap-3 rounded-lg bg-primary p-4 text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
         >
-          <Plus className="h-6 w-6" />
-          <span>
-            <span className="block text-lg font-bold">New game</span>
-            <span className="block text-sm opacity-80">Start a game and get a link to share</span>
-          </span>
+          <Plus className="h-5 w-5" />
+          <span className="font-semibold">New game</span>
         </button>
         <Link to="/history" className="flex items-center gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary">
           <History className="h-5 w-5 text-primary" /><span className="font-semibold">History</span>
