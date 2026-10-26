@@ -1,13 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Trash2 } from "lucide-react";
+import { BarChart3, History, Plus, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/hooks/useSession";
-import { createGame, deleteGame, displayNameOf, fetchMyGames, isAdmin, type GameRow } from "@/lib/games";
+import { createGame, displayNameOf, fetchMyGames, isAdmin } from "@/lib/games";
 import { Button } from "@/components/ui/button";
 import { AppNav } from "@/components/AppNav";
 import { BrandLogo } from "@/components/BrandLogo";
+import { GameCard, visibleGames } from "@/components/GameCard";
 
 export const Route = createFileRoute("/_authenticated/lobby")({
   head: () => ({
@@ -58,19 +59,15 @@ function Lobby() {
     navigate({ to: "/", replace: true });
   }
 
-  const visible = (games.data ?? []).filter(
-    (game) => !game.state?.hiddenFor?.includes(game.player1 === userId ? 0 : 1),
-  );
-  const ongoing = visible.filter((game) => game.status !== "finished");
-  const done = visible.filter((game) => game.status === "finished");
+  const ongoing = visibleGames(games.data, userId).filter((game) => game.status !== "finished");
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
       <BrandLogo className="mb-6 h-12 w-auto sm:h-14" />
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold">Your games</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Signed in as {displayNameOf(user)}</p>
+          <h1 className="text-3xl font-bold">Hi, {displayNameOf(user)}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Ready for a game?</p>
         </div>
         <div className="flex items-center gap-2">
           <AppNav />
@@ -80,20 +77,34 @@ function Lobby() {
         </div>
       </header>
 
-
-      <div className="mt-8 flex flex-wrap gap-3">
-        <Button size="lg" disabled={start.isPending} onClick={() => start.mutate(false)}>
-          Start a game & get a link
-        </Button>
+      <div className="mt-8 grid gap-3 sm:grid-cols-3">
+        <button
+          type="button"
+          disabled={start.isPending}
+          onClick={() => start.mutate(false)}
+          className="flex flex-col items-start gap-3 rounded-lg bg-primary p-5 text-left text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60 sm:col-span-3"
+        >
+          <Plus className="h-6 w-6" />
+          <span>
+            <span className="block text-lg font-bold">New game</span>
+            <span className="block text-sm opacity-80">Start a game and get a link to share</span>
+          </span>
+        </button>
+        <Link to="/history" className="flex items-center gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary">
+          <History className="h-5 w-5 text-primary" /><span className="font-semibold">History</span>
+        </Link>
+        <Link to="/stats" className="flex items-center gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary">
+          <BarChart3 className="h-5 w-5 text-primary" /><span className="font-semibold">Statistics</span>
+        </Link>
         {admin.data ? (
-          <Button
-            size="lg"
-            variant="secondary"
+          <button
+            type="button"
             disabled={start.isPending}
             onClick={() => start.mutate(true)}
+            className="flex items-center gap-3 rounded-lg border border-border bg-card p-4 text-left transition-colors hover:border-primary"
           >
-            Solo practice board
-          </Button>
+            <User className="h-5 w-5 text-primary" /><span className="font-semibold">Solo practice</span>
+          </button>
         ) : null}
       </div>
 
@@ -111,82 +122,6 @@ function Lobby() {
           ongoing.map((game) => <GameCard key={game.id} game={game} userId={userId} />)
         )}
       </section>
-
-      {done.length > 0 ? (
-        <section className="mt-10 space-y-3">
-          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
-            Finished
-          </h2>
-          {done.map((game) => (
-            <GameCard key={game.id} game={game} userId={userId} />
-          ))}
-        </section>
-      ) : null}
     </main>
-  );
-}
-
-function GameCard({ game, userId }: { game: GameRow; userId: string }) {
-  const queryClient = useQueryClient();
-  const names: [string, string] = [
-    game.player1_name,
-    game.player2 ? game.player2_name : "waiting for a player",
-  ];
-  const scores = game.state?.scores ?? [0, 0];
-  const history = game.state?.history ?? [];
-  const last = history[history.length - 1] ?? null;
-  const seat: 0 | 1 = game.player1 === userId ? 0 : 1;
-  const yourTurn =
-    game.status === "active" && (game.solo || game.state?.turn === seat);
-
-  const remove = useMutation({
-    mutationFn: () => deleteGame(game.id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["games", userId] });
-      toast.message("Game deleted.");
-    },
-    onError: () => toast.error("Couldn't delete the game. Please try again."),
-  });
-
-  return (
-    <div className="flex items-center gap-2">
-      <Link
-        to="/game/$gameId"
-        params={{ gameId: game.id }}
-        className="flex flex-1 items-center justify-between gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary"
-      >
-        <div className="min-w-0">
-          <p className="font-semibold">
-            {game.solo ? "Solo practice board" : `${names[0]} vs ${names[1]}`}
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {scores[0]} – {scores[1]} ·{" "}
-            {game.status === "finished" ? "finished" : game.status}
-          </p>
-          <p className="mt-1 truncate text-xs text-muted-foreground">
-            {last
-              ? `Last move: ${names[last.player]} — ${last.description} (${last.score} points)`
-              : "No moves yet"}
-          </p>
-        </div>
-        <span className="shrink-0 text-sm font-semibold text-primary">
-          {game.status === "finished" ? "View" : yourTurn ? "Your move" : "Open"}
-        </span>
-      </Link>
-      <Button
-        variant="ghost"
-        size="icon"
-        aria-label="Delete game"
-        disabled={remove.isPending}
-        className="shrink-0 text-muted-foreground hover:text-destructive"
-        onClick={() => {
-          if (window.confirm("Delete this game? This can't be undone.")) {
-            remove.mutate();
-          }
-        }}
-      >
-        <Trash2 className="h-4 w-4" />
-      </Button>
-    </div>
   );
 }

@@ -3,7 +3,8 @@ import { ThemeSelector } from "@/components/ThemeSelector";
 import { NotificationToggle } from "@/components/NotificationToggle";
 
 const TABS = [
-  { to: "/lobby", label: "Games" },
+  { to: "/lobby", label: "Home" },
+  { to: "/history", label: "History" },
   { to: "/stats", label: "Statistics" },
 ] as const;
 
