@@ -34,7 +34,7 @@ import {
 } from "@/lib/story/engine";
 import { inspectPlacement } from "@/lib/story/preview";
 import { reorderPens } from "@/lib/story/pens";
-import { animationEvents, getStoryAnimationMode, setStoryAnimationMode, STORY_CONFETTI_MS, totalCountDuration, type StoryAnimationMode } from "@/lib/story/animation";
+import { animationEvents, countCrossingTime, getStoryAnimationMode, setStoryAnimationMode, STORY_CONFETTI_MS, totalCountDuration, type StoryAnimationMode } from "@/lib/story/animation";
 import { AnimationModeMenu } from "@/components/story/AnimationModeMenu";
 import { ScoreFlight, type ScoreFlightData } from "@/components/story/ScoreFlight";
 import { PenPurchaseFlight, type PenPurchaseFlightData } from "@/components/story/PenPurchaseFlight";
@@ -426,6 +426,7 @@ function StoryPlay() {
       setFlight(null);
     };
     let roundShown = story.page.ink;
+    const inkTarget = PAGES[story.pageIndex]!.inkTarget;
     let confettiFired = false;
     let confettiDone: Promise<void> | null = null;
     let popKey = 0;
@@ -538,9 +539,9 @@ function StoryPlay() {
         const purple = visible(".story-current-score");
         if (purple) impactBox(purple);
         // Confetti pops the moment the count passes the target; the count keeps going.
-        if (!confettiFired && roundFrom < config.inkTarget && roundShown >= config.inkTarget) {
+        if (!confettiFired && roundFrom < inkTarget && roundShown >= inkTarget) {
           confettiFired = true;
-          const at = scaled(countCrossingTime(roundFrom, roundShown, config.inkTarget));
+          const at = scaled(countCrossingTime(roundFrom, roundShown, inkTarget));
           confettiDone = new Promise((resolve) => setTimeout(() => {
             const box = visible(".story-current-score")?.getBoundingClientRect();
             if (!box || cancelAnim.current || window.matchMedia("(prefers-reduced-motion: reduce)").matches) { resolve(); return; }
