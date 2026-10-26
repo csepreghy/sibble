@@ -348,20 +348,24 @@ const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 export function EnhancePickerDialog({
   state,
   enhancement,
+  price,
   onPick,
   onClose,
 }: {
   state: StoryState;
   enhancement: string;
+  price: number;
   onPick: (letter: string) => void;
   onClose: () => void;
 }) {
   // One button per letter: the enhancement applies to every tile of the chosen letter.
+  const [picked, setPicked] = useState<string | null>(null);
   const current = new Map<string, string>();
   for (const tile of state.tiles) {
     if (tile.letter !== "?" && tile.enhancement && !current.has(tile.letter)) current.set(tile.letter, tile.enhancement);
   }
   const enhancedLetters = [...current.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  const affordable = state.coins >= price;
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-h-[85dvh] max-w-md overflow-y-auto">
@@ -376,8 +380,12 @@ export function EnhancePickerDialog({
             <button
               key={letter}
               type="button"
-              onClick={() => onPick(letter)}
-              className="tile-face tile-gloss relative flex aspect-square items-center justify-center rounded-md text-lg font-bold hover:-translate-y-0.5"
+              aria-pressed={picked === letter}
+              onClick={() => setPicked(letter)}
+              className={cn(
+                "tile-face tile-gloss relative flex aspect-square items-center justify-center rounded-md text-lg font-bold hover:-translate-y-0.5",
+                picked === letter && "-translate-y-0.5 ring-2 ring-primary",
+              )}
             >
               {letter}
               {current.get(letter) ? (
@@ -391,6 +399,18 @@ export function EnhancePickerDialog({
             Already enhanced: {enhancedLetters.map(([letter, enh]) => `${letter} (${enh})`).join(", ")}. Picking one of these replaces its enhancement.
           </p>
         ) : null}
+        <div className="flex w-full items-center justify-between gap-2 pt-1">
+          <span className="flex items-center gap-1 rounded-full bg-gold/15 px-3 py-1 text-lg font-bold text-gold">
+            <Coins className="h-4 w-4" /> {price}
+          </span>
+          <Button
+            disabled={!picked || !affordable}
+            className="relative tile-gloss h-10 px-6 text-base font-bold bg-gold-button text-background hover:bg-gold-button/90"
+            onClick={() => picked && onPick(picked)}
+          >
+            {!affordable ? "Not enough Coins" : "Buy"}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
