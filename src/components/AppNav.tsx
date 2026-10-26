@@ -70,61 +70,64 @@ export function AppNav() {
   }
 
   return (
-    <div className="flex flex-wrap items-center justify-end gap-2">
-      <nav className="flex gap-1 rounded-full border border-border bg-secondary/60 p-1">
-        {TABS[mode].map((tab) => (
-          <Link
-            key={tab.to}
-            to={tab.to}
-            className="rounded-full px-4 py-1.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
-            activeProps={{ className: "bg-primary text-primary-foreground hover:text-primary-foreground" }}
+    <>
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <nav className="flex gap-1 rounded-full border border-border bg-secondary/60 p-1">
+          {TABS[mode].map((tab) => (
+            <Link
+              key={tab.to}
+              to={tab.to}
+              className="rounded-full px-4 py-1.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
+              activeProps={{ className: "bg-primary text-primary-foreground hover:text-primary-foreground" }}
+            >
+              {tab.label}
+            </Link>
+          ))}
+        </nav>
+        {mode === "sibble" ? (
+          <Button size="sm" disabled={start.isPending || !userId} onClick={() => start.mutate()}>
+            <Plus className="mr-1 h-4 w-4" /> New game
+          </Button>
+        ) : (
+          <Button size="sm" onClick={startStory}>
+            <Sparkles className="mr-1 h-4 w-4" /> {hasRun ? "Continue Story" : "Start Story"}
+          </Button>
+        )}
+        <div className="flex rounded-full border border-border bg-secondary/60 p-1 text-sm font-semibold" role="group" aria-label="Game mode">
+          <button
+            type="button"
+            onClick={() => mode !== "sibble" && navigate({ to: "/lobby" })}
+            className={cn(
+              "rounded-full px-3 py-1.5 transition-colors",
+              mode === "sibble" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+            )}
           >
-            {tab.label}
-          </Link>
-        ))}
-      </nav>
-      {mode === "sibble" ? (
-        <Button size="sm" disabled={start.isPending || !userId} onClick={() => start.mutate()}>
-          <Plus className="mr-1 h-4 w-4" /> New game
-        </Button>
-      ) : (
-        <Button size="sm" onClick={startStory}>
-          <Sparkles className="mr-1 h-4 w-4" /> {hasRun ? "Continue Story" : "Start Story"}
-        </Button>
-      )}
-      <div className="flex rounded-full border border-border bg-secondary/60 p-1 text-sm font-semibold" role="group" aria-label="Game mode">
-        <button
-          type="button"
-          onClick={() => mode !== "sibble" && navigate({ to: "/lobby" })}
-          className={cn(
-            "rounded-full px-3 py-1.5 transition-colors",
-            mode === "sibble" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
-          )}
-        >
-          Sibble
-        </button>
-        <button
-          type="button"
-          onClick={() => mode !== "story" && navigate({ to: "/story" })}
-          className={cn(
-            "rounded-full px-3 py-1.5 transition-colors",
-            mode === "story" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
-          )}
-        >
-          Story Mode
-        </button>
+            Sibble
+          </button>
+          <button
+            type="button"
+            onClick={() => mode !== "story" && navigate({ to: "/story" })}
+            className={cn(
+              "rounded-full px-3 py-1.5 transition-colors",
+              mode === "story" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            Story Mode
+          </button>
+        </div>
+        <NotificationToggle />
+        {mode === "sibble" && <ThemeSelector />}
       </div>
-      <NotificationToggle />
-      {mode === "sibble" && <ThemeSelector />}
       <Button
         size="sm"
         variant="destructive"
+        className="fixed right-4 top-4 z-50 shadow-md"
         disabled={signOut.isPending}
         onClick={() => signOut.mutate()}
         aria-label="Sign out"
       >
         <LogOut className="mr-1 h-4 w-4" /> Sign out
       </Button>
-    </div>
+    </>
   );
 }
