@@ -146,18 +146,19 @@ function OfferVisual({ offer, state, large, small }: { offer: Offer; state: Stor
         </span>
       );
     case "enhancement": {
-      const enhStyles = {
-        DL: "border-shop-dl/50 bg-shop-dl/15 text-shop-dl",
-        TL: "border-shop-tl/50 bg-shop-tl/15 text-shop-tl",
-        DW: "border-shop-dw/50 bg-shop-dw/15 text-shop-dw",
-        TW: "border-shop-tw/50 bg-shop-tw/15 text-shop-tw",
+      const enhText = {
+        DL: "text-shop-dl",
+        TL: "text-shop-tl",
+        DW: "text-shop-dw",
+        TW: "text-shop-tw",
       } as const;
       return (
-        <span className={cn("flex items-center justify-center rounded-md border font-bold", box, large ? "text-lg" : "text-sm", enhStyles[offer.enhancement])}>
+        <span className={cn("shop-enh-tile relative tile-gloss flex items-center justify-center rounded-md border font-bold", box, large ? "text-lg" : "text-sm", enhText[offer.enhancement])}>
           {offer.enhancement}
         </span>
       );
     }
+
     case "pen": {
       const Icon = penIcon(offer.penId);
       return (
