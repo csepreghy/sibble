@@ -71,7 +71,7 @@ export function PageIntroDialog({
               ))}
             </ul>
           ) : null}
-          <Button className="w-full" size="lg" onClick={onStart}>
+          <Button className="relative tile-gloss w-full" size="lg" onClick={onStart}>
             Start writing
           </Button>
         </div>

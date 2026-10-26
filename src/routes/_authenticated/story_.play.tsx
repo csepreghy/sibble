@@ -901,7 +901,7 @@ function StoryPlay() {
           <Button
             size="sm"
             disabled={busy || story.phase !== "play" || pending.length === 0 || !words}
-            className="story-play-button"
+            className="story-play-button relative tile-gloss text-base"
             onClick={playWord}
           >
             <Play className="mr-1 h-4 w-4" /> Play word
