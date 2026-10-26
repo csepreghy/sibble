@@ -378,12 +378,13 @@ function StoryPlay() {
     const visible = (selector: string) => [...document.querySelectorAll(selector)].find(el => el.getBoundingClientRect().width > 0);
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     // Fly a number from one score box into another (presentation only).
+    // Box-to-box flights keep the boxes' white number colour.
     const flyBox = async (from: string, to: string, kind: "base" | "mult", text: string) => {
       const a = visible(from)?.getBoundingClientRect();
       const b = visible(to)?.getBoundingClientRect();
       if (!a || !b || reduced) return;
       const x = a.left + a.width / 2, y = a.top + a.height / 2;
-      setFlight({ id: ++flightId.current, kind, text, x, y, dx: b.left + b.width / 2 - x, dy: b.top + b.height / 2 - y });
+      setFlight({ id: ++flightId.current, kind, text, x, y, dx: b.left + b.width / 2 - x, dy: b.top + b.height / 2 - y, white: true });
       await wait(500);
       setFlight(null);
     };
