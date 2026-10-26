@@ -14,6 +14,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { loadWordList } from "@/lib/words";
+import { LETTER_VALUES } from "@/lib/scrabble";
 import { PAGES, TWIST_INFO, pageLabel } from "@/lib/story/boards";
 import {
   buyOffer,
@@ -108,6 +109,28 @@ function StoryPlay() {
     | null
   >(null);
   const cancelAnim = useRef(false);
+
+  // --- drag and drop (mirrors the multiplayer game) -------------------------
+  type DragSource = { type: "rack"; tileId: string } | { type: "board"; index: number };
+  const [drag, setDrag] = useState<{
+    tileId: string;
+    letter: string;
+    blank: boolean;
+    source: DragSource;
+    x: number;
+    y: number;
+  } | null>(null);
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const dragStart = useRef<{ x: number; y: number } | null>(null);
+  const movedRef = useRef(false);
+
+  const cellUnder = (x: number, y: number) => {
+    const element = document.elementFromPoint(x, y) as HTMLElement | null;
+    const cell = element?.closest("[data-cell-index]") as HTMLElement | null;
+    if (!cell) return null;
+    const value = Number(cell.dataset["cellIndex"]);
+    return Number.isNaN(value) ? null : value;
+  };
 
   useEffect(() => {
     loadWordList().then(setWords).catch(() => toast.error("Couldn't load the word list."));
