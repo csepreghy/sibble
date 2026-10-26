@@ -9,7 +9,7 @@ const TABS = [
   { to: "/stats", label: "Statistics" },
 ] as const;
 
-export function AppNav() {
+export function AppNav({ showTheme = true }: { showTheme?: boolean }) {
   return (
     <div className="flex items-center gap-2">
     <nav className="flex gap-1 rounded-full border border-border bg-secondary/60 p-1">
@@ -25,7 +25,7 @@ export function AppNav() {
       ))}
     </nav>
       <NotificationToggle />
-      <ThemeSelector />
+      {showTheme && <ThemeSelector />}
     </div>
   );
 }
