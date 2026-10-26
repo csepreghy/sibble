@@ -4,6 +4,8 @@ import { toast } from "sonner";
 import {
   ArrowRight,
   Coins,
+  Droplet,
+  X,
   Home,
   Info,
   Layers,
@@ -29,8 +31,8 @@ import {
   playPlacement,
   sellPen,
 } from "@/lib/story/engine";
-import { validateStoryMove } from "@/lib/story/placement";
-import { scorePlacement } from "@/lib/story/scoring";
+import { inspectPlacement } from "@/lib/story/preview";
+import { RoundScore, ScoreBoxes } from "@/components/story/ScoreDisplay";
 import { loadStory, saveStory } from "@/lib/story/storage";
 import { useStoryLayout } from "@/hooks/useStoryLayout";
 import { ThemeSelector } from "@/components/ThemeSelector";
@@ -177,23 +179,13 @@ function StoryPlay() {
   // Live preview of the pending placement's Ink.
   const preview = useMemo(() => {
     if (!story || !config || !words || pending.length === 0) return null;
-    const validated = validateStoryMove(story.page.board, config.size, pending, (w) => words.has(w));
-    if ("error" in validated) return { error: validated.error };
-    const score = scorePlacement({
-      words: validated.words,
-      size: config.size,
-      board: story.page.board,
-      pending,
-      tiles: story.tiles,
-      premiums: config.premiums,
-      usedPremiums: story.page.usedPremiums,
-      plotTwist: config.plotTwist,
-      letterUpgrades: story.letterUpgrades,
-      wordLengthUpgrades: story.wordLengthUpgrades,
-      pens: story.pens,
+    return inspectPlacement({
+      size: config.size, board: story.page.board, pending, tiles: story.tiles,
+      premiums: config.premiums, usedPremiums: story.page.usedPremiums,
+      plotTwist: config.plotTwist, letterUpgrades: story.letterUpgrades,
+      wordLengthUpgrades: story.wordLengthUpgrades, pens: story.pens,
       longestThisPage: story.page.longestWord,
-    });
-    return { ink: score.totalInk, words: validated.words.length };
+    }, w => words.has(w));
   }, [story, config, words, pending]);
 
   if (!story || !config) {
@@ -501,7 +493,7 @@ function StoryPlay() {
         <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
           <div className="min-w-0">
             <p className="truncate text-xs font-bold text-muted-foreground">Chapter {config.chapter} · Page {config.page}{story.phase === "bookstore" ? " · Complete!" : ""}</p>
-            <p className="truncate text-2xl font-bold tabular-nums">{story.phase === "bookstore" ? "The Bookstore" : story.page.ink.toLocaleString()} {story.phase !== "bookstore" && <span className="text-sm text-muted-foreground">/ {config.inkTarget.toLocaleString()} Ink</span>}</p>
+            {story.phase === "bookstore" && <p className="text-xl font-bold">The Bookstore</p>}
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild><Button variant="outline" size="icon" aria-label="Story settings"><Settings /></Button></DropdownMenuTrigger>
@@ -515,16 +507,12 @@ function StoryPlay() {
           </DropdownMenu>
         </div>
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 text-xs">
-          <p className="min-w-0 truncate text-muted-foreground">Words: <strong className="text-foreground">{story.page.wordsLeft}</strong> · Discards: <strong className="text-foreground">{story.page.discardsLeft}</strong></p>
+          <p className="min-w-0 truncate text-muted-foreground">Discards: <strong className="text-foreground">{story.page.discardsLeft}</strong></p>
           <span className="flex items-center gap-1 text-xl font-bold tabular-nums text-gold"><Coins className="h-4 w-4" />{story.coins}</span>
         </div>
-        <div className="story-score-row tabular-nums" aria-label="Base and Mult">
-          <div className="story-score-value text-base-ink"><span className="text-xs">Base</span><strong key={`compact-base-${anim.base}`} className={cn("text-2xl", busy && "anim-score-pop")}>{busy ? anim.base : 0}</strong><span className="story-score-delta text-xs">{anim.baseDelta}</span></div>
-          <span className="text-muted-foreground">×</span>
-          <div className="story-score-value text-mult-ink"><span className="text-xs">Mult</span><strong key={`compact-mult-${anim.mult}`} className={cn("text-2xl", busy && "anim-score-pop")}>{busy ? anim.mult : 0}</strong><span className="story-score-delta text-xs">{anim.multDelta}</span></div>
-          <span className="min-w-0 truncate text-right text-sm font-bold text-gold">{busy ? (anim.base * anim.mult).toLocaleString() : preview && "ink" in preview ? `~${preview.ink.toLocaleString()}` : 0} Ink</span>
-        </div>
-        <div className="story-score-caption text-xs text-muted-foreground">{anim.label ?? preview?.error ?? ""}{twist && <Popover><PopoverTrigger asChild><Button variant="ghost" size="sm" className="h-5 px-1 text-accent" aria-label="Plot Twist rules"><Info />{twist.name}</Button></PopoverTrigger><PopoverContent><p className="font-bold">{twist.name}</p><p>{twist.description}</p></PopoverContent></Popover>}</div>
+        {story.phase !== "bookstore" && <RoundScore target={config.inkTarget} current={story.page.ink} />}
+        <ScoreBoxes base={busy ? anim.base : 0} mult={busy ? anim.mult : 0} running={busy} baseDelta={anim.baseDelta} multDelta={anim.multDelta} />
+        <div className="story-score-caption text-xs text-muted-foreground">{anim.label ?? ""}{twist && <Popover><PopoverTrigger asChild><Button variant="ghost" size="sm" className="h-5 px-1 text-accent" aria-label="Plot Twist rules"><Info />{twist.name}</Button></PopoverTrigger><PopoverContent><p className="font-bold">{twist.name}</p><p>{twist.description}</p></PopoverContent></Popover>}</div>
       </header>}
       <div className="story-workspace flex min-h-0 flex-1 gap-3 p-3">
         {/* Left sidebar — run information */}
@@ -555,53 +543,10 @@ function StoryPlay() {
             </p>
           </div>
 
-          <div className="rounded-lg bg-secondary/70 p-3 text-center">
-            <p className="text-xs text-muted-foreground">Ink to beat</p>
-            <p className="text-xl font-bold text-base-ink">{config.inkTarget.toLocaleString()}</p>
-            <p className="mt-2 text-xs text-muted-foreground">Current Ink</p>
-            <p className="text-2xl font-bold">{story.page.ink.toLocaleString()}</p>
-          </div>
-
-          <div className="rounded-lg border border-border bg-secondary/40 p-3">
-            <div className="flex items-end justify-between">
-              <div>
-                <p className="text-[0.65rem] font-bold uppercase tracking-wide text-base-ink">Base</p>
-                <p className="flex items-baseline gap-1 text-3xl font-bold text-base-ink">
-                  <span key={`base-${anim.base}`} className={cn("inline-block", anim.running && "anim-score-pop")}>
-                    {anim.running ? anim.base : 0}
-                  </span>
-                  {anim.baseDelta && <span className="text-base font-bold text-base-ink/80">{anim.baseDelta}</span>}
-                </p>
-              </div>
-              <span className="pb-1 text-lg text-muted-foreground">×</span>
-              <div>
-                <p className="text-[0.65rem] font-bold uppercase tracking-wide text-mult-ink">Mult</p>
-                <p className="flex items-baseline gap-1 text-3xl font-bold text-mult-ink">
-                  <span key={`mult-${anim.mult}`} className={cn("inline-block", anim.running && "anim-score-pop")}>
-                    {anim.running ? anim.mult : 0}
-                  </span>
-                  {anim.multDelta && <span className="text-base font-bold text-mult-ink/80">{anim.multDelta}</span>}
-                </p>
-              </div>
-            </div>
-            <p className="mt-1 min-h-4 text-center text-xs text-muted-foreground">
-              {anim.label ??
-                (preview && "ink" in preview
-                  ? `This word: ~${preview.ink.toLocaleString()} Ink`
-                  : preview?.error ?? "")}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 text-center text-xs">
-            <div className="rounded-md bg-secondary/70 px-2 py-1.5">
-              <p className="text-muted-foreground">Words</p>
-              <p className="text-sm font-bold">{story.page.wordsLeft}</p>
-            </div>
-            <div className="rounded-md bg-secondary/70 px-2 py-1.5">
-              <p className="text-muted-foreground">Discards</p>
-              <p className="text-sm font-bold">{story.page.discardsLeft}</p>
-            </div>
-          </div>
+          <RoundScore target={config.inkTarget} current={story.page.ink} />
+          <ScoreBoxes base={busy ? anim.base : 0} mult={busy ? anim.mult : 0} running={busy} baseDelta={anim.baseDelta} multDelta={anim.multDelta} />
+          <p className="min-h-4 text-center text-xs text-muted-foreground">{anim.label ?? ""}</p>
+          <div className="text-center text-sm text-muted-foreground">Discards <strong className="text-lg text-foreground">{story.page.discardsLeft}</strong></div>
 
           <div className="flex items-center justify-center gap-2 rounded-md bg-gold/15 px-2 py-2 text-3xl font-bold text-gold">
             <Coins className="h-7 w-7" /> {story.coins}
@@ -653,6 +598,8 @@ function StoryPlay() {
               letterUpgrades={story.letterUpgrades}
               activeIndex={anim.activeIndex}
               activeWord={anim.activeWord}
+              validIndices={busy ? [] : preview?.validIndices}
+              invalidIndices={busy ? [] : preview?.invalidIndices}
               disabled={busy || story.phase !== "play"}
               hoverIndex={hoverIndex}
               draggingIndex={draggingBoardIndex}
@@ -660,6 +607,12 @@ function StoryPlay() {
               onTilePointerDown={handleBoardTilePointerDown}
             />
           )}
+          {story.phase === "play" && <div className="story-board-status" aria-live="polite">
+            <span className="shrink-0 text-base font-semibold">Words left <strong className="ml-1 text-2xl tabular-nums text-base-ink">{story.page.wordsLeft}</strong></span>
+            {!busy && preview && <span className={cn("story-preview-tag", preview.error ? "bg-destructive/15 text-destructive" : "bg-story-valid/15 text-story-valid")} title={preview.error ?? "Ink before Pens"}>
+              {preview.error ? <><X className="h-4 w-4 shrink-0" /><span className="truncate">{preview.error}</span></> : <><span>+{preview.ink?.toLocaleString()}</span><Droplet className="h-4 w-4" aria-label="Ink before Pens" /></>}
+            </span>}
+          </div>}
         </main>
 
         {/* Right sidebar — Pens */}
