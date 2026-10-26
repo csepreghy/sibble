@@ -532,9 +532,11 @@ function StoryPlay() {
           <span />
           <span className="flex items-center gap-1 text-xl font-bold tabular-nums text-gold"><Coins className="h-4 w-4" />{story.coins}</span>
         </div>
-        {story.phase !== "bookstore" && <RoundScore target={config.inkTarget} current={story.page.ink} />}
-        <ScoreBoxes base={busy ? anim.base : 0} mult={busy ? anim.mult : 0} running={busy} baseDelta={anim.baseDelta} multDelta={anim.multDelta} />
-        <div className="story-score-caption text-xs text-muted-foreground">{anim.label ?? ""}{twist && <Popover><PopoverTrigger asChild><Button variant="ghost" size="sm" className="h-5 px-1 text-accent" aria-label="Plot Twist rules"><Info />{twist.name}</Button></PopoverTrigger><PopoverContent><p className="font-bold">{twist.name}</p><p>{twist.description}</p></PopoverContent></Popover>}</div>
+        {story.phase !== "bookstore" && <>
+          <RoundScore target={config.inkTarget} current={story.page.ink} />
+          <ScoreBoxes base={busy ? anim.base : 0} mult={busy ? anim.mult : 0} running={busy} baseDelta={anim.baseDelta} multDelta={anim.multDelta} />
+          <div className="story-score-caption text-xs text-muted-foreground">{anim.label ?? ""}{twist && <Popover><PopoverTrigger asChild><Button variant="ghost" size="sm" className="h-5 px-1 text-accent" aria-label="Plot Twist rules"><Info />{twist.name}</Button></PopoverTrigger><PopoverContent><p className="font-bold">{twist.name}</p><p>{twist.description}</p></PopoverContent></Popover>}</div>
+        </>}
       </header>}
       <div className="story-workspace flex min-h-0 flex-1 gap-3 p-3">
         {/* Left sidebar — run information */}

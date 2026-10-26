@@ -206,15 +206,16 @@ export function Bookstore({ state, onBuy, compact }: BookstoreProps) {
               onClick={() => setInspect(index)}
               style={{ ["--glow" as string]: glowVar(offer) }}
               className={cn(
-                "shop-card mb-1 flex h-auto aspect-square flex-col items-center justify-between gap-1 whitespace-normal rounded-lg border-2 p-2 text-center",
+                "shop-card mb-1 flex h-auto flex-col items-center justify-between whitespace-normal rounded-lg border-2 text-center",
+                compact ? "gap-0.5 p-1.5" : "aspect-square gap-1 p-2",
                 !affordable && "opacity-70",
               )}
             >
               <span className={cn("self-start text-[0.55rem] font-bold uppercase tracking-widest", cat.text)}>{cat.label}</span>
-              <OfferVisual offer={offer} state={state} />
-              <span className="text-sm font-bold leading-tight">{offerTitle(offer)}</span>
-              <span className="line-clamp-2 text-[0.7rem] leading-tight text-muted-foreground">{shortText(offer, state)}</span>
-              <span className={cn("flex items-center gap-1 self-end rounded-full bg-gold/15 px-2 py-0.5 text-sm font-bold text-gold", !affordable && "text-gold/60")}>
+              <OfferVisual offer={offer} state={state} small={compact} />
+              <span className={cn("font-bold leading-tight", compact ? "line-clamp-2 text-xs" : "text-sm")}>{offerTitle(offer)}</span>
+              <span className={cn("leading-tight text-muted-foreground", compact ? "line-clamp-1 text-[0.65rem]" : "line-clamp-2 text-[0.7rem]")}>{shortText(offer, state)}</span>
+              <span className={cn("flex items-center gap-1 self-end rounded-full bg-gold/15 px-2 py-0.5 font-bold text-gold", compact ? "text-xs" : "text-sm", !affordable && "text-gold/60")}>
                 <Coins className="h-3.5 w-3.5" /> {price}
               </span>
             </Button>
