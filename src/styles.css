@@ -878,6 +878,7 @@
   min-height: 170px;
   padding: 2px 4px;
 }
+.story-compact .story-hud { min-height: 0; }
 .story-compact .story-round-score { margin-block: 2px 6px; }
 .story-compact .story-number-box { height: 44px; }
 .story-compact .story-target-score, .story-compact .story-current-score { height: 58px; }
@@ -930,7 +931,7 @@
   justify-content: center;
 }
 .story-board-square {
-  width: min(100%, max(200px, calc(var(--story-visible-height, 100dvh) - 418px - env(safe-area-inset-top) - env(safe-area-inset-bottom))));
+  width: min(100%, max(200px, calc(var(--story-visible-height, 100dvh) - 360px - env(safe-area-inset-top) - env(safe-area-inset-bottom))));
   max-width: 100%;
   aspect-ratio: 1;
   flex: none;
