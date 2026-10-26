@@ -53,7 +53,7 @@ export function StoryRack({
             onClick={() => onSelect(tile.id)}
             onPointerDown={(event) => onTilePointerDown?.(tile.id, event)}
             className={cn(
-              "relative flex h-auto aspect-square w-10 shrink-0 items-center justify-center rounded-[4px] p-0 text-lg font-bold transition-all duration-150 hover:-translate-y-1 hover:shadow-lg active:scale-95 sm:w-12 sm:rounded-md sm:text-xl",
+              "relative flex h-auto aspect-square w-10 shrink-0 items-center justify-center rounded-[4px] p-0 text-lg font-bold transition-all duration-150 hover:-translate-y-1 hover:text-tile-foreground hover:shadow-lg active:scale-95 sm:w-12 sm:rounded-md sm:text-xl",
               compact && "story-rack-tile",
               tile.enhancement ? ENH_CLASS[tile.enhancement] : "tile-face",
               gloss && "tile-gloss",
