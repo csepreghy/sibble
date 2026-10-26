@@ -18,7 +18,7 @@ import { PenCurrentBonus, PenDescription } from "./PenDescription";
 // --- Page intro ----------------------------------------------------------
 
 const FIRST_PAGE_TIPS = [
-  "Create a word through the centre star — it's the mandatory starting square and gives no scoring bonus.",
+  "Create a word through the centre tile — it's the mandatory starting square and gives no scoring bonus.",
   "Letters add Base Ink. Longer words increase Mult.",
   "Base × Mult = Ink. Reach the target before you run out of words.",
   "You can discard tiles to draw replacements.",

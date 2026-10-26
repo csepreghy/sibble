@@ -1,5 +1,5 @@
 // Size-parameterized word placement validation for Story mode boards.
-// Mirrors the multiplayer rules: one line, contiguous, centre star first,
+// Mirrors the multiplayer rules: one line, contiguous, centre square first,
 // must connect afterwards, every formed word must be in the dictionary.
 
 import type { BoardTile, PendingPlacement } from "./types";
@@ -94,7 +94,7 @@ export function validateStoryMove(
   const center = ((size - 1) / 2) * size + (size - 1) / 2;
   const boardIsEmpty = board.every((cell) => cell === null);
   if (boardIsEmpty) {
-    if (!pending.has(center)) return { error: "The first word must cross the centre star." };
+    if (!pending.has(center)) return { error: "The first word must cross the centre square." };
     if (indices.length < 2) return { error: "The first word needs at least two letters." };
   } else {
     const touches = indices.some((index) => {
