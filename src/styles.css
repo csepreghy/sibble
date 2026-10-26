@@ -945,6 +945,7 @@
 .story-rack-tile > span:nth-child(2) { font-size: 10px; left: 3px; bottom: 3px; }
 .story-rack-tile > span:nth-child(3) { font-size: 9px; right: 2px; bottom: 3px; }
 .story-compact .story-actions { display: flex; flex-wrap: nowrap; width: 100%; height: 44px; gap: 5px; }
+.story-actions.hidden { display: none; }
 .story-compact .story-actions > button { height: 44px; min-width: 44px; padding-inline: 10px; }
 .story-compact .story-actions .story-play-button { order: -1; flex: 1; }
 .story-compact .story-action-label { display: none; }
