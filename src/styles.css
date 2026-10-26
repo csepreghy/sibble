@@ -867,7 +867,7 @@
 @media (prefers-reduced-motion: reduce) { .story-confetti-piece { display: none; } }
 @media (prefers-reduced-motion: reduce) { .story-score-flight { display: none; } }
 .story-board-status .story-preview-tag-slot { display: flex; justify-content: flex-end; flex-basis: 100%; }
-.story-preview-tag { display: inline-flex; width: fit-content; align-items: center; justify-content: center; gap: 4px; min-width: 0; max-width: 60%; border-radius: 4px; padding: 4px; font-size: 14px; font-weight: 700; }
+.story-preview-tag { display: inline-flex; width: fit-content; align-items: center; justify-content: center; gap: 4px; min-width: 0; max-width: 60%; border-radius: 4px; padding: 4px; line-height: 1; font-size: 14px; font-weight: 700; }
 .story-word-valid { outline: 3px solid var(--story-valid); outline-offset: -3px; }
 .story-word-invalid { outline: 3px solid var(--destructive); outline-offset: -3px; }
 .story-hud {
