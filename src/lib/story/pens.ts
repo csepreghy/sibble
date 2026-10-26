@@ -1,4 +1,17 @@
 // The ten Pens — passive scoring items shown in the right sidebar.
+import type { PenInstance } from "./types";
+
+/** Reorder owned instances without dropping or changing their live bonuses. */
+export function reorderPens(pens: PenInstance[], activeId: string, overId: string): PenInstance[] {
+  const from = pens.findIndex((pen) => pen.penId === activeId);
+  const to = pens.findIndex((pen) => pen.penId === overId);
+  if (from < 0 || to < 0 || from === to) return pens;
+  const reordered = [...pens];
+  const [moved] = reordered.splice(from, 1);
+  if (!moved) return pens;
+  reordered.splice(to, 0, moved);
+  return reordered;
+}
 
 export interface PenDef {
   id: string;
