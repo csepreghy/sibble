@@ -71,6 +71,10 @@ export function StoryBoard({
   const letterFont = `${(100 / size) * 0.44}cqw`;
   const cornerFont = `${(100 / size) * 0.17}cqw`;
   const labelFont = `${(100 / size) * 0.2}cqw`;
+  // Word outlines scale with tile size so they look equally thick on every board
+  // (≈3px on a phone-sized 7×7 board, where the original fixed width was tuned).
+  const outlineWidth = `max(1px, ${(100 / size) * 0.06}cqw)`;
+  const outlineRadius = `${(100 / size) * 0.09}cqw`;
 
   const viewportRef = useRef<HTMLDivElement>(null);
   const [zoom, setZoom] = useState(1);
@@ -280,7 +284,7 @@ export function StoryBoard({
                 const rows = word.indices.map(index => Math.floor(index / size));
                 const cols = word.indices.map(index => index % size);
                 if (!rows.length) return null;
-                return <div key={i} data-word-valid={word.valid} className={cn("rounded-[4px] border-[3px]", "scoring" in word ? "border-mult-ink" : word.valid ? "border-story-valid" : "border-destructive")} style={{ gridRow: `${Math.min(...rows) + 1} / ${Math.max(...rows) + 2}`, gridColumn: `${Math.min(...cols) + 1} / ${Math.max(...cols) + 2}` }} />;
+                return <div key={i} data-word-valid={word.valid} className={cn("border-solid", "scoring" in word ? "border-mult-ink" : word.valid ? "border-story-valid" : "border-destructive")} style={{ gridRow: `${Math.min(...rows) + 1} / ${Math.max(...rows) + 2}`, gridColumn: `${Math.min(...cols) + 1} / ${Math.max(...cols) + 2}`, borderWidth: outlineWidth, borderRadius: outlineRadius }} />;
               })}
             </div>
           </div>
