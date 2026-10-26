@@ -4,7 +4,21 @@ import { useEffect, useRef, useState } from "react";
 // Count-up waits for the impact flash so it begins only after the hit.
 const IMPACT_MS = 80;
 
-function CountNumber({ value, running }: { value: number; running: boolean }) {
+/** Physical hit on a score box: fast grow + jolt, slow settle, white flash fading out. */
+export function impactBox(box: Element) {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const color = getComputedStyle(box).backgroundColor;
+  box.animate([
+    { transform: "translate(0,0) scale(1)" },
+    { transform: "translate(-4px,1px) scale(1.16)", offset: 0.08 },
+    { transform: "translate(3px,-1px) scale(1.14)", offset: 0.16 },
+    { transform: "translate(-2px,0) scale(1.11)", offset: 0.26 },
+    { transform: "translate(0,0) scale(1)" },
+  ], { duration: 380, easing: "cubic-bezier(.2,.7,.3,1)" });
+  box.animate([{ backgroundColor: "white", boxShadow: `0 0 28px ${color}` }, { backgroundColor: color, boxShadow: `0 0 0 ${color}` }], { duration: IMPACT_MS + 10, easing: "ease-out" });
+}
+
+export function CountNumber({ value, running }: { value: number; running: boolean }) {
   const [shown, setShown] = useState(value);
   const previous = useRef(value);
   useEffect(() => {
@@ -26,9 +40,11 @@ function CountNumber({ value, running }: { value: number; running: boolean }) {
   return <strong>{shown.toLocaleString(undefined, { maximumFractionDigits: 1 })}</strong>;
 }
 
-export function ScoreBoxes({ base = 0, mult = 0, running = false, baseDelta, multDelta }: {
+export function ScoreBoxes({ base = 0, mult = 0, running = false, baseDelta, multDelta, baseHidden, multHidden, popKey = 0 }: {
   base?: number; mult?: number; running?: boolean; baseDelta?: string | null; multDelta?: string | null;
+  baseHidden?: boolean; multHidden?: boolean; popKey?: number;
 }) {
+  const pop = popKey ? "story-zero-pop" : undefined;
   const root = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!running || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -36,34 +52,23 @@ export function ScoreBoxes({ base = 0, mult = 0, running = false, baseDelta, mul
       if (!delta) continue;
       const box = root.current?.querySelector(`[data-score-box="${kind}"]`);
       if (!box) continue;
-      const color = getComputedStyle(box).backgroundColor;
-      // Impact: quick jolt + brief scale pulse (visual transforms only).
-      // Impact: snap up fast, settle slowly, with a quick jolt (visual transforms only).
-      box.animate([
-        { transform: "translate(0,0) scale(1)" },
-        { transform: "translate(-4px,1px) scale(1.16)", offset: 0.08 },
-        { transform: "translate(3px,-1px) scale(1.14)", offset: 0.16 },
-        { transform: "translate(-2px,0) scale(1.11)", offset: 0.26 },
-        { transform: "translate(0,0) scale(1)" },
-      ], { duration: 380, easing: "cubic-bezier(.2,.7,.3,1)" });
-      // Starts solid white on impact, then fades back to the box colour.
-      box.animate([{ backgroundColor: "white", boxShadow: `0 0 28px ${color}` }, { backgroundColor: color, boxShadow: `0 0 0 ${color}` }], { duration: IMPACT_MS + 10, easing: "ease-out" });
+      impactBox(box);
     }
   }, [base, mult, baseDelta, multDelta, running]);
   return <div ref={root} className="story-score-boxes tabular-nums" aria-label={`Base ${base} times Mult ${mult}`}>
     <div data-score-box="base" className="story-number-box tile-gloss bg-base-ink">
-      <CountNumber value={base} running={running} />
+      {!baseHidden && <span key={popKey} className={pop}><CountNumber value={base} running={running} /></span>}
       {baseDelta && <span className="story-number-delta">{baseDelta}</span>}
     </div>
     <span className="story-score-times" aria-hidden="true">×</span>
     <div data-score-box="mult" className="story-number-box tile-gloss bg-mult-ink">
-      <CountNumber value={mult} running={running} />
+      {!multHidden && <span key={popKey} className={pop}><CountNumber value={mult} running={running} /></span>}
       {multDelta && <span className="story-number-delta">{multDelta}</span>}
     </div>
   </div>;
 }
 
-export function RoundScore({ target, current }: { target: number; current: number }) {
+export function RoundScore({ target, current, running = false }: { target: number; current: number; running?: boolean }) {
   return <div className="story-round-score tabular-nums">
     <div className="story-target-score tile-gloss">
       <span className="text-xs">Score at least</span>
@@ -71,7 +76,7 @@ export function RoundScore({ target, current }: { target: number; current: numbe
     </div>
     <div className="story-current-score tile-gloss">
       <span className="text-xs">Round score</span>
-      <span className="flex items-center justify-center gap-1.5 text-3xl font-bold">{current.toLocaleString()}<Droplet className="h-5 w-5" aria-label="Ink" /></span>
+      <span className="flex items-center justify-center gap-1.5 text-3xl font-bold"><CountNumber value={current} running={running} /><Droplet className="h-5 w-5" aria-label="Ink" /></span>
     </div>
   </div>;
 }

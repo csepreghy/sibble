@@ -859,6 +859,8 @@
 }
 /* Ease-in: starts slow, hits the box at full speed, fully opaque the whole way. */
 .story-score-flight { position: fixed; z-index: 100; pointer-events: none; font-size: 28px; font-weight: 800; text-shadow: 0 2px 4px var(--background); animation: story-number-flight 500ms cubic-bezier(.4,0,1,.6) both; }
+@keyframes story-zero-pop { from { transform: scale(0); } to { transform: scale(1); } }
+.story-zero-pop { display: inline-block; animation: story-zero-pop 260ms cubic-bezier(.3,1.4,.5,1) both; }
 @keyframes story-confetti { 0% { transform: translate(-50%,-50%) rotate(0); opacity: 1; } 70% { opacity: 1; } 100% { transform: translate(calc(-50% + var(--cx)), calc(-50% + var(--cy) + 40px)) rotate(var(--cr)); opacity: 0; } }
 .story-confetti-piece { position: absolute; width: 7px; height: 11px; border-radius: 2px; animation: story-confetti 800ms cubic-bezier(.15,.7,.4,1) both; }
 @media (prefers-reduced-motion: reduce) { .story-confetti-piece { display: none; } }
