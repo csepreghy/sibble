@@ -1,15 +1,61 @@
-import { Coins } from "lucide-react";
+import { ArrowRight, Check, CheckCircle2, Coins, Sparkles, Star } from "lucide-react";
+import { useState } from "react";
 import { LETTER_VALUES } from "@/lib/scrabble";
 import type { Offer, StoryState } from "@/lib/story/types";
 import { penDef } from "@/lib/story/pens";
 import { priceFor, upgradeDef } from "@/lib/story/upgrades";
+import { PAGES, TWIST_INFO, pageLabel } from "@/lib/story/boards";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { penIcon } from "./PenSidebar";
 
-interface BookstoreProps {
-  state: StoryState;
-  onBuy: (offerIndex: number) => void;
-  onContinue?: () => void;
+const PEN_SHORT: Record<string, string> = {
+  minimalist: "3-letter words: +5 Base per letter.",
+  "vowel-power": "Vowels give double Base.",
+  crossword: "+2 Mult per extra word formed.",
+  "growing-vocabulary": "5-letter words: +1 Mult, forever.",
+  catnip: "3-letter words: +10 Mult.",
+  "echo-chamber": "Reused letters retrigger.",
+};
+const UPGRADE_SHORT: Record<string, string> = {
+  "bigger-rack": "+1 rack tile.",
+  "extra-chance": "+1 discard per Page.",
+  "deep-pockets": "+1 word per Page.",
+  "bargain-hunter": "20% off the Bookstore.",
+  "extra-shelf": "+1 Pen slot.",
+  "flexible-fingers": "Discard up to 4 tiles.",
+  "golden-payday": "+2 Coins per Page.",
+};
+const ENH_SHORT = { DL: "×2 letter Base.", TL: "×3 letter Base.", DW: "×2 Word Mult.", TW: "×3 Word Mult." };
+const ENH_FULL = {
+  DL: "Double one tile's Base Ink, every time it scores.",
+  TL: "Triple one tile's Base Ink, every time it scores.",
+  DW: "One tile doubles the Mult of every word it joins.",
+  TW: "One tile triples the Mult of every word it joins.",
+};
+
+function category(offer: Offer): { label: string; border: string; text: string } {
+  switch (offer.kind) {
+    case "letter":
+      return { label: "Letter", border: "border-shop-letter/70", text: "text-shop-letter" };
+    case "word-length":
+      return { label: "Word", border: "border-shop-length/70", text: "text-shop-length" };
+    case "enhancement": {
+      const map = {
+        DL: ["border-shop-dl/70", "text-shop-dl"],
+        TL: ["border-shop-tl/80", "text-shop-tl"],
+        DW: ["border-shop-dw/70", "text-shop-dw"],
+        TW: ["border-shop-tw/80", "text-shop-tw"],
+      } as const;
+      const [border, text] = map[offer.enhancement];
+      return { label: "Enhance", border, text };
+    }
+    case "pen":
+      return { label: "Pen", border: "border-shop-pen/70", text: "text-shop-pen" };
+    case "upgrade":
+      return { label: "Permanent", border: "border-shop-upgrade/70", text: "text-shop-upgrade" };
+  }
 }
 
 function offerTitle(offer: Offer): string {
@@ -19,7 +65,7 @@ function offerTitle(offer: Offer): string {
     case "word-length":
       return `${offer.length}-letter words`;
     case "enhancement":
-      return `${offer.enhancement} enhancement`;
+      return `${offer.enhancement} Enhancement`;
     case "pen":
       return penDef(offer.penId).name;
     case "upgrade":
@@ -27,127 +73,228 @@ function offerTitle(offer: Offer): string {
   }
 }
 
-function offerBody(offer: Offer, state: StoryState) {
+function letterBase(offer: Extract<Offer, { kind: "letter" }>, state: StoryState) {
+  return (LETTER_VALUES[offer.letter] ?? 0) + (state.letterUpgrades[offer.letter] ?? 0);
+}
+function lengthMult(offer: Extract<Offer, { kind: "word-length" }>, state: StoryState) {
+  return offer.length + (state.wordLengthUpgrades[offer.length] ?? 0);
+}
+
+function shortText(offer: Offer, state: StoryState): string {
   switch (offer.kind) {
     case "letter": {
-      const current = (LETTER_VALUES[offer.letter] ?? 0) + (state.letterUpgrades[offer.letter] ?? 0);
-      return (
-        <>
-          <span className="tile-face flex h-12 w-12 items-center justify-center rounded-md text-2xl font-bold">
-            {offer.letter}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            Base {current} → <span className="font-bold text-base-ink">{current + 1}</span>
-          </span>
-        </>
-      );
+      const b = letterBase(offer, state);
+      return `Base ${b} → ${b + 1}.`;
     }
     case "word-length": {
-      const current = offer.length + (state.wordLengthUpgrades[offer.length] ?? 0);
-      return (
-        <>
-          <span className="text-2xl font-bold text-mult-ink">×{current + 1}</span>
-          <span className="text-xs text-muted-foreground">
-            Mult ×{current} → <span className="font-bold text-mult-ink">×{current + 1}</span>
-          </span>
-        </>
-      );
+      const m = lengthMult(offer, state);
+      return `Mult ×${m} → ×${m + 1}.`;
     }
     case "enhancement":
-      return (
-        <>
-          <span
-            className={cn(
-              "flex h-12 w-12 items-center justify-center rounded-md text-sm font-bold",
-              `tile-enh-${offer.enhancement.toLowerCase()}`,
-            )}
-          >
-            {offer.enhancement}
-          </span>
-          <span className="text-center text-xs text-muted-foreground">
-            {offer.enhancement === "DL" && "Double one tile's Base Ink, every time it scores."}
-            {offer.enhancement === "TL" && "Triple one tile's Base Ink, every time it scores."}
-            {offer.enhancement === "DW" && "One tile doubles the Mult of every word it joins."}
-            {offer.enhancement === "TW" && "One tile triples the Mult of every word it joins."}
-          </span>
-        </>
-      );
-    case "pen": {
-      const def = penDef(offer.penId);
-      const Icon = penIcon(offer.penId);
-      return (
-        <>
-          <Icon className="h-8 w-8 text-primary" />
-          <span className="text-center text-xs text-muted-foreground">{def.description}</span>
-        </>
-      );
-    }
-    case "upgrade": {
-      const def = upgradeDef(offer.upgradeId);
-      return (
-        <>
-          <span className="rounded-md border border-primary/50 bg-primary/10 px-2 py-1 text-xs font-bold uppercase tracking-wide text-primary">
-            Permanent
-          </span>
-          <span className="text-center text-xs text-muted-foreground">{def.description}</span>
-        </>
-      );
-    }
+      return ENH_SHORT[offer.enhancement];
+    case "pen":
+      return PEN_SHORT[offer.penId] ?? penDef(offer.penId).description;
+    case "upgrade":
+      return UPGRADE_SHORT[offer.upgradeId] ?? upgradeDef(offer.upgradeId).description;
   }
 }
 
+function fullText(offer: Offer, state: StoryState): string {
+  switch (offer.kind) {
+    case "letter": {
+      const b = letterBase(offer, state);
+      return `Every ${offer.letter} tile permanently scores +1 Base Ink (${b} → ${b + 1}) for the rest of this Story.`;
+    }
+    case "word-length": {
+      const m = lengthMult(offer, state);
+      return `Words of exactly ${offer.length} letters start with +1 Mult (×${m} → ×${m + 1}) for the rest of this Story.`;
+    }
+    case "enhancement":
+      return `${ENH_FULL[offer.enhancement]} You'll choose which tile after buying.`;
+    case "pen":
+      return penDef(offer.penId).description;
+    case "upgrade":
+      return upgradeDef(offer.upgradeId).description;
+  }
+}
+
+function OfferVisual({ offer, state, large }: { offer: Offer; state: StoryState; large?: boolean }) {
+  const box = large ? "h-16 w-16" : "h-11 w-11";
+  switch (offer.kind) {
+    case "letter":
+      return (
+        <span className={cn("tile-face relative flex items-center justify-center rounded-md font-bold", box, large ? "text-3xl" : "text-xl")}>
+          {offer.letter}
+          <span className="absolute bottom-0.5 right-1 text-[0.6rem] font-bold">{letterBase(offer, state) + 1}</span>
+        </span>
+      );
+    case "word-length":
+      return (
+        <span className={cn("flex flex-col items-center justify-center rounded-md border border-shop-length/50 bg-shop-length/10 font-bold text-mult-ink", box)}>
+          <span className={large ? "text-2xl leading-none" : "text-lg leading-none"}>{offer.length}</span>
+          <span className="text-[0.6rem] leading-none">×{lengthMult(offer, state) + 1}</span>
+        </span>
+      );
+    case "enhancement":
+      return (
+        <span className={cn("flex items-center justify-center rounded-md font-bold", box, large ? "text-lg" : "text-sm", `tile-enh-${offer.enhancement.toLowerCase()}`)}>
+          {offer.enhancement}
+        </span>
+      );
+    case "pen": {
+      const Icon = penIcon(offer.penId);
+      return (
+        <span className={cn("flex items-center justify-center rounded-full border border-shop-pen/50 bg-shop-pen/15 shadow-[0_0_14px_color-mix(in_oklab,var(--color-shop-pen)_35%,transparent)]", box)}>
+          <Icon className={cn("text-shop-pen", large ? "h-8 w-8" : "h-6 w-6")} />
+        </span>
+      );
+    }
+    case "upgrade":
+      return (
+        <span className={cn("flex items-center justify-center rounded-md border border-shop-upgrade/50 bg-shop-upgrade/15 rotate-45", large ? "h-12 w-12" : "h-9 w-9")}>
+          <Star className={cn("-rotate-45 text-shop-upgrade", large ? "h-6 w-6" : "h-4 w-4")} />
+        </span>
+      );
+  }
+}
+
+interface BookstoreProps {
+  state: StoryState;
+  onBuy: (offerIndex: number) => void;
+}
+
 export function Bookstore({ state, onBuy }: BookstoreProps) {
+  const [inspect, setInspect] = useState<number | null>(null);
+  const offers = state.offers ?? [];
+  const inspected = inspect !== null ? offers[inspect] : undefined;
+  const inspectedPrice = inspected ? priceFor(state.upgrades, inspected.price) : 0;
+
   return (
     <div className="flex h-full flex-col">
-      <header className="mb-3 flex items-center justify-between">
+      <header className="mb-4 flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold">The Bookstore</h2>
-          <p className="text-xs text-muted-foreground">Spend your Coins — everything lasts for the rest of this Story.</p>
+          <p className="text-xs text-muted-foreground">Tools for writing your next Page. Tap an item for details.</p>
         </div>
         <span className="flex items-center gap-2 rounded-full bg-gold/15 px-4 py-1 text-3xl font-bold text-gold">
           <Coins className="h-7 w-7" /> {state.coins}
         </span>
       </header>
 
-      <div className="grid flex-1 grid-cols-2 gap-2 overflow-y-auto sm:grid-cols-3 lg:grid-cols-4">
-        {(state.offers ?? []).map((offer, index) => {
-          if (offer.sold) return null;
+      <div className="grid grid-cols-2 content-start gap-3 overflow-y-auto sm:grid-cols-3 lg:grid-cols-4">
+        {offers.map((offer, index) => {
           const price = priceFor(state.upgrades, offer.price);
           const affordable = state.coins >= price;
+          const cat = category(offer);
           return (
             <button
               key={index}
               type="button"
-              disabled={offer.sold || !affordable}
-              onClick={() => onBuy(index)}
+              disabled={offer.sold}
+              onClick={() => setInspect(index)}
               className={cn(
-                "flex flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card p-3 transition-all",
-                offer.sold
-                  ? "opacity-40"
-                  : affordable
-                    ? "hover:border-primary hover:shadow-panel"
-                    : "opacity-60",
+                "relative flex flex-col items-center gap-1.5 rounded-xl border-2 bg-card px-2 pb-2 pt-1.5 text-center transition-all",
+                cat.border,
+                !offer.sold && "hover:-translate-y-0.5 hover:shadow-panel",
+                !offer.sold && !affordable && "opacity-70",
               )}
             >
-              {offerBody(offer, state)}
-              <span className="text-sm font-bold">{offerTitle(offer)}</span>
-              <span
-                className={cn(
-                  "flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold",
-                  "bg-gold/15 text-base text-gold",
-                )}
-              >
-                {offer.sold ? "Sold" : (
-                  <>
-                    <Coins className="h-3 w-3" /> {price}
-                  </>
-                )}
+              <span className={cn("self-start text-[0.55rem] font-bold uppercase tracking-widest", cat.text)}>{cat.label}</span>
+              <OfferVisual offer={offer} state={state} />
+              <span className="text-sm font-bold leading-tight">{offerTitle(offer)}</span>
+              <span className="line-clamp-2 min-h-[2rem] text-[0.7rem] leading-tight text-muted-foreground">
+                {shortText(offer, state)}
               </span>
+              <span className={cn("flex items-center gap-1 rounded-full bg-gold/15 px-2 py-0.5 text-sm font-bold text-gold", !affordable && !offer.sold && "text-gold/60")}>
+                <Coins className="h-3.5 w-3.5" /> {price}
+              </span>
+              {offer.sold ? (
+                <span className="absolute inset-0 flex items-center justify-center rounded-[10px] bg-background/55">
+                  <span className="flex items-center gap-1 rounded-full bg-secondary px-3 py-1 text-xs font-bold uppercase tracking-wide">
+                    <Check className="h-3.5 w-3.5" /> Sold
+                  </span>
+                </span>
+              ) : null}
             </button>
           );
         })}
       </div>
 
+      <Dialog open={!!inspected} onOpenChange={(open) => !open && setInspect(null)}>
+        <DialogContent className="max-w-sm">
+          {inspected ? (
+            <>
+              <DialogHeader className="items-center text-center">
+                <span className={cn("text-[0.65rem] font-bold uppercase tracking-widest", category(inspected).text)}>
+                  {category(inspected).label}
+                </span>
+                <div className="py-2">
+                  <OfferVisual offer={inspected} state={state} large />
+                </div>
+                <DialogTitle>{offerTitle(inspected)}</DialogTitle>
+                <DialogDescription>{fullText(inspected, state)}</DialogDescription>
+              </DialogHeader>
+              <Button
+                size="lg"
+                disabled={inspected.sold || state.coins < inspectedPrice}
+                onClick={() => {
+                  const i = inspect!;
+                  setInspect(null);
+                  onBuy(i);
+                }}
+              >
+                {state.coins < inspectedPrice ? "Not enough Coins" : "Buy"}
+                <span className="ml-2 flex items-center gap-1 text-gold">
+                  <Coins className="h-4 w-4" /> {inspectedPrice}
+                </span>
+              </Button>
+            </>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+/** Left-sidebar Page Complete summary shown while shopping. */
+export function BookstoreSummary({ state, onContinue }: { state: StoryState; onContinue: () => void }) {
+  const done = PAGES[state.pageIndex]!;
+  const next = PAGES[state.pageIndex + 1];
+  return (
+    <div className="flex flex-1 flex-col gap-3">
+      <div>
+        <p className="text-xs text-muted-foreground">{pageLabel(done)}</p>
+        <p className="flex items-center gap-1.5 text-lg font-bold text-primary">
+          <CheckCircle2 className="h-5 w-5" /> Page Complete!
+        </p>
+      </div>
+      <div className="rounded-lg bg-secondary/70 p-3 text-center">
+        <p className="text-xs text-muted-foreground">Ink earned</p>
+        <p className="text-xl font-bold">
+          {state.page.ink.toLocaleString()} <span className="text-sm text-muted-foreground">/ {done.inkTarget.toLocaleString()}</span>
+        </p>
+        <p className="mt-2 text-xs text-muted-foreground">Reward</p>
+        <p className="flex items-center justify-center gap-1 text-lg font-bold text-gold">
+          +{done.coins + (state.upgrades.includes("golden-payday") ? 2 : 0)} <Coins className="h-4 w-4" />
+        </p>
+      </div>
+      {next ? (
+        <div className="rounded-lg border border-border bg-secondary/40 p-3">
+          <p className="text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">Up next</p>
+          <p className="text-sm font-bold">{pageLabel(next)}</p>
+          {next.plotTwist ? (
+            <p className="flex items-center gap-1 text-xs font-bold text-accent">
+              <Sparkles className="h-3 w-3" /> {TWIST_INFO[next.plotTwist].name}
+            </p>
+          ) : null}
+          <p className="mt-1 text-xs text-muted-foreground">
+            {next.size}×{next.size} board · {next.inkTarget.toLocaleString()} Ink required
+          </p>
+        </div>
+      ) : null}
+      <Button size="lg" className="mt-auto w-full" onClick={onContinue}>
+        Continue <ArrowRight className="ml-1 h-4 w-4" />
+      </Button>
     </div>
   );
 }
