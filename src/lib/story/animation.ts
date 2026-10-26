@@ -27,3 +27,13 @@ export function setStoryAnimationMode(mode: StoryAnimationMode) {
 export function animationEvents(events: ScoreEvent[], mode: StoryAnimationMode): ScoreEvent[] {
   return mode === "normal" ? events : events.filter(event => event.type === "word" || event.type === "result");
 }
+/** Time (unscaled ms) at which a total count from `from` to `to` first reaches `threshold`. */
+export function countCrossingTime(from: number, to: number, threshold: number): number {
+  const duration = totalCountDuration(to - from);
+  if (threshold <= from) return 0;
+  if (threshold >= to) return duration;
+  const f = (threshold - from) / (to - from);
+  // invert 0.6p + 0.4p² = f
+  const p = (-0.6 + Math.sqrt(0.36 + 1.6 * f)) / 0.8;
+  return p * duration;
+}

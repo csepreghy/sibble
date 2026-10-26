@@ -34,7 +34,7 @@ import {
 } from "@/lib/story/engine";
 import { inspectPlacement } from "@/lib/story/preview";
 import { reorderPens } from "@/lib/story/pens";
-import { animationEvents, getStoryAnimationMode, setStoryAnimationMode, STORY_CONFETTI_MS, totalCountDuration, type StoryAnimationMode } from "@/lib/story/animation";
+import { animationEvents, countCrossingTime, getStoryAnimationMode, setStoryAnimationMode, STORY_CONFETTI_MS, totalCountDuration, type StoryAnimationMode } from "@/lib/story/animation";
 import { AnimationModeMenu } from "@/components/story/AnimationModeMenu";
 import { ScoreFlight, type ScoreFlightData } from "@/components/story/ScoreFlight";
 import { PenPurchaseFlight, type PenPurchaseFlightData } from "@/components/story/PenPurchaseFlight";
@@ -426,6 +426,9 @@ function StoryPlay() {
       setFlight(null);
     };
     let roundShown = story.page.ink;
+    const inkTarget = PAGES[story.pageIndex]!.inkTarget;
+    let confettiFired = false;
+    let confettiDone: Promise<void> | null = null;
     let popKey = 0;
     for (const event of animationEvents(result.score.events, animationMode)) {
       if (cancelAnim.current) return;
@@ -529,12 +532,24 @@ function StoryPlay() {
         // Base -> Round score: purple box counts up.
         await flyBox('[data-score-box="base"]', ".story-current-score", "base", event.ink.toLocaleString());
         if (cancelAnim.current) return;
+        const roundFrom = roundShown;
         roundShown += event.ink;
         current = { ...current, baseHidden: true, baseDelta: null, roundScore: roundShown };
         setAnim(current);
         const purple = visible(".story-current-score");
         if (purple) impactBox(purple);
-        await delay();
+        // Confetti pops the moment the count passes the target; the count keeps going.
+        if (!confettiFired && roundFrom < inkTarget && roundShown >= inkTarget) {
+          confettiFired = true;
+          const at = scaled(countCrossingTime(roundFrom, roundShown, inkTarget));
+          confettiDone = new Promise((resolve) => setTimeout(() => {
+            const box = visible(".story-current-score")?.getBoundingClientRect();
+            if (!box || cancelAnim.current || window.matchMedia("(prefers-reduced-motion: reduce)").matches) { resolve(); return; }
+            setConfetti({ id: ++flightId.current, x: box.left + box.width / 2, y: box.top + box.height / 2 });
+            setTimeout(() => { setConfetti(null); resolve(); }, STORY_CONFETTI_MS);
+          }, at));
+        }
+        await wait(Math.max(STEP_MS, totalCountDuration(event.ink) + 100));
         // Empty boxes regrow their zeros.
         current = { ...current, base: 0, mult: 0, baseHidden: false, multHidden: false, popKey: ++popKey };
         setAnim(current);
@@ -544,14 +559,7 @@ function StoryPlay() {
     }
     await delay();
 
-    if (result.pageCompleted && !cancelAnim.current) {
-      const box = [...document.querySelectorAll(".story-current-score")].map(el => el.getBoundingClientRect()).find(r => r.width > 0);
-      if (box && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        setConfetti({ id: ++flightId.current, x: box.left + box.width / 2, y: box.top + box.height / 2 });
-        await new Promise(resolve => setTimeout(resolve, STORY_CONFETTI_MS));
-        setConfetti(null);
-      }
-    }
+    if (confettiDone) await confettiDone;
 
     setStory(result.state);
     setPending([]);
