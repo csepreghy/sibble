@@ -19,5 +19,5 @@ export function scaled(ms: number) {
 
 export function nextStorySpeed(current: number) {
   const i = (STORY_SPEEDS as readonly number[]).indexOf(current);
-  return STORY_SPEEDS[(i + 1) % STORY_SPEEDS.length];
+  return STORY_SPEEDS[(i + 1) % STORY_SPEEDS.length] ?? 1;
 }
