@@ -960,7 +960,7 @@
 .story-shopping.story-compact .story-shop-offers { gap: 8px; }
 .story-shopping.story-compact .story-shop-offers > button { max-width: none; }
 .story-shopping.story-compact .story-footer { flex: 0 0 56px; min-height: 56px; order: 5; }
-.story-continue { flex: 0 0 44px; order: 4; width: 100%; max-width: 640px; margin-inline: auto; display: flex; justify-content: flex-end; padding-inline: 6px; }
+.story-continue { flex: 0 0 44px; order: 4; width: 100%; max-width: 640px; margin-inline: auto; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-inline: 10px; }
 .story-continue > button { height: 44px; }
 @media (max-height: 730px) {
   .story-shopping.story-compact .story-footer { display: none; }
@@ -990,17 +990,6 @@
     linear-gradient(180deg, color-mix(in oklab, var(--card) 85%, white) 0%, var(--card) 55%, color-mix(in oklab, var(--card) 80%, black) 100%);
   box-shadow: var(--shop-depth);
   transition: transform 150ms ease;
-  &::before {
-    content: "";
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    right: 3px;
-    height: 32%;
-    pointer-events: none;
-    background: linear-gradient(135deg, hsl(0 0% 100% / 0.22) 0%, hsl(0 0% 100% / 0.06) 40%, hsl(0 0% 100% / 0) 80%);
-    border-radius: 0.6rem 0.6rem 0.4rem 0.4rem;
-  }
   &:hover {
     transform: translateY(-3px);
     animation: shop-glow-pulse 3.2s ease-in-out infinite;
