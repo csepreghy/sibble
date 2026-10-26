@@ -3,9 +3,9 @@
 Source spec: uploaded `Sibble_-_Singleplayer_Story_Mode_pasted.md`. Multiplayer stays untouched.
 
 ## Animation modes
-- [ ] Add saved Normal/Reduced setting independently of speed.
-- [ ] Reduced counts Base and Mult together without contribution flights; preserve final box transfers and scoring.
-- [ ] Verify both modes in live scoring and run tests.
+- [x] Add saved Normal/Reduced setting independently of speed.
+- [x] Reduced counts Base and Mult together without contribution flights; preserve final box transfers and scoring.
+- [x] Signed-in CAT scored 130 in both modes; Reduced showed simultaneous counts and only two finale flights; 22 tests pass and build clean.
 
 ## Bookstore controls and Pen ordering
 - [x] Restore settings top-right; bottom controls ordered page/bag menu, coins, Continue Story.
