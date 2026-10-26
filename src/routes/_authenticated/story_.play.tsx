@@ -535,10 +535,10 @@ function StoryPlay() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 text-xs">
+        {story.phase !== "bookstore" && <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 text-xs">
           <span />
           <span className="flex items-center gap-1 text-xl font-bold tabular-nums text-gold"><Coins className="h-4 w-4" />{story.coins}</span>
-        </div>
+        </div>}
         {story.phase !== "bookstore" && <>
           <RoundScore target={config.inkTarget} current={story.page.ink} />
           <ScoreBoxes base={busy ? anim.base : 0} mult={busy ? anim.mult : 0} running={busy} baseDelta={anim.baseDelta} multDelta={anim.multDelta} />
@@ -663,6 +663,7 @@ function StoryPlay() {
               <StoryRack
                 compact={compact}
                 capacity={compact ? 6 : 10}
+                gloss={false}
                 tiles={(compact ? "SIBBLE" : "SIBBLEBOOK").split("").map((letter, i) => ({ id: `deco-${i}`, letter, enhancement: null }))}
                 selectedId={null}
                 discardMode={false}
@@ -730,7 +731,10 @@ function StoryPlay() {
         </div>
       </footer>
 
-      {compact && story.phase === "bookstore" && <div className="story-continue"><Button className="tile-gloss px-6" onClick={() => setStory(continueToNextPage(story))}>Continue to Next Page <ArrowRight /></Button></div>}
+      {compact && story.phase === "bookstore" && <div className="story-continue">
+        <span className="flex items-center gap-1.5 text-3xl font-black tabular-nums text-gold"><Coins className="h-7 w-7" />{story.coins}</span>
+        <Button className="relative tile-gloss px-6" onClick={() => setStory(continueToNextPage(story))}>Next Page <ArrowRight /></Button>
+      </div>}
       <Dialog open={themeOpen} onOpenChange={setThemeOpen}><DialogContent><DialogTitle>Story theme</DialogTitle><ThemeSelector /></DialogContent></Dialog>
       {/* Dialogs */}
       {showIntro ? <PageIntroDialog state={story} onStart={() => setIntroDismissed(story.pageIndex)} /> : null}

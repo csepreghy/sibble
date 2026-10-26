@@ -21,6 +21,8 @@ interface StoryRackProps {
   onTilePointerDown?: (tileId: string, event: React.PointerEvent) => void;
   compact?: boolean;
   capacity?: number;
+  /** false hides the tile shine (used by the decorative Bookstore row). */
+  gloss?: boolean;
 }
 
 export function StoryRack({
@@ -34,6 +36,7 @@ export function StoryRack({
   onTilePointerDown,
   compact,
   capacity = 7,
+  gloss = true,
 }: StoryRackProps) {
   return (
     <div aria-label="Letter rack" className={cn("flex items-center justify-center gap-1 rounded-xl border border-border bg-secondary/60 p-1.5 sm:gap-1.5 sm:p-2", compact && "story-rack")} style={compact ? { ["--rack-capacity" as string]: capacity } : undefined}>
@@ -52,7 +55,8 @@ export function StoryRack({
             className={cn(
               "relative flex h-auto aspect-square w-10 shrink-0 items-center justify-center rounded-[4px] p-0 text-lg font-bold transition-all duration-150 hover:-translate-y-1 hover:shadow-lg active:scale-95 sm:w-12 sm:rounded-md sm:text-xl",
               compact && "story-rack-tile",
-              tile.enhancement ? `${ENH_CLASS[tile.enhancement]} tile-gloss` : "tile-face tile-gloss",
+              tile.enhancement ? ENH_CLASS[tile.enhancement] : "tile-face",
+              gloss && "tile-gloss",
               selectedId === tile.id && !discardMode && "-translate-y-1.5 ring-[1.5px] ring-primary",
               discardMode && discardSelection.includes(tile.id) && "-translate-y-1.5 ring-[1.5px] ring-accent",
               draggingId === tile.id && "opacity-30",

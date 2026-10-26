@@ -189,14 +189,9 @@ export function Bookstore({ state, onBuy, compact }: BookstoreProps) {
 
   return (
     <div className={cn("flex h-full min-h-0 flex-col", compact && "story-shop")}>
-      {!compact && <header className="mb-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
-        <div>
-          <h2 className="text-xl font-bold">The Bookstore</h2>
-          <p className="text-xs text-muted-foreground">Tools for writing your next Page. Tap an item for details.</p>
-        </div>
-        <span className="flex items-center gap-2 rounded-full bg-gold/15 px-4 py-1 text-3xl font-bold text-gold">
-          <Coins className="h-7 w-7" /> {state.coins}
-        </span>
+      {!compact && <header className="mb-4">
+        <h2 className="text-xl font-bold">The Bookstore</h2>
+        <p className="text-xs text-muted-foreground">Tools for writing your next Page. Tap an item for details.</p>
       </header>}
 
       <div aria-label="Bookstore offers" className={cn("grid content-start overflow-y-auto", compact ? "story-shop-offers grid-cols-2 gap-3" : "grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4")}>
@@ -303,9 +298,14 @@ export function BookstoreSummary({ state, onContinue }: { state: StoryState; onC
           </p>
         </div>
       ) : null}
-      <Button size="lg" className="mt-auto w-full" onClick={onContinue}>
-        Continue <ArrowRight className="ml-1 h-4 w-4" />
-      </Button>
+      <div className="mt-auto flex items-center justify-between gap-3">
+        <span className="flex items-center gap-1.5 text-3xl font-black tabular-nums text-gold">
+          <Coins className="h-7 w-7" /> {state.coins}
+        </span>
+        <Button size="lg" className="relative tile-gloss" onClick={onContinue}>
+          Next Page <ArrowRight className="ml-1 h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 }
