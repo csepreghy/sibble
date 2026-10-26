@@ -584,7 +584,3 @@ function StoryPlay() {
     </div>
   );
 }
-
-function SparklesIcon() {
-  return <Play className="mr-2 h-4 w-4 rotate-0" />;
-}
