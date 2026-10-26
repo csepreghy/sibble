@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import { strict as assert } from "node:assert";
 import { inspectPlacement } from "./preview";
+import { scorePlacement } from "./scoring";
 
 const fixture = {
   size: 5, board: Array(25).fill(null),
@@ -12,6 +13,7 @@ const fixture = {
 test("valid IT previews 8 Ink before the short-circuit Pen doubles it", () => {
   const result = inspectPlacement(fixture, word => word === "IT");
   assert.equal(result.ink, 8);
+  assert.equal(scorePlacement({ ...fixture, words: [{ word: "IT", indices: [12, 13] }] }).totalInk, 16);
   assert.deepEqual(result.validIndices, [12, 13]);
 });
 test("invalid words have an X-ready error and invalid word indices, without Ink", () => {
