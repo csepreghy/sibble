@@ -600,7 +600,7 @@ function StoryPlay() {
         {/* Center — board or Bookstore */}
         <main className="flex min-w-0 flex-1 flex-col justify-center overflow-y-auto rounded-xl border border-border bg-card/30 p-3">
           {story.phase === "bookstore" ? (
-            <Bookstore state={story} onBuy={handleBuy} onContinue={() => setStory(continueToNextPage(story))} />
+            <Bookstore state={story} onBuy={handleBuy} />
           ) : (
             <StoryBoard
               size={config.size}
