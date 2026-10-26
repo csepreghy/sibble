@@ -54,7 +54,7 @@ export function PageIntroDialog({
             </div>
             <div className="rounded-lg bg-secondary/70 px-3 py-2 text-center">
               <p className="text-xs text-muted-foreground">Reward</p>
-              <p className="flex items-center gap-1 text-lg font-bold text-primary">
+              <p className="flex items-center gap-1 text-lg font-bold text-gold">
                 <Coins className="h-4 w-4" /> {config.coins}
               </p>
             </div>
