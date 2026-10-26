@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/compone
 import { cn } from "@/lib/utils";
 import { penIcon } from "./PenSidebar";
 import { ScoreBoxes } from "./ScoreDisplay";
+import { ShopDetailTile } from "./ShopDetailTile";
 
 const PEN_SHORT: Record<string, string> = {
   minimalist: "3-letter words: +5 Base per letter.",
@@ -224,10 +225,7 @@ export function Bookstore({ state, onBuy, compact }: BookstoreProps) {
       <Dialog open={!!inspected} onOpenChange={(open) => !open && setInspect(null)}>
         <DialogContent className="max-h-[90dvh] max-w-xs overflow-y-auto border-0 bg-transparent p-0 shadow-none">
           {inspected ? (
-            <div
-              style={{ ["--glow" as string]: glowVar(inspected) }}
-              className="shop-card shop-card-live flex aspect-square w-full flex-col items-center justify-between gap-2 rounded-2xl border-[3px] p-4 text-center"
-            >
+            <ShopDetailTile glow={glowVar(inspected)}>
               <span className={cn("self-start text-xs font-bold uppercase tracking-widest", category(inspected).text)}>
                 {category(inspected).label}
               </span>
@@ -251,7 +249,7 @@ export function Bookstore({ state, onBuy, compact }: BookstoreProps) {
                   <Coins className="h-4 w-4" /> {inspectedPrice}
                 </span>
               </div>
-            </div>
+            </ShopDetailTile>
           ) : null}
         </DialogContent>
       </Dialog>

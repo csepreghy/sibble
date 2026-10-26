@@ -8,6 +8,7 @@ import type { PenInstance, StoryState, StoryTile } from "@/lib/story/types";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { penIcon } from "./PenSidebar";
+import { ShopDetailTile } from "./ShopDetailTile";
 
 // --- Page intro ----------------------------------------------------------
 
@@ -281,14 +282,12 @@ export function PenInspectDialog({
   const Icon = penIcon(pen.penId);
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-xs">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Icon className="h-5 w-5 text-primary" /> {def.name}
-          </DialogTitle>
-        </DialogHeader>
-        <div className="space-y-3 text-sm">
-          <p className="text-muted-foreground">{def.description}</p>
+      <DialogContent className="max-h-[90dvh] max-w-xs overflow-y-auto border-0 bg-transparent p-0 shadow-none">
+        <ShopDetailTile glow="var(--color-shop-pen)">
+          <span className="self-start text-xs font-bold uppercase text-shop-pen">Pen</span>
+          <Icon className="h-16 w-16 text-shop-pen" />
+          <DialogTitle className="text-xl font-bold leading-tight">{def.name}</DialogTitle>
+          <p className="text-sm leading-snug text-muted-foreground">{def.description}</p>
           {def.scaling ? (
             <p>
               Current bonus: <span className="font-bold text-mult-ink">+{pen.bonus} Mult</span>
@@ -299,7 +298,7 @@ export function PenInspectDialog({
               Sell for {Math.floor(def.price / 2)} Coins
             </Button>
           ) : null}
-        </div>
+        </ShopDetailTile>
       </DialogContent>
     </Dialog>
   );
