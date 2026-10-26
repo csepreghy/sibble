@@ -42,7 +42,7 @@ export function CountNumber({ value, running }: { value: number; running: boolea
 
 export function ScoreBoxes({ base = 0, mult = 0, running = false, baseDelta, multDelta, baseHidden, multHidden, popKey = 0 }: {
   base?: number; mult?: number; running?: boolean; baseDelta?: string | null; multDelta?: string | null;
-  baseHidden?: boolean; multHidden?: boolean; popKey?: number;
+  baseHidden?: boolean | undefined; multHidden?: boolean | undefined; popKey?: number | undefined;
 }) {
   const pop = popKey ? "story-zero-pop" : undefined;
   const root = useRef<HTMLDivElement>(null);
