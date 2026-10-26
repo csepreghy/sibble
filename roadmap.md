@@ -4,7 +4,7 @@ Source spec: uploaded `Sibble_-_Singleplayer_Story_Mode_pasted.md`. Multiplayer 
 
 ## Pen explanation update
 - [x] Replace all ten descriptions with the supplied text; share inline scoring colors and separate live scaling bonuses across shop/details/Run Info.
-- [ ] Verify Pen explanations and live bonuses in the signed-in game; run existing Story tests without changing mechanics.
+- [x] Verify all ten shop descriptions, owned bonus growth after scoring APPLE (+8/+9), and Run Info readback in the signed-in game; 17 existing Story tests pass and preview build is clean.
 
 - [x] Story engine lib: types, boards (5×5→15×15, 9 pages, 3 plot twists), scoring pipeline (Base×Mult, enhancements, 10 pens, plot twists), bookstore offer generation, upgrades, localStorage persistence
 - [x] Story routes: `/story` intro + `/story/play` (board, left run-info sidebar, right pens sidebar, bottom rack/actions, bookstore phase, victory/defeat screens)
