@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Sparkles } from "lucide-react";
+import { LogOut, Plus, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { ThemeSelector } from "@/components/ThemeSelector";
 import { NotificationToggle } from "@/components/NotificationToggle";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/hooks/useSession";
+import { supabase } from "@/integrations/supabase/client";
 import { createGame, displayNameOf } from "@/lib/games";
 import { newStory } from "@/lib/story/engine";
 import { loadStory, saveStory } from "@/lib/story/storage";
@@ -45,6 +46,16 @@ export function AppNav() {
       navigate({ to: "/game/$gameId", params: { gameId: game.id } });
     },
     onError: () => toast.error("Couldn't start the game. Please try again."),
+  });
+
+  const signOut = useMutation({
+    mutationFn: async () => {
+      await queryClient.cancelQueries();
+      queryClient.clear();
+      await supabase.auth.signOut();
+    },
+    onSuccess: () => navigate({ to: "/", replace: true }),
+    onError: () => toast.error("Couldn't sign you out. Please try again."),
   });
 
   function startStory() {
@@ -105,6 +116,15 @@ export function AppNav() {
       </div>
       <NotificationToggle />
       {mode === "sibble" && <ThemeSelector />}
+      <Button
+        size="sm"
+        variant="destructive"
+        disabled={signOut.isPending}
+        onClick={() => signOut.mutate()}
+        aria-label="Sign out"
+      >
+        <LogOut className="mr-1 h-4 w-4" /> Sign out
+      </Button>
     </div>
   );
 }
