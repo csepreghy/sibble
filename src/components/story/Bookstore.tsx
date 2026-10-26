@@ -125,7 +125,9 @@ function OfferVisual({ offer, state, large, small }: { offer: Offer; state: Stor
       return (
         <span className={cn("tile-face relative flex items-center justify-center rounded-md font-bold", box, large ? "text-3xl" : "text-xl")}>
           {offer.letter}
-          <span className="absolute bottom-0.5 right-1 text-[0.6rem] font-bold">{letterBase(offer, state)}→{letterBase(offer, state) + 1}</span>
+          <span className="absolute bottom-0.5 right-1 text-[0.6rem] font-bold text-base-ink">
+            {large ? `${letterBase(offer, state)}→${letterBase(offer, state) + 1}` : letterBase(offer, state)}
+          </span>
         </span>
       );
     case "word-length":
