@@ -6,7 +6,7 @@ import { loadStoryStats } from "@/lib/story/stats";
 import { loadStory } from "@/lib/story/storage";
 import { PAGES } from "@/lib/story/boards";
 
-export const Route = createFileRoute("/_authenticated/story/history")({
+export const Route = createFileRoute("/_authenticated/story_/history")({
   head: () => ({
     meta: [
       { title: "Story history — Sibble" },

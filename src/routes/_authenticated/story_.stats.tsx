@@ -5,7 +5,7 @@ import { BrandLogo } from "@/components/BrandLogo";
 import { loadStoryStats, topLetters } from "@/lib/story/stats";
 import { PAGES } from "@/lib/story/boards";
 
-export const Route = createFileRoute("/_authenticated/story/stats")({
+export const Route = createFileRoute("/_authenticated/story_/stats")({
   head: () => ({
     meta: [
       { title: "Story statistics — Sibble" },
