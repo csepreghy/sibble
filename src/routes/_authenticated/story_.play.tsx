@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
+  ArrowRight,
   Coins,
   Home,
   Info,
@@ -514,7 +515,7 @@ function StoryPlay() {
             <p className="text-xs text-muted-foreground">Ink to beat</p>
             <p className="text-xl font-bold text-base-ink">{config.inkTarget.toLocaleString()}</p>
             <p className="mt-2 text-xs text-muted-foreground">Current Ink</p>
-            <p className="text-2xl font-bold">{story.page.ink.toLocaleString()}</p>
+            <p className="text-2xl font-bold">{story.phase === "bookstore" ? 0 : story.page.ink.toLocaleString()}</p>
           </div>
 
           <div className="rounded-lg border border-border bg-secondary/40 p-3">
@@ -523,7 +524,7 @@ function StoryPlay() {
                 <p className="text-[0.65rem] font-bold uppercase tracking-wide text-base-ink">Base</p>
                 <p className="flex items-baseline gap-1 text-3xl font-bold text-base-ink">
                   <span key={`base-${anim.base}`} className={cn("inline-block", anim.running && "anim-score-pop")}>
-                    {anim.running ? anim.base : "—"}
+                    {anim.running ? anim.base : story.phase === "bookstore" ? 0 : "—"}
                   </span>
                   {anim.baseDelta && <span className="text-base font-bold text-base-ink/80">{anim.baseDelta}</span>}
                 </p>
@@ -533,7 +534,7 @@ function StoryPlay() {
                 <p className="text-[0.65rem] font-bold uppercase tracking-wide text-mult-ink">Mult</p>
                 <p className="flex items-baseline gap-1 text-3xl font-bold text-mult-ink">
                   <span key={`mult-${anim.mult}`} className={cn("inline-block", anim.running && "anim-score-pop")}>
-                    {anim.running ? anim.mult : "—"}
+                    {anim.running ? anim.mult : story.phase === "bookstore" ? 0 : "—"}
                   </span>
                   {anim.multDelta && <span className="text-base font-bold text-mult-ink/80">{anim.multDelta}</span>}
                 </p>
@@ -558,9 +559,15 @@ function StoryPlay() {
             </div>
           </div>
 
-          <div className="flex items-center justify-center gap-1.5 rounded-md bg-primary/15 px-2 py-1.5 text-sm font-bold text-primary">
-            <Coins className="h-4 w-4" /> {story.coins}
+          <div className="flex items-center justify-center gap-2 rounded-md bg-gold/15 px-2 py-2 text-3xl font-bold text-gold">
+            <Coins className="h-7 w-7" /> {story.coins}
           </div>
+
+          {story.phase === "bookstore" ? (
+            <Button size="lg" className="w-full" onClick={() => setStory(continueToNextPage(story))}>
+              Continue to Next Page <ArrowRight className="ml-1 h-4 w-4" />
+            </Button>
+          ) : null}
 
           <div className="mt-auto flex gap-1.5">
             <Button variant="outline" size="sm" className="flex-1" onClick={() => setDialog({ kind: "run-info" })}>
@@ -626,6 +633,15 @@ function StoryPlay() {
       {/* Bottom — rack and actions */}
       <footer className="flex items-center justify-center gap-2 px-3 pb-3">
         <div className="w-full max-w-md">
+          {story.phase === "bookstore" ? (
+            <div className="flex justify-center gap-1">
+              {"SIBBLE".split("").map((l, i) => (
+                <span key={i} className="tile-face flex h-11 w-11 items-center justify-center rounded-md text-2xl font-bold">
+                  {l}
+                </span>
+              ))}
+            </div>
+          ) : (
           <StoryRack
             tiles={rackTiles}
             selectedId={selectedRackId}
@@ -636,6 +652,7 @@ function StoryPlay() {
             onSelect={handleRackSelect}
             onTilePointerDown={handleRackPointerDown}
           />
+          )}
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
           <Button variant="outline" size="sm" onClick={shuffleRack} disabled={busy || story.phase !== "play"}>

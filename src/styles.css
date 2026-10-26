@@ -767,11 +767,13 @@
   /* Scoring panel language: blue = Base Ink, orange = Mult. */
   --base-ink: oklch(0.72 0.14 235);
   --mult-ink: oklch(0.78 0.16 60);
+  --gold: oklch(0.84 0.16 88);
 }
 
 @theme inline {
   --color-base-ink: var(--base-ink);
   --color-mult-ink: var(--mult-ink);
+  --color-gold: var(--gold);
 }
 
 /* Enhanced physical tiles keep their DL/TL/DW/TW colour identifiable,

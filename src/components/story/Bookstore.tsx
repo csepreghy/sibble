@@ -1,16 +1,15 @@
-import { ArrowRight, Coins } from "lucide-react";
+import { Coins } from "lucide-react";
 import { LETTER_VALUES } from "@/lib/scrabble";
 import type { Offer, StoryState } from "@/lib/story/types";
 import { penDef } from "@/lib/story/pens";
 import { priceFor, upgradeDef } from "@/lib/story/upgrades";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { penIcon } from "./PenSidebar";
 
 interface BookstoreProps {
   state: StoryState;
   onBuy: (offerIndex: number) => void;
-  onContinue: () => void;
+  onContinue?: () => void;
 }
 
 function offerTitle(offer: Offer): string {
@@ -97,7 +96,7 @@ function offerBody(offer: Offer, state: StoryState) {
   }
 }
 
-export function Bookstore({ state, onBuy, onContinue }: BookstoreProps) {
+export function Bookstore({ state, onBuy }: BookstoreProps) {
   return (
     <div className="flex h-full flex-col">
       <header className="mb-3 flex items-center justify-between">
@@ -105,13 +104,14 @@ export function Bookstore({ state, onBuy, onContinue }: BookstoreProps) {
           <h2 className="text-xl font-bold">The Bookstore</h2>
           <p className="text-xs text-muted-foreground">Spend your Coins — everything lasts for the rest of this Story.</p>
         </div>
-        <span className="flex items-center gap-1.5 rounded-full bg-primary/15 px-3 py-1 text-sm font-bold text-primary">
-          <Coins className="h-4 w-4" /> {state.coins}
+        <span className="flex items-center gap-2 rounded-full bg-gold/15 px-4 py-1 text-3xl font-bold text-gold">
+          <Coins className="h-7 w-7" /> {state.coins}
         </span>
       </header>
 
       <div className="grid flex-1 grid-cols-2 gap-2 overflow-y-auto sm:grid-cols-3 lg:grid-cols-4">
         {(state.offers ?? []).map((offer, index) => {
+          if (offer.sold) return null;
           const price = priceFor(state.upgrades, offer.price);
           const affordable = state.coins >= price;
           return (
@@ -134,7 +134,7 @@ export function Bookstore({ state, onBuy, onContinue }: BookstoreProps) {
               <span
                 className={cn(
                   "flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold",
-                  offer.sold ? "bg-secondary text-muted-foreground" : "bg-primary/15 text-primary",
+                  "bg-gold/15 text-base text-gold",
                 )}
               >
                 {offer.sold ? "Sold" : (
@@ -148,9 +148,6 @@ export function Bookstore({ state, onBuy, onContinue }: BookstoreProps) {
         })}
       </div>
 
-      <Button size="lg" className="mt-3 w-full" onClick={onContinue}>
-        Continue to Next Page <ArrowRight className="ml-1 h-4 w-4" />
-      </Button>
     </div>
   );
 }
