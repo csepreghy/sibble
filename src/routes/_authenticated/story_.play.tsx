@@ -833,7 +833,7 @@ function StoryPlay() {
               Discard
             </Button>
           )}
-          <Button title="Bag" aria-label="Bag" variant="outline" size="sm" onClick={() => setDialog({ kind: "bag" })}>
+          <Button title="Bag and completed pages" aria-label="Bag" variant="outline" size="sm" onClick={() => setDialog({ kind: "bag" })}>
             <Layers className="mr-1 h-4 w-4" /><span className="story-action-label">Bag</span>
           </Button>
           <Button
@@ -849,6 +849,7 @@ function StoryPlay() {
 
       {compact && story.phase === "bookstore" && <div className="story-continue">
         <span className="flex items-center gap-1.5 text-3xl font-black tabular-nums text-gold"><Coins className="h-7 w-7" />{story.coins}</span>
+        <Button variant="outline" size="icon" aria-label="Bag and completed pages" onClick={() => setDialog({ kind: "bag" })}><Layers className="h-4 w-4" /></Button>
         <Button className="relative tile-gloss px-6" onClick={() => setStory(continueToNextPage(story))}>Next Page <ArrowRight /></Button>
       </div>}
       {/* Dialogs */}

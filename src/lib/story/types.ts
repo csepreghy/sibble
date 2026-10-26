@@ -33,6 +33,8 @@ export interface PenInstance {
 }
 
 export interface PageState {
+  /** Scored words in play order, including crosswords from the same move. */
+  playedWords?: { word: string; base: number; mult: number; ink: number; move: number }[];
   board: (BoardTile | null)[];
   /** tile ids currently on the rack */
   rack: string[];
@@ -59,6 +61,19 @@ export type Offer =
 
 export type StoryPhase = "play" | "bookstore" | "victory" | "defeat";
 
+export interface CompletedPage {
+  pageIndex: number;
+  board: (BoardTile | null)[];
+  tiles: StoryTile[];
+  letterUpgrades: Record<string, number>;
+  usedPremiums: number[];
+  playedWords: NonNullable<PageState["playedWords"]>;
+  ink: number;
+  words: number;
+  bestWordInk: number;
+  coins: number;
+}
+
 export interface StoryState {
   version: 1;
   pageIndex: number; // 0..8 into PAGES
@@ -74,4 +89,5 @@ export interface StoryState {
   page: PageState;
   offers: Offer[] | null;
   pagesCompleted: number;
+  completedPages?: CompletedPage[];
 }

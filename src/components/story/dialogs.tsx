@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { cn } from "@/lib/utils";
 import { penIcon } from "./PenSidebar";
 import { ShopDetailTile } from "./ShopDetailTile";
+import { CompletedPages } from "./CompletedPages";
 
 // --- Page intro ----------------------------------------------------------
 
@@ -80,6 +81,7 @@ export function PageIntroDialog({
 // --- Run info ------------------------------------------------------------
 
 export function RunInfoDialog({ state, onClose }: { state: StoryState; onClose: () => void }) {
+  const [reviewing, setReviewing] = useState(false);
   const upgradedLetters = Object.keys(state.letterUpgrades).sort();
   const upgradedLengths = Object.keys(state.wordLengthUpgrades).map(Number).sort((a, b) => a - b);
   const enhancedByLetter = new Map<string, { enhancement: string; count: number }>();
@@ -94,9 +96,11 @@ export function RunInfoDialog({ state, onClose }: { state: StoryState; onClose: 
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-h-[85dvh] max-w-lg overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Run Info</DialogTitle>
+          <DialogTitle>{reviewing ? "Completed Page" : "Run Info"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 text-sm">
+          <CompletedPages state={state} onReviewChange={setReviewing} />
+          <div hidden={reviewing} className="space-y-4">
           <section>
             <h3 className="mb-1 font-bold">Letter Base upgrades</h3>
             {upgradedLetters.length === 0 ? (
@@ -177,6 +181,7 @@ export function RunInfoDialog({ state, onClose }: { state: StoryState; onClose: 
               </ul>
             )}
           </section>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
@@ -192,6 +197,7 @@ export function BagDialog({
   state: StoryState;
   onClose: () => void;
 }) {
+  const [reviewing, setReviewing] = useState(false);
   const tileById = new Map(state.tiles.map((t) => [t.id, t]));
   const counts = new Map<string, { count: number; enhanced: number }>();
   for (const id of state.page.bag) {
@@ -206,11 +212,11 @@ export function BagDialog({
   );
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[85dvh] max-w-sm overflow-y-auto">
+      <DialogContent className="max-h-[85dvh] max-w-lg overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Bag — {state.page.bag.length} tiles left this Page</DialogTitle>
+          <DialogTitle>{reviewing ? "Completed Page" : `Bag — ${state.page.bag.length} tiles left this Page`}</DialogTitle>
         </DialogHeader>
-        <div className="grid grid-cols-4 gap-1.5">
+        <div className={cn("grid-cols-4 gap-1.5", reviewing ? "hidden" : "grid")}>
           {rows.map(([letter, { count, enhanced }]) => (
             <div key={letter} className="rounded-md bg-secondary px-2 py-1.5 text-center">
               <span className="font-bold">{letter === "?" ? "blank" : letter}</span>
@@ -219,6 +225,7 @@ export function BagDialog({
             </div>
           ))}
         </div>
+        <CompletedPages state={state} onReviewChange={setReviewing} />
       </DialogContent>
     </Dialog>
   );
