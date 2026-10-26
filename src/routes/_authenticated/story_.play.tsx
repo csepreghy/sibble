@@ -677,7 +677,7 @@ function StoryPlay() {
               <DropdownMenuItem onClick={() => setDialog({ kind: "run-info" })}><Info /> Run Info</DropdownMenuItem>
               <DropdownMenuItem onSelect={(e) => { e.preventDefault(); cycleSpeed(); }}><Gauge /> Animation speed: {speed}×</DropdownMenuItem>
               <AnimationModeMenu mode={animationMode} onChange={changeAnimationMode} disabled={busy} />
-              <DropdownMenuItem className="text-destructive" onClick={() => { if (window.confirm("End this Story? Your run will be over.")) setStory({ ...story, phase: "defeat" }); }}><Trash2 /> End this Story</DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive" onClick={endStory}><Trash2 /> End this Story</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -746,7 +746,7 @@ function StoryPlay() {
                 </DropdownMenuItem>
                 <AnimationModeMenu mode={animationMode} onChange={changeAnimationMode} disabled={busy} />
                 <DropdownMenuItem
-                  onClick={() => { if (window.confirm("End this Story? Your run will be over.")) setStory({ ...story, phase: "defeat" }); }}
+                  onClick={endStory}
                   className="text-destructive"
                 >
                   <Trash2 className="mr-2 h-4 w-4" /> End this Story
