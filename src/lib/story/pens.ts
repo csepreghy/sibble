@@ -17,28 +17,28 @@ export const PENS: PenDef[] = [
     name: "The Minimalist",
     icon: "Feather",
     price: 6,
-    description: "Every letter in a 3-letter word adds +5 Base Ink.",
+    description: "Each letter in a 3-letter word gives +5 Base Ink",
   },
   {
     id: "vowel-power",
     name: "Vowel Power",
     icon: "PenLine",
     price: 8,
-    description: "Double the Base Ink contributed by vowels in scored words.",
+    description: "Vowels give ×2 Base Ink",
   },
   {
     id: "crossword",
     name: "Crossword",
     icon: "Grid2x2",
     price: 8,
-    description: "+2 Mult for each additional word formed by the same placement.",
+    description: "+2 Mult per additional word formed",
   },
   {
     id: "growing-vocabulary",
     name: "Growing Vocabulary",
     icon: "BookOpen",
     price: 10,
-    description: "Permanently gains +1 Mult whenever you score a 5-letter word.",
+    description: "Gains +1 Mult for each 5-letter word scored",
     scaling: true,
   },
   {
@@ -46,7 +46,7 @@ export const PENS: PenDef[] = [
     name: "Catnip",
     icon: "Cat",
     price: 6,
-    description: "+10 Mult for words of exactly three letters.",
+    description: "+10 Mult for 3-letter words",
   },
   {
     id: "echo-chamber",
@@ -54,21 +54,21 @@ export const PENS: PenDef[] = [
     icon: "AudioLines",
     price: 12,
     description:
-      "Previously placed letters trigger their Base Ink and enhancement one additional time when reused in a new word.",
+      "Reused letters trigger their Base Ink and enhancements again",
   },
   {
     id: "architect",
     name: "The Architect",
     icon: "Compass",
     price: 10,
-    description: "×3 Mult for every word scored by a placement that forms at least two extra perpendicular words.",
+    description: "×3 Mult when a placement forms 2 or more additional words",
   },
   {
     id: "vowel-collector",
     name: "Vowel Collector",
     icon: "Library",
     price: 8,
-    description: "Permanently gains +1 Mult for every vowel tile you newly place on the board.",
+    description: "Gains +1 Mult for each new vowel placed",
     scaling: true,
   },
   {
@@ -76,7 +76,7 @@ export const PENS: PenDef[] = [
     name: "Short Circuit",
     icon: "Zap",
     price: 9,
-    description: "Words of four letters or fewer receive ×2 Mult.",
+    description: "×2 Mult for words with 2–4 letters",
   },
   {
     id: "linguist",
@@ -84,7 +84,7 @@ export const PENS: PenDef[] = [
     icon: "GraduationCap",
     price: 12,
     description:
-      "When a word sets a new record for the longest word on this Page, your other Pens trigger one additional time for it.",
+      "New longest word this Page retriggers all other Pens",
   },
 ];
 

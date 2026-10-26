@@ -86,7 +86,7 @@ export function PenSidebar({ pens, slots, activePenId, arrivingPenId, onArrivalE
           >
             <Icon className="h-5 w-5 text-shop-pen" />
             {def.scaling ? (
-              <span className="rounded-full bg-shop-pen/20 px-1.5 text-[0.55rem] font-bold text-shop-pen">
+              <span className="rounded-full bg-shop-pen/20 px-1.5 text-[0.55rem] font-bold text-mult-ink">
                 +{pen.bonus} Mult
               </span>
             ) : null}

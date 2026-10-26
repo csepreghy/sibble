@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { penIcon } from "./PenSidebar";
 import { ShopDetailTile } from "./ShopDetailTile";
 import { CompletedPages } from "./CompletedPages";
+import { PenCurrentBonus, PenDescription } from "./PenDescription";
 
 // --- Page intro ----------------------------------------------------------
 
@@ -155,8 +156,8 @@ export function RunInfoDialog({ state, onClose }: { state: StoryState; onClose: 
                   return (
                     <li key={pen.penId} className="rounded-md bg-secondary px-2.5 py-1.5">
                       <span className="font-semibold">{def.name}</span>
-                      {def.scaling ? <span className="ml-1 text-primary">(+{pen.bonus} Mult)</span> : null}
-                      <p className="text-xs text-muted-foreground">{def.description}</p>
+                      <p className="text-sm leading-snug"><PenDescription penId={pen.penId} /></p>
+                      <PenCurrentBonus pen={pen} />
                     </li>
                   );
                 })}
@@ -304,12 +305,8 @@ export function PenInspectDialog({
           <span className="self-start text-xs font-bold uppercase text-shop-pen">Pen</span>
           <Icon className="h-16 w-16 text-shop-pen" />
           <DialogTitle className="text-xl font-bold leading-tight">{def.name}</DialogTitle>
-          <p className="text-sm leading-snug text-muted-foreground">{def.description}</p>
-          {def.scaling ? (
-            <p>
-              Current bonus: <span className="font-bold text-mult-ink">+{pen.bonus} Mult</span>
-            </p>
-          ) : null}
+          <p className="text-sm leading-snug"><PenDescription penId={pen.penId} /></p>
+          <PenCurrentBonus pen={pen} />
           {canSell ? (
             <Button variant="outline" size="sm" onClick={onSell}>
               Sell for {Math.floor(def.price / 2)} Coins
