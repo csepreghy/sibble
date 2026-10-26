@@ -1,5 +1,4 @@
 import { Droplet } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
 
 function CountNumber({ value, running }: { value: number; running: boolean }) {

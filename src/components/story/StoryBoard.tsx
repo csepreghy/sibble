@@ -225,7 +225,7 @@ export function StoryBoard({
                       : null,
                     placed && "z-10 shadow-md",
                     isActive && "z-10 ring-4 ring-base-ink brightness-110 anim-tile-bump",
-                    !isActive && inActiveWord && "ring-[3px] ring-mult-ink anim-tile-bump",
+                    !isActive && inActiveWord && "brightness-110",
                     !letter && hoverIndex === index && "ring-[1.5px] ring-primary/70",
                     !letter && "hover:brightness-95",
                     draggingIndex === index && "opacity-30",
@@ -269,11 +269,11 @@ export function StoryBoard({
               );
             })}
             <div className="pointer-events-none absolute inset-[3px] z-20 grid gap-[3px]" style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${size}, minmax(0, 1fr))` }}>
-              {wordHighlights.map((word, i) => {
+              {[...wordHighlights, ...(activeWord?.length && activeIndex == null ? [{ indices: activeWord, valid: true, scoring: true }] : [])].map((word, i) => {
                 const rows = word.indices.map(index => Math.floor(index / size));
                 const cols = word.indices.map(index => index % size);
                 if (!rows.length) return null;
-                return <div key={i} data-word-valid={word.valid} className={cn("rounded-[4px] border-[3px]", word.valid ? "border-story-valid" : "border-destructive")} style={{ gridRow: `${Math.min(...rows) + 1} / ${Math.max(...rows) + 2}`, gridColumn: `${Math.min(...cols) + 1} / ${Math.max(...cols) + 2}` }} />;
+                return <div key={i} data-word-valid={word.valid} className={cn("rounded-[4px] border-[3px]", "scoring" in word ? "border-mult-ink" : word.valid ? "border-story-valid" : "border-destructive")} style={{ gridRow: `${Math.min(...rows) + 1} / ${Math.max(...rows) + 2}`, gridColumn: `${Math.min(...cols) + 1} / ${Math.max(...cols) + 2}` }} />;
               })}
             </div>
           </div>
