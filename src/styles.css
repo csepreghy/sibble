@@ -909,7 +909,7 @@
   justify-content: center;
 }
 .story-board-square {
-  width: min(100%, max(200px, calc(var(--story-visible-height, 100dvh) - 388px - env(safe-area-inset-top) - env(safe-area-inset-bottom))));
+  width: min(100%, max(200px, calc(var(--story-visible-height, 100dvh) - 430px - env(safe-area-inset-top) - env(safe-area-inset-bottom))));
   max-width: 100%;
   aspect-ratio: 1;
   flex: none;
