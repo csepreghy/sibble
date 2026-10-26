@@ -365,7 +365,7 @@ function StoryPlay() {
     const delay = () => new Promise((resolve) => setTimeout(resolve, STEP_MS));
     for (const event of result.score.events) {
       if (cancelAnim.current) return;
-      const next = { ...current, running: true, activeIndex: null, activePenId: null, baseDelta: null, multDelta: null };
+      const next: AnimState = { ...current, running: true, activeIndex: null, activePenId: null, baseDelta: null, multDelta: null };
         switch (event.type) {
           case "word":
             next.activeWord = event.indices;

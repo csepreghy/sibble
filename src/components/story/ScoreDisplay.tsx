@@ -12,7 +12,8 @@ function CountNumber({ value, running }: { value: number; running: boolean }) {
     const start = performance.now();
     const step = (time: number) => {
       const progress = Math.min(1, (time - start) / 260);
-      setShown(Math.round((from + (value - from) * (1 - (1 - progress) ** 3)) * 10) / 10);
+      const interpolated = from + (value - from) * (1 - (1 - progress) ** 3);
+      setShown(Number.isInteger(value) ? Math.round(interpolated) : Math.round(interpolated * 10) / 10);
       if (progress < 1) frame = requestAnimationFrame(step);
     };
     frame = requestAnimationFrame(step);
