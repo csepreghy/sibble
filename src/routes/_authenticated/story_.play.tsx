@@ -14,6 +14,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { loadWordList } from "@/lib/words";
+import { LETTER_VALUES } from "@/lib/scrabble";
 import { PAGES, TWIST_INFO, pageLabel } from "@/lib/story/boards";
 import {
   buyOffer,
@@ -109,6 +110,28 @@ function StoryPlay() {
   >(null);
   const cancelAnim = useRef(false);
 
+  // --- drag and drop (mirrors the multiplayer game) -------------------------
+  type DragSource = { type: "rack"; tileId: string } | { type: "board"; index: number };
+  const [drag, setDrag] = useState<{
+    tileId: string;
+    letter: string;
+    blank: boolean;
+    source: DragSource;
+    x: number;
+    y: number;
+  } | null>(null);
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const dragStart = useRef<{ x: number; y: number } | null>(null);
+  const movedRef = useRef(false);
+
+  const cellUnder = (x: number, y: number) => {
+    const element = document.elementFromPoint(x, y) as HTMLElement | null;
+    const cell = element?.closest("[data-cell-index]") as HTMLElement | null;
+    if (!cell) return null;
+    const value = Number(cell.dataset["cellIndex"]);
+    return Number.isNaN(value) ? null : value;
+  };
+
   useEffect(() => {
     loadWordList().then(setWords).catch(() => toast.error("Couldn't load the word list."));
   }, []);
@@ -186,6 +209,82 @@ function StoryPlay() {
     setPending([...pending, { index, tileId: tile.id, letter: tile.letter, blank: false }]);
     setSelectedRackId(null);
   }
+
+  function beginDrag(event: React.PointerEvent, tileId: string, letter: string, blank: boolean, source: DragSource) {
+    if (busy || story?.phase !== "play" || discardMode) return;
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    dragStart.current = { x: event.clientX, y: event.clientY };
+    movedRef.current = false;
+
+    const onMove = (moveEvent: PointerEvent) => {
+      const origin = dragStart.current;
+      if (!origin) return;
+      if (!movedRef.current) {
+        if (Math.hypot(moveEvent.clientX - origin.x, moveEvent.clientY - origin.y) < 6) return;
+        movedRef.current = true;
+      }
+      moveEvent.preventDefault();
+      setDrag({ tileId, letter, blank, source, x: moveEvent.clientX, y: moveEvent.clientY });
+      setHoverIndex(cellUnder(moveEvent.clientX, moveEvent.clientY));
+    };
+
+    const onUp = (upEvent: PointerEvent) => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+      const wasDragging = movedRef.current;
+      dragStart.current = null;
+      movedRef.current = false;
+      setDrag(null);
+      setHoverIndex(null);
+      if (wasDragging) dropTile(tileId, letter, blank, source, upEvent.clientX, upEvent.clientY);
+    };
+
+    window.addEventListener("pointermove", onMove, { passive: false });
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+  }
+
+  function dropTile(tileId: string, letter: string, blank: boolean, source: DragSource, x: number, y: number) {
+    if (!story || story.phase !== "play") return;
+    const target = cellUnder(x, y);
+    const withoutSource =
+      source.type === "board" ? pending.filter((item) => item.index !== source.index) : pending;
+
+    if (target === null) {
+      // Dropped off the board: a pending tile goes back to the rack.
+      if (source.type === "board") setPending(withoutSource);
+      return;
+    }
+    if (story.page.board[target] || withoutSource.some((item) => item.index === target)) return;
+
+    if (source.type === "board") {
+      setPending([...withoutSource, { index: target, tileId, letter, blank }]);
+      return;
+    }
+
+    if (blank) {
+      setDialog({ kind: "blank", index: target, tileId });
+      return;
+    }
+    setPending([...pending, { index: target, tileId, letter, blank: false }]);
+    setSelectedRackId(null);
+  }
+
+  function handleRackPointerDown(tileId: string, event: React.PointerEvent) {
+    const tile = tileById.get(tileId);
+    if (!tile) return;
+    beginDrag(event, tile.id, tile.letter, tile.letter === "?", { type: "rack", tileId });
+  }
+
+  function handleBoardTilePointerDown(index: number, event: React.PointerEvent) {
+    const placement = pending.find((item) => item.index === index);
+    if (!placement) return;
+    beginDrag(event, placement.tileId, placement.letter, placement.blank, { type: "board", index });
+  }
+
+  const draggingRackId = drag?.source.type === "rack" ? drag.source.tileId : null;
+  const draggingBoardIndex = drag?.source.type === "board" ? drag.source.index : null;
 
   function handleRackSelect(tileId: string) {
     if (busy || !story || story.phase !== "play") return;
@@ -477,7 +576,10 @@ function StoryPlay() {
               activeIndex={anim.activeIndex}
               activeWord={anim.activeWord}
               disabled={busy || story.phase !== "play"}
+              hoverIndex={hoverIndex}
+              draggingIndex={draggingBoardIndex}
               onCellClick={handleCellClick}
+              onTilePointerDown={handleBoardTilePointerDown}
             />
           )}
         </main>
@@ -500,7 +602,9 @@ function StoryPlay() {
             discardMode={discardMode}
             discardSelection={discardSelection}
             letterUpgrades={story.letterUpgrades}
+            draggingId={draggingRackId}
             onSelect={handleRackSelect}
+            onTilePointerDown={handleRackPointerDown}
           />
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
@@ -580,6 +684,20 @@ function StoryPlay() {
           onPick={handleEnhancePick}
           onClose={() => setDialog(null)}
         />
+      ) : null}
+
+      {drag ? (
+        <div
+          className="pointer-events-none fixed z-50"
+          style={{ left: drag.x, top: drag.y, transform: "translate(-50%, -50%)" }}
+        >
+          <div className="tile-face relative flex h-12 w-12 rotate-[-6deg] scale-125 items-center justify-center rounded-md text-xl font-bold shadow-2xl transition-transform">
+            {drag.letter === "?" ? "" : drag.letter}
+            <span className="absolute bottom-0.5 right-1 text-[0.6rem] font-semibold opacity-70">
+              {drag.blank ? "" : LETTER_VALUES[drag.letter]}
+            </span>
+          </div>
+        </div>
       ) : null}
     </div>
   );

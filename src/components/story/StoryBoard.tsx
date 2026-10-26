@@ -34,7 +34,10 @@ interface StoryBoardProps {
   /** word currently being scored */
   activeWord?: number[] | null;
   disabled?: boolean;
+  hoverIndex?: number | null;
+  draggingIndex?: number | null;
   onCellClick: (index: number) => void;
+  onTilePointerDown?: (index: number, event: React.PointerEvent) => void;
 }
 
 export function StoryBoard({
@@ -48,7 +51,10 @@ export function StoryBoard({
   activeIndex,
   activeWord,
   disabled,
+  hoverIndex,
+  draggingIndex,
   onCellClick,
+  onTilePointerDown,
 }: StoryBoardProps) {
   const pendingMap = new Map(pending.map((p) => [p.index, p]));
   const tileById = new Map(tiles.map((t) => [t.id, t]));
@@ -113,7 +119,10 @@ export function StoryBoard({
       pinch.current = { distance: Math.hypot(a!.x - b!.x, a!.y - b!.y) };
       pan.current = null;
     } else if (pointers.current.size === 1 && viewRef.current.zoom > 1) {
-      pan.current = { x: event.clientX, y: event.clientY, offset: viewRef.current.offset };
+      const target = event.target as HTMLElement;
+      if (!target.closest("[data-draggable-tile]")) {
+        pan.current = { x: event.clientX, y: event.clientY, offset: viewRef.current.offset };
+      }
     }
   }
 
@@ -192,8 +201,12 @@ export function StoryBoard({
                   key={index}
                   type="button"
                   data-cell-index={index}
+                  data-draggable-tile={placed ? "true" : undefined}
                   disabled={disabled}
                   onClick={() => onCellClick(index)}
+                  onPointerDown={(event) => {
+                    if (placed) onTilePointerDown?.(index, event);
+                  }}
                   className={cn(
                     "relative flex aspect-square items-center justify-center rounded-[4px] bg-board-cell font-bold leading-none transition-all duration-150 sm:rounded-md",
                     premium && !letter && !premiumUsed && PREMIUM_CLASS[premium],
@@ -206,7 +219,9 @@ export function StoryBoard({
                     placed && "z-10 shadow-md tile-placing tile-gloss",
                     isActive && "z-10 ring-2 ring-primary brightness-110",
                     !isActive && inActiveWord && "ring-1 ring-primary/60",
+                    !letter && hoverIndex === index && "ring-[1.5px] ring-primary/70",
                     !letter && "hover:brightness-95",
+                    draggingIndex === index && "opacity-30",
                   )}
                   aria-label={
                     letter
