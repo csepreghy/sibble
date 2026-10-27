@@ -8,12 +8,13 @@ import { penDef } from "@/lib/story/pens";
 import { upgradeDef } from "@/lib/story/upgrades";
 import type { PenInstance, StoryState, StoryTile } from "@/lib/story/types";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { penIcon } from "./PenSidebar";
 import { ShopDetailTile } from "./ShopDetailTile";
 import { CompletedPages } from "./CompletedPages";
 import { PenCurrentBonus, PenDescription } from "./PenDescription";
+import { UpgradeVisual } from "./Bookstore";
 
 // --- Page intro ----------------------------------------------------------
 
@@ -85,6 +86,7 @@ export function PageIntroDialog({
 export function RunInfoDialog({ state, onClose }: { state: StoryState; onClose: () => void }) {
   const [reviewing, setReviewing] = useState(false);
   const [tab, setTab] = useState<"build" | "stats">("build");
+  const [upgradeInfo, setUpgradeInfo] = useState<string | null>(null);
   const upgradedLetters = Object.keys(state.letterUpgrades).sort();
   const upgradedLengths = Object.keys(state.wordLengthUpgrades).map(Number).sort((a, b) => a - b);
   const enhancedByLetter = new Map<string, { enhancement: string; count: number }>();
@@ -197,21 +199,40 @@ export function RunInfoDialog({ state, onClose }: { state: StoryState; onClose: 
             {state.upgrades.length === 0 ? (
               <p className="text-muted-foreground">None yet.</p>
             ) : (
-              <ul className="space-y-1.5">
+              <div className="grid grid-cols-3 gap-2">
                 {state.upgrades.map((id) => {
                   const def = upgradeDef(id);
                   return (
-                    <li key={id} className="rounded-md bg-secondary px-2.5 py-1.5">
-                      <span className="font-semibold">{def.name}</span>
-                      <p className="text-xs text-muted-foreground">{def.description}</p>
-                    </li>
+                    <Button
+                      key={id}
+                      type="button"
+                      variant="ghost"
+                      onClick={() => setUpgradeInfo(id)}
+                      style={{ ["--glow" as string]: "var(--color-shop-upgrade)" }}
+                      className="shop-card flex aspect-square h-auto flex-col items-center justify-center gap-1.5 whitespace-normal rounded-lg border-2 p-1.5 text-center hover:bg-transparent hover:text-foreground"
+                    >
+                      <UpgradeVisual small />
+                      <span className="text-xs font-bold leading-tight">{def.name}</span>
+                    </Button>
                   );
                 })}
-              </ul>
+              </div>
             )}
           </section>
           </div>
         </div>
+        {upgradeInfo ? (
+          <Dialog open onOpenChange={(open) => !open && setUpgradeInfo(null)}>
+            <DialogContent className="max-w-xs border-0 bg-transparent p-0 shadow-none">
+              <ShopDetailTile glow="var(--color-shop-upgrade)">
+                <span className="self-start text-xs font-bold uppercase tracking-widest text-shop-upgrade">Permanent</span>
+                <UpgradeVisual large />
+                <DialogTitle className="text-xl font-bold leading-tight">{upgradeDef(upgradeInfo).name}</DialogTitle>
+                <DialogDescription className="text-sm leading-snug">{upgradeDef(upgradeInfo).description}</DialogDescription>
+              </ShopDetailTile>
+            </DialogContent>
+          </Dialog>
+        ) : null}
       </DialogContent>
     </Dialog>
   );
