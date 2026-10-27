@@ -122,6 +122,9 @@ const IDLE_ANIM: AnimState = {
 
 // Brief pause between consecutive flying numbers so each impact reads before the next launches.
 const STEP_MS = 300;
+// Page-complete fly-out: each letter launches LETTER_OUT_STAGGER_MS after the previous one.
+const LETTER_OUT_MS = 550;
+const LETTER_OUT_STAGGER_MS = 200;
 
 function fmtDelta(diff: number): string {
   const rounded = Math.round(diff);
