@@ -137,7 +137,7 @@ export function StoryRack({
     flights.current.clear();
   }, []);
   return (
-    <div ref={rackRef} aria-label="Letter rack" className={cn("relative flex items-center justify-center gap-1 rounded-xl border border-border bg-secondary/60 p-1.5 sm:gap-1.5 sm:p-2", compact && "story-rack")} style={compact ? { ["--rack-capacity" as string]: capacity } : undefined}>
+    <div ref={rackRef} aria-label="Letter rack" className={cn("story-letter-rack relative flex items-center justify-center gap-1 rounded-xl border border-border bg-secondary/60 p-1.5 sm:gap-1.5 sm:p-2", compact && "story-rack")} style={{ ["--rack-capacity" as string]: capacity }}>
       {tiles.length === 0 ? (
         <span className="px-2 py-3 text-sm text-muted-foreground">No tiles left</span>
       ) : (

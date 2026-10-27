@@ -8,6 +8,11 @@ Source spec: uploaded `Sibble_-_Singleplayer_Story_Mode_pasted.md`. Multiplayer 
 - [x] Allow solo practice for every authenticated user; verified ownership-only insert policy, signed-in creation and regression test without role lookup.
 - [x] Verify signed-in navigation, personal theme change, starting both modes and phone layout; all 50 checks pass.
 
+## Large-screen Story scaling
+- [x] Enlarge desktop scores/status, Pens, rack and actions using bounded desktop-only sizing and fixed typography tiers.
+- [x] Preserve exact board/workspace bounds at 1280×900, 1830×1177, 2560×1440 and 390×852; compact and Bookstore styling excluded.
+- [x] Verify desktop rack drag/return and orientation-preserved pending placement; WITED committed 81 Ink through the scoring animation, no runtime errors, 49 Story checks pass and preview clean.
+
 ## Returning letters and centre logo
 - [x] Animate tapped pending Story letters back into their rack slot while other rack letters make space.
 - [x] Use the sharpest matching centre logo edge-to-edge on both boards, cropping transparent margins from the existing 512px icon.

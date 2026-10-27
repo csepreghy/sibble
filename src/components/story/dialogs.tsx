@@ -301,7 +301,7 @@ export function PenInspectDialog({
   const Icon = penIcon(pen.penId);
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[90dvh] max-w-xs overflow-y-auto border-0 bg-transparent p-0 shadow-none">
+      <DialogContent className="story-pen-inspector max-h-[90dvh] max-w-xs overflow-y-auto border-0 bg-transparent p-0 shadow-none">
         <ShopDetailTile glow="var(--color-shop-pen)">
           <span className="self-start text-xs font-bold uppercase text-shop-pen">Pen</span>
           <Icon className="h-16 w-16 text-shop-pen" />
