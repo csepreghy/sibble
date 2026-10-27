@@ -1134,13 +1134,10 @@ html.story-board-midnight {
     radial-gradient(120% 80% at 50% 0%, color-mix(in oklab, var(--glow) 22%, transparent) 0%, transparent 60%),
     linear-gradient(180deg, color-mix(in oklab, var(--card) 85%, white) 0%, var(--card) 55%, color-mix(in oklab, var(--card) 80%, black) 100%);
   box-shadow: var(--shop-depth);
-  transition: transform 150ms ease;
+  transition: box-shadow 150ms ease;
   &:hover {
-    transform: translateY(-3px);
+    box-shadow: var(--shop-depth), 0 0 18px color-mix(in oklab, var(--glow) 60%, transparent);
     animation: shop-glow-pulse 3.2s ease-in-out infinite;
-  }
-  &:active {
-    transform: translateY(3px);
   }
 }
 
@@ -1211,10 +1208,16 @@ html.story-board-midnight {
 }
 
 /* Very large screens: five Bookstore items per row. */
-@media (min-width: 1920px) { .story-shop-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+@media (min-width: 1280px) { .story-shop-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
 /* The decorative SIBBLEBOOK rack uses gameplay tile sizes (capacity = gameplay rack), so it may be wider than the gameplay rack. */
 .story-shopping .story-footer > div:first-child:has([data-story-deco-rack]) { max-width: none; width: auto; }
 .story-shopping.story-compact .story-footer > div:first-child:has([data-story-deco-rack]) { width: 100%; }
 @media (min-width: 1440px) and (min-height: 900px) and (min-aspect-ratio: 3/2) {
   .story-screen[data-layout="desktop"] [data-story-deco-rack] .story-letter-rack [data-rack-tile-id] { width: min(var(--story-rack-size), calc((var(--story-rack-width) - 22px - (var(--rack-capacity) - 1) * 8px) / var(--rack-capacity))); }
 }
+
+@keyframes story-hover-preview-in { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
+.story-hover-preview { animation: story-hover-preview-in 140ms ease-out both; }
+.story-hover-preview[data-side="left"] { transform-origin: right center; }
+.story-hover-preview[data-side="right"] { transform-origin: left center; }
+@media (prefers-reduced-motion: reduce) { .story-hover-preview { animation: none; } }

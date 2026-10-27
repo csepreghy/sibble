@@ -18,6 +18,10 @@ import { Button } from "@/components/ui/button";
 import { DndContext, closestCenter, MouseSensor, TouchSensor, KeyboardSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { SortableContext, useSortable, rectSortingStrategy, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { useState } from "react";
+import { HoverPreview, canHover } from "./HoverPreview";
+import { ShopDetailTile } from "./ShopDetailTile";
+import { PenCurrentBonus, PenDescription } from "./PenDescription";
 
 const ICONS: Record<string, LucideIcon> = {
   Feather,
@@ -53,7 +57,9 @@ function SortablePen({ pen, index, activePenId, arrivingPenId, onArrivalEnd, onI
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: pen.penId, disabled: !!disabled });
   const def = penDef(pen.penId);
   const Icon = penIcon(pen.penId);
+  const [hoverRect, setHoverRect] = useState<DOMRect | null>(null);
   return (
+    <>
     <Button
       ref={setNodeRef}
       {...attributes}
@@ -62,7 +68,10 @@ function SortablePen({ pen, index, activePenId, arrivingPenId, onArrivalEnd, onI
       data-owned-pen={pen.penId}
       onAnimationEnd={onArrivalEnd}
       type="button"
-      onClick={() => { if (!isDragging) onInspect(pen); }}
+      onClick={() => { setHoverRect(null); if (!isDragging) onInspect(pen); }}
+      onPointerEnter={(event) => { if (!horizontal && canHover()) setHoverRect(event.currentTarget.getBoundingClientRect()); }}
+      onPointerLeave={() => setHoverRect(null)}
+      onPointerDown={(event) => { setHoverRect(null); listeners?.onPointerDown?.(event); }}
       variant="ghost"
       title={def.name}
       aria-label={def.name}
@@ -79,6 +88,18 @@ function SortablePen({ pen, index, activePenId, arrivingPenId, onArrivalEnd, onI
       <Icon className="h-5 w-5 text-shop-pen" />
       {def.scaling && <span className="rounded-full bg-shop-pen/20 px-1.5 text-[0.55rem] font-bold text-mult-ink">+{pen.bonus} Mult</span>}
     </Button>
+    {hoverRect && !isDragging && (
+      <HoverPreview anchor={hoverRect} side="left">
+        <ShopDetailTile glow="var(--color-shop-pen)">
+          <span className="self-start text-xs font-bold uppercase text-shop-pen">Pen</span>
+          <Icon className="h-16 w-16 text-shop-pen" />
+          <h3 className="text-xl font-bold leading-tight">{def.name}</h3>
+          <p className="text-sm leading-snug"><PenDescription penId={pen.penId} /></p>
+          <PenCurrentBonus pen={pen} />
+        </ShopDetailTile>
+      </HoverPreview>
+    )}
+    </>
   );
 }
 
