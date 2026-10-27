@@ -775,7 +775,7 @@ function StoryPlay() {
               <DropdownMenuItem onClick={() => setDialog({ kind: "run-info" })}><Info /> Run Info</DropdownMenuItem>
               <DropdownMenuItem onSelect={(e) => { e.preventDefault(); cycleSpeed(); }}><Gauge /> Animation speed: {speed}×</DropdownMenuItem>
               <AnimationModeMenu mode={animationMode} onChange={changeAnimationMode} disabled={busy} />
-              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); toggleSound(); }}>{soundOn ? <Volume2 /> : <VolumeX />} Sound: {soundOn ? "On" : "Off"}</DropdownMenuItem>
+              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); toggleSound(); }}>{soundOn ? <VolumeX /> : <Volume2 />} {soundOn ? "Mute sounds" : "Unmute sounds"}</DropdownMenuItem>
               <DropdownMenuItem className="text-destructive" onClick={endStory}><Trash2 /> End this Story</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -845,7 +845,7 @@ function StoryPlay() {
                 </DropdownMenuItem>
                 <AnimationModeMenu mode={animationMode} onChange={changeAnimationMode} disabled={busy} />
                 <DropdownMenuItem onSelect={(e) => { e.preventDefault(); toggleSound(); }}>
-                  {soundOn ? <Volume2 className="mr-2 h-4 w-4" /> : <VolumeX className="mr-2 h-4 w-4" />} Sound: {soundOn ? "On" : "Off"}
+                  {soundOn ? <VolumeX className="mr-2 h-4 w-4" /> : <Volume2 className="mr-2 h-4 w-4" />} {soundOn ? "Mute sounds" : "Unmute sounds"}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={endStory}

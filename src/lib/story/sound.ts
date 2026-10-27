@@ -10,7 +10,7 @@ const KEY = "sibble:story:sound";
  * Which effects are currently switched on. Every sound below stays implemented;
  * add its name back to this list to bring it back.
  */
-const ENABLED = new Set(["confetti"]);
+const ENABLED = new Set(["confetti", "coin"]);
 const isOn = (name: string) => ENABLED.has(name);
 
 let ctx: AudioContext | null = null;
