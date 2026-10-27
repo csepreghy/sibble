@@ -149,6 +149,9 @@ function StoryPlay() {
   const discardOutRef = useRef(false);
   const [anim, setAnim] = useState<AnimState>(IDLE_ANIM);
   const [lettersExited, setLettersExited] = useState(false);
+  // True once the just-played word's scoring outline has finished fading (page-complete fly-out),
+  // so later re-renders cannot remount the outline at full opacity over the emptied board.
+  const [outlineGone, setOutlineGone] = useState(false);
   const [introDismissed, setIntroDismissed] = useState(-1);
   const [dialog, setDialog] = useState<
     | { kind: "run-info" }
@@ -448,6 +451,7 @@ function StoryPlay() {
 
   async function playWord() {
     if (!story || !config || !words || busy) return;
+    setOutlineGone(false);
     const result = playPlacement(story, pending, (w) => words.has(w));
     if ("error" in result) {
       toast.error(result.error);
@@ -643,6 +647,10 @@ function StoryPlay() {
       // Restore the original empty squares underneath the presentation-only flights.
       // The completed board remains untouched in the saved run and Page history.
       setLettersExited(true);
+      // Once the word outline has faded (600ms), drop it from the render entirely so
+      // later re-renders can't bring it back over the emptied board.
+      if (reduced) setOutlineGone(true);
+      else window.setTimeout(() => setOutlineGone(true), 600);
       if (reward > 0) {
         const from = visible(".story-current-score")?.getBoundingClientRect();
         const to = visible(".story-play-coins")?.getBoundingClientRect();
@@ -923,8 +931,8 @@ function StoryPlay() {
               pending={lettersExited ? [] : pending}
               letterUpgrades={story.letterUpgrades}
               activeIndex={lettersExited ? null : anim.activeIndex}
-              activeWord={anim.activeWord}
-              wordHighlights={busy ? [] : preview?.wordHighlights ?? []}
+              activeWord={outlineGone ? null : anim.activeWord}
+              wordHighlights={lettersExited || busy ? [] : preview?.wordHighlights ?? []}
               disabled={busy || story.phase !== "play"}
               hoverIndex={hoverIndex}
               draggingIndex={draggingBoardIndex}
