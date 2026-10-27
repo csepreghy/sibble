@@ -68,26 +68,32 @@ export function AppNav({ showSignOut = true }: { showSignOut?: boolean }) {
   return (
     <>
       <nav aria-label={story ? "Story menu" : "Multiplayer menu"} className="flex max-w-full items-center justify-center gap-1 sm:gap-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button size="sm" variant={story ? "story" : "multiplayer"} disabled={start.isPending || !userId} className="h-10 px-3 text-sm sm:px-5">
-              <Play /> Play
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-56">
-            {story ? (
-              <>
-                {hasRun ? <DropdownMenuItem onSelect={() => navigate({ to: "/story/play" })}><Play /> Continue Story</DropdownMenuItem> : null}
-                <DropdownMenuItem onSelect={startStory}><Sparkles /> New Story</DropdownMenuItem>
-              </>
-            ) : (
-              <>
-                <DropdownMenuItem onSelect={() => start.mutate(false)}><Users /> New multiplayer game</DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => start.mutate(true)}><User /> Solo practice</DropdownMenuItem>
-              </>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {story && !hasRun ? (
+          <Button size="sm" variant="story" disabled={start.isPending || !userId} className="h-10 px-3 text-sm sm:px-5" onClick={startStory}>
+            <Play /> Play
+          </Button>
+        ) : (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" variant={story ? "story" : "multiplayer"} disabled={start.isPending || !userId} className="h-10 px-3 text-sm sm:px-5">
+                <Play /> Play
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              {story ? (
+                <>
+                  <DropdownMenuItem onSelect={() => navigate({ to: "/story/play" })}><Play /> Continue Story</DropdownMenuItem>
+                  <DropdownMenuItem onSelect={startStory}><Sparkles /> New Story</DropdownMenuItem>
+                </>
+              ) : (
+                <>
+                  <DropdownMenuItem onSelect={() => start.mutate(false)}><Users /> New multiplayer game</DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => start.mutate(true)}><User /> Solo practice</DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
         {tabs.map((tab) => (
           <Button key={tab.to} asChild variant="secondary" size="sm" className="h-10 px-2 text-sm sm:px-4">
             <Link to={tab.to} activeProps={{ className: "ring-1 ring-ring" }}>
