@@ -646,7 +646,7 @@ function StoryPlay() {
       // Persist now; the screen keeps showing the finished board until the Bookstore opens.
       saveStory(result.state);
       const reward = result.coinReward;
-      if (!reduced) flyLettersOut();
+      const flightsDone = reduced ? null : flyLettersOut();
       // Restore the original empty squares underneath the presentation-only flights.
       // The completed board remains untouched in the saved run and Page history.
       setLettersExited(true);
@@ -673,6 +673,7 @@ function StoryPlay() {
         await new Promise((resolve) => setTimeout(resolve, countMs + 100));
       }
       await new Promise((resolve) => setTimeout(resolve, 500));
+      if (flightsDone) await flightsDone;
       if (cancelAnim.current) return;
       pendingCommit.current = commit;
       soundWhoosh();
