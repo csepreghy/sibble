@@ -8,12 +8,13 @@ import { penDef } from "@/lib/story/pens";
 import { upgradeDef } from "@/lib/story/upgrades";
 import type { PenInstance, StoryState, StoryTile } from "@/lib/story/types";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { penIcon } from "./PenSidebar";
 import { ShopDetailTile } from "./ShopDetailTile";
 import { CompletedPages } from "./CompletedPages";
 import { PenCurrentBonus, PenDescription } from "./PenDescription";
+import { UpgradeVisual } from "./Bookstore";
 
 // --- Page intro ----------------------------------------------------------
 
@@ -85,6 +86,7 @@ export function PageIntroDialog({
 export function RunInfoDialog({ state, onClose }: { state: StoryState; onClose: () => void }) {
   const [reviewing, setReviewing] = useState(false);
   const [tab, setTab] = useState<"build" | "stats">("build");
+  const [upgradeInfo, setUpgradeInfo] = useState<string | null>(null);
   const upgradedLetters = Object.keys(state.letterUpgrades).sort();
   const upgradedLengths = Object.keys(state.wordLengthUpgrades).map(Number).sort((a, b) => a - b);
   const enhancedByLetter = new Map<string, { enhancement: string; count: number }>();

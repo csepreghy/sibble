@@ -156,12 +156,19 @@ export function OfferVisual({ offer, state, large, small }: { offer: Offer; stat
       );
     }
     case "upgrade":
-      return (
-        <span className={cn("flex items-center justify-center rounded-md border border-shop-upgrade/50 bg-shop-upgrade/15 rotate-45", large ? "h-12 w-12" : small ? "h-7 w-7" : "h-9 w-9")}>
-          <Star className={cn("-rotate-45 text-shop-upgrade", large ? "h-6 w-6" : small ? "h-3.5 w-3.5" : "h-4 w-4")} />
-        </span>
-      );
+      return <UpgradeVisual large={large} small={small} />;
   }
+}
+
+/** The permanent-upgrade badge: a green square with a star. Shared with the Run Info dialog. */
+export function UpgradeVisual({ large, small }: { large?: boolean; small?: boolean }) {
+  const box = large ? "h-12 w-12" : small ? "h-7 w-7" : "h-9 w-9";
+  const icon = large ? "h-6 w-6" : small ? "h-3.5 w-3.5" : "h-4 w-4";
+  return (
+    <span className={cn("flex items-center justify-center rounded-md border border-shop-upgrade/50 bg-shop-upgrade/15 rotate-45", box)}>
+      <Star className={cn("-rotate-45 text-shop-upgrade", icon)} />
+    </span>
+  );
 }
 
 interface BookstoreProps {
