@@ -170,6 +170,7 @@ function StoryPlay() {
   const [confetti, setConfetti] = useState<ScoreConfettiData | null>(null);
   const [coinFlight, setCoinFlight] = useState<{ id: number; amount: number; x: number; y: number; dx: number; dy: number } | null>(null);
   const [coinBonus, setCoinBonus] = useState(0);
+  const [lastError, setLastError] = useState<string | null>(null);
   const [shopEntering, setShopEntering] = useState(false);
   const pendingCommit = useRef<(() => void) | null>(null);
   const [soundOn, setSoundOn] = useState(true);
