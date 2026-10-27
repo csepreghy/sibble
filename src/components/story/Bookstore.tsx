@@ -291,7 +291,7 @@ function OfferDetailBody({ offer, state, dialog }: { offer: Offer; state: StoryS
 }
 
 /** Left-sidebar Page Complete summary shown while shopping. */
-export function BookstoreSummary({ state, onContinue, onOpenBag }: { state: StoryState; onContinue: () => void; onOpenBag: () => void }) {
+export function BookstoreSummary({ state, onContinue, onOpenRunInfo }: { state: StoryState; onContinue: () => void; onOpenRunInfo: () => void }) {
   const done = PAGES[state.pageIndex];
   if (!done) return null;
   const next = PAGES[state.pageIndex + 1];
@@ -333,10 +333,10 @@ export function BookstoreSummary({ state, onContinue, onOpenBag }: { state: Stor
           <Coins className="h-7 w-7" /> {state.coins}
         </span>
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="lg" className="px-4" onClick={onOpenRunInfo}>Run Info</Button>
           <Button size="lg" className="relative tile-gloss" onClick={onContinue}>
             Continue Story <ArrowRight className="ml-1 h-4 w-4" />
           </Button>
-          <Button variant="outline" size="icon" aria-label="Bag and completed pages" onClick={onOpenBag}><Menu className="h-4 w-4" /></Button>
         </div>
       </div>
     </div>

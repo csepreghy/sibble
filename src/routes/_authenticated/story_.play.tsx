@@ -824,7 +824,7 @@ function StoryPlay() {
         {/* Left sidebar — run information */}
         <aside className="story-desktop-sidebar flex w-52 shrink-0 flex-col gap-3 overflow-y-auto rounded-xl border border-border bg-card/60 p-3 sm:w-60">
           {story.phase === "bookstore" ? (
-            <BookstoreSummary state={story} onContinue={() => setStory(continueToNextPage(story))} onOpenBag={() => setDialog({ kind: "bag" })} />
+            <BookstoreSummary state={story} onContinue={() => setStory(continueToNextPage(story))} onOpenRunInfo={() => setDialog({ kind: "run-info" })} />
           ) : (
           <>
           <div>
@@ -1032,8 +1032,8 @@ function StoryPlay() {
       {compact && story.phase === "bookstore" && <div className="story-continue">
         <span className="flex items-center gap-1.5 text-3xl font-black tabular-nums text-gold"><Coins className="h-7 w-7" />{story.coins}</span>
         <div className="flex items-center gap-2">
+          <Button variant="outline" className="px-3" onClick={() => setDialog({ kind: "run-info" })}>Run Info</Button>
           <Button className="relative tile-gloss px-3" onClick={() => setStory(continueToNextPage(story))}>Continue Story <ArrowRight /></Button>
-          <Button variant="outline" size="icon" aria-label="Bag and completed pages" onClick={() => setDialog({ kind: "bag" })}><Menu className="h-4 w-4" /></Button>
         </div>
       </div>}
       {/* Dialogs */}
