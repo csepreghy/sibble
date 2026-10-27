@@ -210,6 +210,7 @@ export function soundConfetti() {
     burst(0.03, { vol: 0.07, at: 0.05 + Math.random() * 0.9, freq: 3000 + Math.random() * 4000, q: 2, send: 0.4 });
   }
   // Afterglow: tuned bell chimes (major 9) shimmering into the reverb.
+  if (!isOn("confetti-afterglow")) return;
   const chord = [1046.5, 1318.5, 1568, 1975.5, 2349.3, 2637];
   for (let i = 0; i < 14; i++) {
     const f = chord[Math.floor(Math.random() * chord.length)]! * (Math.random() < 0.3 ? 2 : 1);
