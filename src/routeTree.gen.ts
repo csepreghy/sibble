@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated/history'
 import { Route as AuthenticatedLobbyRouteImport } from './routes/_authenticated/lobby'
+import { Route as AuthenticatedMultiplayerRouteImport } from './routes/_authenticated/multiplayer'
 import { Route as AuthenticatedStatsRouteImport } from './routes/_authenticated/stats'
 import { Route as AuthenticatedStoryRouteImport } from './routes/_authenticated/story'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
@@ -46,6 +47,12 @@ const AuthenticatedLobbyRoute = AuthenticatedLobbyRouteImport.update({
   path: '/lobby',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMultiplayerRoute =
+  AuthenticatedMultiplayerRouteImport.update({
+    id: '/multiplayer',
+    path: '/multiplayer',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedStatsRoute = AuthenticatedStatsRouteImport.update({
   id: '/stats',
   path: '/stats',
@@ -88,6 +95,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRouteWithChildren
   '/history': typeof AuthenticatedHistoryRoute
   '/lobby': typeof AuthenticatedLobbyRoute
+  '/multiplayer': typeof AuthenticatedMultiplayerRoute
   '/stats': typeof AuthenticatedStatsRoute
   '/story': typeof AuthenticatedStoryRoute
   '/auth/callback': typeof AuthCallbackRoute
@@ -101,6 +109,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRouteWithChildren
   '/history': typeof AuthenticatedHistoryRoute
   '/lobby': typeof AuthenticatedLobbyRoute
+  '/multiplayer': typeof AuthenticatedMultiplayerRoute
   '/stats': typeof AuthenticatedStatsRoute
   '/story': typeof AuthenticatedStoryRoute
   '/auth/callback': typeof AuthCallbackRoute
@@ -116,6 +125,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRouteWithChildren
   '/_authenticated/history': typeof AuthenticatedHistoryRoute
   '/_authenticated/lobby': typeof AuthenticatedLobbyRoute
+  '/_authenticated/multiplayer': typeof AuthenticatedMultiplayerRoute
   '/_authenticated/stats': typeof AuthenticatedStatsRoute
   '/_authenticated/story': typeof AuthenticatedStoryRoute
   '/auth/callback': typeof AuthCallbackRoute
@@ -131,6 +141,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/history'
     | '/lobby'
+    | '/multiplayer'
     | '/stats'
     | '/story'
     | '/auth/callback'
@@ -144,6 +155,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/history'
     | '/lobby'
+    | '/multiplayer'
     | '/stats'
     | '/story'
     | '/auth/callback'
@@ -158,6 +170,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/history'
     | '/_authenticated/lobby'
+    | '/_authenticated/multiplayer'
     | '/_authenticated/stats'
     | '/_authenticated/story'
     | '/auth/callback'
@@ -208,6 +221,13 @@ declare module '@tanstack/react-router' {
       path: '/lobby'
       fullPath: '/lobby'
       preLoaderRoute: typeof AuthenticatedLobbyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/multiplayer': {
+      id: '/_authenticated/multiplayer'
+      path: '/multiplayer'
+      fullPath: '/multiplayer'
+      preLoaderRoute: typeof AuthenticatedMultiplayerRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/stats': {
@@ -265,6 +285,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedHistoryRoute: typeof AuthenticatedHistoryRoute
   AuthenticatedLobbyRoute: typeof AuthenticatedLobbyRoute
+  AuthenticatedMultiplayerRoute: typeof AuthenticatedMultiplayerRoute
   AuthenticatedStatsRoute: typeof AuthenticatedStatsRoute
   AuthenticatedStoryRoute: typeof AuthenticatedStoryRoute
   AuthenticatedGameGameIdRoute: typeof AuthenticatedGameGameIdRoute
@@ -276,6 +297,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHistoryRoute: AuthenticatedHistoryRoute,
   AuthenticatedLobbyRoute: AuthenticatedLobbyRoute,
+  AuthenticatedMultiplayerRoute: AuthenticatedMultiplayerRoute,
   AuthenticatedStatsRoute: AuthenticatedStatsRoute,
   AuthenticatedStoryRoute: AuthenticatedStoryRoute,
   AuthenticatedGameGameIdRoute: AuthenticatedGameGameIdRoute,
