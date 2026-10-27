@@ -1209,6 +1209,9 @@ html.story-board-midnight {
 
 /* Very large screens: five Bookstore items per row. */
 @media (min-width: 1280px) { .story-shop-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+/* Offers stay scrollable but scrollbars are hidden: the item pop overshoot must not flash a scrollbar. */
+.story-shop-grid, .story-shop-offers { scrollbar-width: none; }
+.story-shop-grid::-webkit-scrollbar, .story-shop-offers::-webkit-scrollbar { display: none; }
 /* The decorative SIBBLEBOOK rack uses gameplay tile sizes (capacity = gameplay rack), so it may be wider than the gameplay rack. */
 .story-shopping .story-footer > div:first-child:has([data-story-deco-rack]) { max-width: none; width: auto; }
 .story-shopping.story-compact .story-footer > div:first-child:has([data-story-deco-rack]) { width: 100%; }
