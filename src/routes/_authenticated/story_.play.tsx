@@ -149,6 +149,9 @@ function StoryPlay() {
   const discardOutRef = useRef(false);
   const [anim, setAnim] = useState<AnimState>(IDLE_ANIM);
   const [lettersExited, setLettersExited] = useState(false);
+  // True once the just-played word's scoring outline has finished fading (page-complete fly-out),
+  // so later re-renders cannot remount the outline at full opacity over the emptied board.
+  const [outlineGone, setOutlineGone] = useState(false);
   const [introDismissed, setIntroDismissed] = useState(-1);
   const [dialog, setDialog] = useState<
     | { kind: "run-info" }
@@ -448,6 +451,7 @@ function StoryPlay() {
 
   async function playWord() {
     if (!story || !config || !words || busy) return;
+    setOutlineGone(false);
     const result = playPlacement(story, pending, (w) => words.has(w));
     if ("error" in result) {
       toast.error(result.error);
