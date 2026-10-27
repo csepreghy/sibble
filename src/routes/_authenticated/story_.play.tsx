@@ -806,7 +806,7 @@ function StoryPlay() {
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => navigate({ to: "/lobby" })}><Home /> Return to main menu</DropdownMenuItem>
               <DropdownMenuItem onClick={startNewStory}><Sparkles /> Start new Story</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setDialog({ kind: "run-info" })}><Info /> Run Info</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setDialog({ kind: "run-info" })}><Info /> Run Info &amp; Stats</DropdownMenuItem>
               <DropdownMenuItem onSelect={(e) => { e.preventDefault(); cycleSpeed(); }}><Gauge /> Animation speed: {speed}×</DropdownMenuItem>
               <AnimationModeMenu mode={animationMode} onChange={changeAnimationMode} disabled={busy} />
               <DropdownMenuItem onSelect={(e) => { e.preventDefault(); toggleSound(); }}>{soundOn ? <VolumeX /> : <Volume2 />} {soundOn ? "Mute sounds" : "Unmute sounds"}</DropdownMenuItem>
@@ -860,13 +860,13 @@ function StoryPlay() {
           <div className="mt-auto flex flex-col gap-3">
           {!compact && story.phase === "play" && <span className="story-play-coins flex items-center gap-2 text-3xl font-black tabular-nums text-gold"><Coins className="h-7 w-7 shrink-0" /><CountNumber value={story.coins + coinBonus} running={coinBonus > 0} growToTotal byDelta /></span>}
           <div className="flex gap-1.5">
-            <Button variant="outline" size="sm" className="flex-1" onClick={() => setDialog({ kind: "run-info" })}>
-              Run Info
-            </Button>
+            {story.phase !== "bookstore" && <Button variant="outline" size="sm" className="flex-1" onClick={() => setDialog({ kind: "run-info" })}>
+              Run Info &amp; Stats
+            </Button>}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" aria-label="Options">
-                  <MoreVertical className="h-4 w-4" />
+                <Button variant="outline" size="sm" aria-label="Settings" className={story.phase === "bookstore" ? "w-full" : undefined}>
+                  <Settings className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -1032,7 +1032,7 @@ function StoryPlay() {
       {compact && story.phase === "bookstore" && <div className="story-continue">
         <span className="flex items-center gap-1.5 text-3xl font-black tabular-nums text-gold"><Coins className="h-7 w-7" />{story.coins}</span>
         <div className="flex items-center gap-2">
-          <Button variant="outline" className="px-3" onClick={() => setDialog({ kind: "run-info" })}>Run Info</Button>
+          <Button variant="outline" className="px-3" onClick={() => setDialog({ kind: "run-info" })}>Stats</Button>
           <Button className="relative tile-gloss px-3" onClick={() => setStory(continueToNextPage(story))}>Continue Story <ArrowRight /></Button>
         </div>
       </div>}
