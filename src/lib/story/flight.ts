@@ -5,4 +5,4 @@
  * win over a Tailwind shadow utility.
  */
 export const TILE_FLIGHT_SHADOW =
-  "0 26px 54px -8px rgb(0 0 0 / 0.85), 0 10px 22px -5px rgb(0 0 0 / 0.7)";
+  "0 28px 58px -8px rgb(0 0 0 / 0.95), 0 11px 26px -5px rgb(0 0 0 / 0.8)";
