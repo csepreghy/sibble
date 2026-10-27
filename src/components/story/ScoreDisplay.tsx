@@ -1,6 +1,7 @@
 import { Droplet } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { scaled } from "@/lib/story/speed";
+import { compactNumber } from "@/lib/story/format";
 import { totalCountDuration, totalCountProgress } from "@/lib/story/animation";
 
 // Count-up waits for the impact flash so it begins only after the hit.
@@ -20,7 +21,7 @@ export function impactBox(box: Element) {
   box.animate([{ backgroundColor: `color-mix(in srgb, ${color}, white 50%)`, boxShadow: `0 0 28px ${color}` }, { backgroundColor: color, boxShadow: `0 0 0 ${color}` }], { duration: scaled(IMPACT_MS + 10), easing: "ease-out" });
 }
 
-export function CountNumber({ value, running, growToTotal = false, byDelta = false }: { value: number; running: boolean; growToTotal?: boolean; byDelta?: boolean }) {
+export function CountNumber({ value, running, growToTotal = false, byDelta = false, compact = false }: { value: number; running: boolean; growToTotal?: boolean; byDelta?: boolean; compact?: boolean }) {
   const [shown, setShown] = useState(value);
   const previous = useRef(value);
   const number = useRef<HTMLElement>(null);
@@ -45,13 +46,14 @@ export function CountNumber({ value, running, growToTotal = false, byDelta = fal
     frame = requestAnimationFrame(step);
     return () => { cancelAnimationFrame(frame); growth?.cancel(); };
   }, [value, running, growToTotal, byDelta]);
-  return <strong ref={number} className="inline-block">{shown.toLocaleString(undefined, { maximumFractionDigits: 1 })}</strong>;
+  const exact = shown.toLocaleString(undefined, { maximumFractionDigits: 1 });
+  return <strong ref={number} className="inline-block" title={compact ? value.toLocaleString() : undefined}>{compact ? compactNumber(shown) : exact}</strong>;
 }
 
-export function ScoreBoxes({ base = 0, mult = 0, running = false, baseDelta, multDelta, baseHidden, multHidden, popKey = 0, growToTotal = false }: {
+export function ScoreBoxes({ base = 0, mult = 0, running = false, baseDelta, multDelta, baseHidden, multHidden, popKey = 0, growToTotal = false, compact = false }: {
   base?: number; mult?: number; running?: boolean; baseDelta?: string | null; multDelta?: string | null;
   baseHidden?: boolean | undefined; multHidden?: boolean | undefined; popKey?: number | undefined;
-  growToTotal?: boolean;
+  growToTotal?: boolean; compact?: boolean;
 }) {
   const pop = popKey ? "story-zero-pop" : undefined;
   const root = useRef<HTMLDivElement>(null);
@@ -66,27 +68,27 @@ export function ScoreBoxes({ base = 0, mult = 0, running = false, baseDelta, mul
   }, [base, mult, baseDelta, multDelta, running]);
   return <div ref={root} className="story-score-boxes tabular-nums" aria-label={`Base ${base} times Mult ${mult}`}>
     <div data-score-box="base" className="story-number-box tile-gloss bg-base-ink">
-      {!baseHidden && <span key={popKey} className={pop}><CountNumber value={base} running={running} growToTotal={growToTotal} /></span>}
+      {!baseHidden && <span key={popKey} className={pop}><CountNumber value={base} running={running} growToTotal={growToTotal} compact={compact} /></span>}
       {baseDelta && <span className="story-number-delta">{baseDelta}</span>}
     </div>
     <span className="story-score-times" aria-hidden="true">×</span>
     <div data-score-box="mult" className="story-number-box tile-gloss bg-mult-ink">
-      {!multHidden && <span key={popKey} className={pop}><CountNumber value={mult} running={running} growToTotal={growToTotal} /></span>}
+      {!multHidden && <span key={popKey} className={pop}><CountNumber value={mult} running={running} growToTotal={growToTotal} compact={compact} /></span>}
       {multDelta && <span className="story-number-delta">{multDelta}</span>}
     </div>
   </div>;
 }
 
-export function RoundScore({ target, current, running = false }: { target: number; current: number; running?: boolean }) {
+export function RoundScore({ target, current, running = false, compact = false, targetLabel = "Score to beat" }: { target: number; current: number; running?: boolean; compact?: boolean; targetLabel?: string }) {
   return <div className="story-round-score tabular-nums">
     <div className="story-target-score tile-gloss">
-      <span className="text-xs">Score to beat</span>
-      <span className="flex items-center justify-center gap-1.5 text-3xl font-bold">{target.toLocaleString()}<Droplet className="h-5 w-5" aria-label="Ink" /></span>
+      <span className="text-xs">{targetLabel}</span>
+      <span className="flex items-center justify-center gap-1.5 text-3xl font-bold"><strong className="font-bold" title={compact ? target.toLocaleString() : undefined}>{compact ? compactNumber(target) : target.toLocaleString()}</strong><Droplet className="h-5 w-5 shrink-0" aria-label="Ink" /></span>
     </div>
     <span className="story-score-times" aria-hidden="true">/</span>
     <div className="story-current-score tile-gloss">
       <span className="text-xs">Page score</span>
-      <span className="flex items-center justify-center gap-1.5 text-3xl font-bold"><CountNumber value={current} running={running} growToTotal byDelta /><Droplet className="h-5 w-5" aria-label="Ink" /></span>
+      <span className="flex items-center justify-center gap-1.5 text-3xl font-bold"><CountNumber value={current} running={running} growToTotal byDelta compact={compact} /><Droplet className="h-5 w-5 shrink-0" aria-label="Ink" /></span>
     </div>
   </div>;
 }

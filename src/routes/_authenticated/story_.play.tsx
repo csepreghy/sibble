@@ -833,9 +833,19 @@ function StoryPlay() {
             <BookstoreSummary state={story} onContinue={() => setStory(continueToNextPage(story))} onOpenRunInfo={() => setDialog({ kind: "run-info" })} />
           ) : (
           <>
-          <div>
-            <div className="flex flex-col items-start gap-1">
-              <h1 className="text-sm font-bold">{pageLabel(config)}</h1>
+          <h1 className="sr-only">{pageLabel(config)}</h1>
+          <div className="story-hud-scores">
+            <RoundScore target={config.inkTarget} current={busy && anim.roundScore != null ? anim.roundScore : story.page.ink} running={busy} compact targetLabel="Required Ink" />
+            <ScoreBoxes base={busy ? anim.base : 0} mult={busy ? anim.mult : 0} running={busy} baseDelta={anim.baseDelta} multDelta={anim.multDelta} baseHidden={busy && anim.baseHidden} multHidden={busy && anim.multHidden} popKey={busy ? anim.popKey : 0} growToTotal={busy && anim.growToTotal === true} compact />
+          </div>
+          <p className="min-h-4 text-center text-xs text-muted-foreground">{anim.label ?? ""}</p>
+          <div className="story-hud-info">
+            <div className="story-hud-block"><span>Words left</span><strong className="text-base-ink">{story.page.wordsLeft}</strong></div>
+            <div className="story-hud-block"><span>Discards left</span><strong className="text-mult-ink">{story.page.discardsLeft}</strong></div>
+            <div className="story-hud-block story-hud-wide"><span>Coins</span><span className="story-play-coins flex items-center gap-2 font-black tabular-nums text-gold"><Coins className="h-6 w-6 shrink-0" /><CountNumber value={story.coins + coinBonus} running={coinBonus > 0} growToTotal byDelta /></span></div>
+            <div className="story-hud-block"><span>Chapter</span><strong>{config.chapter}</strong></div>
+            <div className="story-hud-block"><span>Page</span><strong>{config.page}</strong></div>
+            <div className="story-hud-block story-hud-wide story-hud-meta"><span>{config.size}×{config.size} board</span>
               {twist ? (
                 <Popover>
                   <PopoverTrigger asChild>
@@ -850,21 +860,11 @@ function StoryPlay() {
                 </Popover>
               ) : null}
             </div>
-            <p className="text-xs text-muted-foreground">
-              {config.size}×{config.size} board
-            </p>
           </div>
-
-          <RoundScore target={config.inkTarget} current={busy && anim.roundScore != null ? anim.roundScore : story.page.ink} running={busy} />
-          <ScoreBoxes base={busy ? anim.base : 0} mult={busy ? anim.mult : 0} running={busy} baseDelta={anim.baseDelta} multDelta={anim.multDelta} baseHidden={busy && anim.baseHidden} multHidden={busy && anim.multHidden} popKey={busy ? anim.popKey : 0} growToTotal={busy && anim.growToTotal === true} />
-          <p className="min-h-4 text-center text-xs text-muted-foreground">{anim.label ?? ""}</p>
-          {!compact && <div className="story-remaining-counters story-sidebar-counters"><span>Words left <strong className="tabular-nums text-base-ink">{story.page.wordsLeft}</strong></span><span>Discards left <strong className="tabular-nums text-mult-ink">{story.page.discardsLeft}</strong></span></div>}
-
           </>
           )}
 
           <div className="mt-auto flex flex-col gap-3">
-          {!compact && story.phase === "play" && <span className="story-play-coins flex items-center gap-2 text-3xl font-black tabular-nums text-gold"><Coins className="h-7 w-7 shrink-0" /><CountNumber value={story.coins + coinBonus} running={coinBonus > 0} growToTotal byDelta /></span>}
           <div className="flex gap-1.5">
             {story.phase !== "bookstore" && <Button variant="outline" size="sm" className="flex-1" onClick={() => setDialog({ kind: "run-info" })}>
               Run Info &amp; Stats
