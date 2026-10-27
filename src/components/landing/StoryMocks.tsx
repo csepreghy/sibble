@@ -22,7 +22,7 @@ function useCountUp(to: number, ms = 1400, delay = 0) {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { setN(to); return; }
     let raf = 0; let timer = 0;
     const io = new IntersectionObserver(([e]) => {
-      if (!e.isIntersecting) return;
+      if (!e?.isIntersecting) return;
       io.disconnect();
       timer = window.setTimeout(() => {
         const start = performance.now();
