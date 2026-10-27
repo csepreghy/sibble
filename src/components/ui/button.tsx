@@ -10,6 +10,8 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground shadow hover:bg-primary/90",
+        story: "relative tile-gloss bg-mode-story text-mode-foreground shadow-tile hover:bg-mode-story/90",
+        multiplayer: "relative tile-gloss bg-mode-multiplayer text-mode-foreground shadow-tile hover:bg-mode-multiplayer/90",
         destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
         outline:
           "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
