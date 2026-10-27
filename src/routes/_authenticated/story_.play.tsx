@@ -1102,11 +1102,14 @@ function StoryPlay() {
             style={{ left: drag.x, top: drag.y, transform: "translate(-50%, -50%)" }}
           >
             <div
-              className="tile-face relative flex rotate-[-6deg] items-center justify-center rounded-md font-bold shadow-2xl"
+              className="tile-face relative flex rotate-[-6deg] items-center justify-center rounded-md font-bold"
               style={{
                 width: size,
                 height: size,
                 fontSize: size * 0.42,
+                // Inline so it beats .tile-face's own box-shadow: the dragged
+                // tile must read as lifted off the board on phone and desktop.
+                boxShadow: "0 22px 44px -10px rgb(0 0 0 / 0.75), 0 8px 18px -6px rgb(0 0 0 / 0.6)",
                 transition: "width 160ms ease-out, height 160ms ease-out, font-size 160ms ease-out",
               }}
             >
