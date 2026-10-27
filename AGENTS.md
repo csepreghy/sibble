@@ -32,3 +32,4 @@
 - Story statistics live in `src/lib/story/stats.ts`, persisted per device in localStorage (`sibble:story:stats:v1`) and recorded from the play route after commits — never in the database, never recalculated from presentation state.
 - `/lobby` is the mode chooser; `/story` and `/multiplayer` use the shared centered `ModeMenu`. `AppNav` derives the mode from the path and shows Play/History/Statistics/Theme without a mode toggle; Play contains mode-specific start/resume actions, keeping navigation consistent while preserving existing game and run storage.
 - Story word-length starting Mult comes only from `wordLengthMult()` in `src/lib/story/scoring.ts`; UI must never assume Mult equals word length, so balance changes stay in one table.
+- Sandbox package installs: if `bun install` fails with DNSResolveFailed while the registry is reachable, install with `npm install --no-package-lock --no-save --ignore-scripts` so the lockfile stays bun-owned.
