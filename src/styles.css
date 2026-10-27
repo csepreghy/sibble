@@ -1002,12 +1002,14 @@ html.story-board-midnight {
   flex: 0 0 auto;
   white-space: nowrap;
   overflow: hidden;
+  --tag-pop-w: 104px;
+  --tag-pop-pad: 10px;
   animation: story-tag-pop 360ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
 }
 @keyframes story-tag-pop {
   0% { max-width: 0; padding-inline: 0; opacity: 0; transform: scale(0.4); }
-  55% { max-width: 104px; opacity: 1; transform: scale(1.06); }
-  100% { max-width: 104px; padding-inline: 10px; opacity: 1; transform: scale(1); }
+  55% { max-width: var(--tag-pop-w); opacity: 1; transform: scale(1.06); }
+  100% { max-width: var(--tag-pop-w); padding-inline: var(--tag-pop-pad); opacity: 1; transform: scale(1); }
 }
 .story-compact .story-action-label { display: none; }
 .story-compact .story-actions svg { margin: 0; }
@@ -1026,7 +1028,7 @@ html.story-board-midnight {
 }
 @media (prefers-reduced-motion: reduce) {
   .anim-tile-bump, .anim-score-pop, .shop-card-live { animation: none; }
-  .story-preview-tag-action { animation: none; }
+  .story-compact .story-actions .story-preview-tag-action { animation: none; }
 }
 
 /* The actual board supplies its own frame. Keep the centre layout footprint
@@ -1035,7 +1037,7 @@ html.story-board-midnight {
 .story-screen[data-layout="desktop"] .story-footer > div:first-child { max-width: 448px; }
 /* The valid-word score sits beside Play word and shares its box: same height,
    inline padding, corner radius and shadow, so the pair reads as one row. */
-.story-screen[data-layout="desktop"] .story-preview-tag-action { height: 32px; padding-inline: 12px; border-radius: 6px; font-size: 16px; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
+.story-screen[data-layout="desktop"] .story-preview-tag-action { height: 32px; padding-inline: 12px; border-radius: 6px; font-size: 16px; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); flex: 0 0 auto; white-space: nowrap; overflow: hidden; --tag-pop-w: 150px; --tag-pop-pad: 12px; animation: story-tag-pop 360ms cubic-bezier(0.34, 1.4, 0.64, 1) both; }
 .story-screen[data-layout="desktop"].story-shopping .story-hud { display: none; }
 .story-screen[data-layout="desktop"] .story-sidebar-counters { flex-direction: column; align-items: stretch; margin-left: 0; gap: 12px; font-size: 18px; }
 .story-screen[data-layout="desktop"] .story-sidebar-counters > span { justify-content: space-between; }
@@ -1092,7 +1094,7 @@ html.story-board-midnight {
   .story-screen[data-layout="desktop"] .story-actions { align-self: center; flex-wrap: nowrap; gap: 8px; }
   .story-screen[data-layout="desktop"] .story-actions button { height: 46px; padding-inline: 16px; font-size: 16px; }
   .story-screen[data-layout="desktop"] .story-actions .story-play-button { height: 52px; font-size: 18px; }
-  .story-screen[data-layout="desktop"] .story-preview-tag-action { height: 52px; padding-inline: 16px; font-size: 18px; }
+  .story-screen[data-layout="desktop"] .story-preview-tag-action { height: 52px; padding-inline: 16px; font-size: 18px; --tag-pop-w: 170px; --tag-pop-pad: 16px; }
   .story-screen[data-layout="desktop"] .story-actions svg { width: 20px; height: 20px; }
   .story-screen[data-layout="desktop"] .story-play-coins { font-size: 36px; line-height: 36px; }
   .story-screen[data-layout="desktop"] .story-sidebar-counters { font-size: 20px; }
@@ -1195,4 +1197,5 @@ html.story-board-midnight {
 .story-offer-pop { animation: story-offer-pop 300ms cubic-bezier(.25,1.2,.5,1) both; }
 @media (prefers-reduced-motion: reduce) {
   .story-coin-flight, .story-sheet-up[data-state="open"], .story-shop-enter, .story-offer-pop { animation: none; }
+  .story-screen[data-layout="desktop"] .story-preview-tag-action { animation: none; }
 }
