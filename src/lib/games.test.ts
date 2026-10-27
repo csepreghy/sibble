@@ -1,5 +1,6 @@
-/// <reference types="bun" />
-import { test, expect, mock } from "bun:test";
+import { test } from "node:test";
+import { strict as assert } from "node:assert";
+import { mock } from "bun:test";
 
 let inserted: Record<string, unknown> | undefined;
 mock.module("@/integrations/supabase/client", () => ({
@@ -20,9 +21,9 @@ test("a regular signed-in user can create active solo practice without an admin 
   const { createGame } = await import("./games");
   const userId = "11111111-1111-4111-8111-111111111111";
   const game = await createGame({ userId, name: "Regular player", solo: true });
-  expect(game.solo).toBe(true);
-  expect(game.status).toBe("active");
-  expect(inserted?.['created_by']).toBe(userId);
-  expect(inserted?.['player1']).toBe(userId);
-  expect(game.state.racks[0].length).toBe(7);
+  assert.equal(game.solo, true);
+  assert.equal(game.status, "active");
+  assert.equal(inserted?.['created_by'], userId);
+  assert.equal(inserted?.['player1'], userId);
+  assert.equal(game.state.racks[0].length, 7);
 });
