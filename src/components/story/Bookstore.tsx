@@ -161,7 +161,7 @@ export function OfferVisual({ offer, state, large, small }: { offer: Offer; stat
 }
 
 /** The permanent-upgrade badge: a green square with a star. Shared with the Run Info dialog. */
-export function UpgradeVisual({ large, small }: { large?: boolean; small?: boolean }) {
+export function UpgradeVisual({ large, small }: { large?: boolean | undefined; small?: boolean | undefined }) {
   const box = large ? "h-12 w-12" : small ? "h-7 w-7" : "h-9 w-9";
   const icon = large ? "h-6 w-6" : small ? "h-3.5 w-3.5" : "h-4 w-4";
   return (
