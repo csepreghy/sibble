@@ -1,7 +1,7 @@
 import { soundPop } from "@/lib/story/sound";
 import { wordLengthMult } from "@/lib/story/scoring";
 import { ArrowRight, CheckCircle2, Coins, Menu, Sparkles, Star } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { LETTER_VALUES } from "@/lib/scrabble";
 import type { Offer, StoryState } from "@/lib/story/types";
 import { penDef } from "@/lib/story/pens";
@@ -205,12 +205,12 @@ export function Bookstore({ state, onBuy, compact, entering = false }: Bookstore
               type="button"
               variant="ghost"
               onClick={() => setInspect(index)}
-              style={{ ["--glow" as string]: glowVar(offer), ...(popAll ? { animationDelay: `${420 + popIndex++ * 110}ms` } : {}) }}
+              style={{ ["--glow" as string]: glowVar(offer), ...(entering ? { animationDelay: `${420 + popIndex++ * 110}ms` } : {}) }}
               className={cn(
                 "shop-card mb-1 flex h-auto flex-col items-center justify-between whitespace-normal rounded-lg border-2 text-center hover:bg-transparent hover:text-foreground",
                 compact ? "gap-0.5 p-1.5" : "aspect-square gap-1 p-2",
                 !affordable && "opacity-70",
-                popAll && "story-offer-pop",
+                entering && "story-offer-pop",
               )}
             >
               <span className={cn("self-start text-[0.55rem] font-bold uppercase tracking-widest", cat.text)}>{cat.label}</span>
