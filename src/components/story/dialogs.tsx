@@ -84,6 +84,7 @@ export function PageIntroDialog({
 
 export function RunInfoDialog({ state, onClose }: { state: StoryState; onClose: () => void }) {
   const [reviewing, setReviewing] = useState(false);
+  const [tab, setTab] = useState<"build" | "stats">("build");
   const upgradedLetters = Object.keys(state.letterUpgrades).sort();
   const upgradedLengths = Object.keys(state.wordLengthUpgrades).map(Number).sort((a, b) => a - b);
   const enhancedByLetter = new Map<string, { enhancement: string; count: number }>();
@@ -98,11 +99,37 @@ export function RunInfoDialog({ state, onClose }: { state: StoryState; onClose: 
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-h-[85dvh] max-w-lg overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{reviewing ? "Completed Page" : "Run Info"}</DialogTitle>
+          <DialogTitle>{reviewing ? "Completed Page" : "Run Info & Stats"}</DialogTitle>
         </DialogHeader>
+        {!reviewing ? (
+          <div role="tablist" className="grid grid-cols-2 gap-1 rounded-lg bg-secondary p-1 text-sm font-semibold">
+            {(["build", "stats"] as const).map((t) => (
+              <button
+                key={t}
+                role="tab"
+                aria-selected={tab === t}
+                onClick={() => setTab(t)}
+                className={cn("rounded-md px-3 py-1.5 transition-colors", tab === t ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}
+              >
+                {t === "build" ? "Build" : "Stats"}
+              </button>
+            ))}
+          </div>
+        ) : null}
         <div className="space-y-4 text-sm">
-          <CompletedPages state={state} onReviewChange={setReviewing} />
-          <div hidden={reviewing} className="space-y-4">
+          {tab === "stats" ? (
+            <>
+              {!reviewing ? (
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="rounded-lg bg-secondary/70 px-2 py-2"><p className="text-xs text-muted-foreground">Page</p><p className="text-lg font-bold">{state.pageIndex + 1}/{PAGES.length}</p></div>
+                  <div className="rounded-lg bg-secondary/70 px-2 py-2"><p className="text-xs text-muted-foreground">Coins</p><p className="text-lg font-bold text-gold">{state.coins}</p></div>
+                  <div className="rounded-lg bg-secondary/70 px-2 py-2"><p className="text-xs text-muted-foreground">Pens</p><p className="text-lg font-bold">{state.pens.length}</p></div>
+                </div>
+              ) : null}
+              <CompletedPages state={state} onReviewChange={setReviewing} />
+            </>
+          ) : null}
+          <div hidden={tab !== "build"} className="space-y-4">
           <section>
             <h3 className="mb-1 font-bold">Letter Base upgrades</h3>
             {upgradedLetters.length === 0 ? (

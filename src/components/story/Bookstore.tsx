@@ -328,16 +328,14 @@ export function BookstoreSummary({ state, onContinue, onOpenRunInfo }: { state: 
           </p>
         </div>
       ) : null}
-      <div className="mt-auto flex flex-wrap items-center justify-between gap-3">
+      <div className="mt-auto flex w-full min-w-0 flex-col gap-2">
         <span className="flex items-center gap-1.5 text-3xl font-black tabular-nums text-gold">
           <Coins className="h-7 w-7" /> {state.coins}
         </span>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="lg" className="px-4" onClick={onOpenRunInfo}>Run Info</Button>
-          <Button size="lg" className="relative tile-gloss" onClick={onContinue}>
-            Continue Story <ArrowRight className="ml-1 h-4 w-4" />
-          </Button>
-        </div>
+        <Button variant="outline" size="lg" className="w-full" onClick={onOpenRunInfo}>Run Info &amp; Stats</Button>
+        <Button size="lg" className="relative tile-gloss w-full" onClick={onContinue}>
+          Continue Story <ArrowRight className="ml-1 h-4 w-4" />
+        </Button>
       </div>
     </div>
   );
