@@ -1009,6 +1009,13 @@ html.story-board-midnight {
   .anim-tile-bump, .anim-score-pop, .shop-card-live { animation: none; }
 }
 
+/* The actual board supplies its own frame. Keep the centre layout footprint
+   transparent rather than drawing an oversized panel behind the desktop rails. */
+.story-screen[data-layout="desktop"]:not(.story-shopping) .story-main { background: transparent; border-color: transparent; }
+.story-screen[data-layout="desktop"] .story-sidebar-counters { flex-direction: column; align-items: stretch; margin-left: 0; gap: 12px; font-size: 18px; }
+.story-screen[data-layout="desktop"] .story-sidebar-counters > span { justify-content: space-between; }
+.story-screen[data-layout="desktop"] .story-sidebar-counters strong { font-size: 28px; line-height: 1.2; }
+
 /* Large desktop controls expand into spare board gutters. Negative rail margins
    retain the original 240/112px layout footprints; the board never moves.
    Discrete typography tiers avoid viewport-sized text and cap the enlargement. */
@@ -1061,8 +1068,8 @@ html.story-board-midnight {
   .story-screen[data-layout="desktop"]:not(.story-shopping) .story-actions .story-play-button { height: 52px; font-size: 18px; }
   .story-screen[data-layout="desktop"]:not(.story-shopping) .story-actions svg { width: 20px; height: 20px; }
   .story-screen[data-layout="desktop"]:not(.story-shopping) .story-play-coins { font-size: 36px; line-height: 36px; }
-  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-remaining-counters { font-size: 15px; }
-  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-remaining-counters strong { font-size: 24px; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-sidebar-counters { font-size: 20px; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-sidebar-counters strong { font-size: 32px; }
   body:has(.story-screen[data-layout="desktop"]) .story-pen-inspector { max-width: 380px; }
   body:has(.story-screen[data-layout="desktop"]) .story-pen-inspector h2 { font-size: 26px; }
   body:has(.story-screen[data-layout="desktop"]) .story-pen-inspector p { font-size: 18px; line-height: 1.4; }

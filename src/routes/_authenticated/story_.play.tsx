@@ -818,12 +818,14 @@ function StoryPlay() {
           <RoundScore target={config.inkTarget} current={busy && anim.roundScore != null ? anim.roundScore : story.page.ink} running={busy} />
           <ScoreBoxes base={busy ? anim.base : 0} mult={busy ? anim.mult : 0} running={busy} baseDelta={anim.baseDelta} multDelta={anim.multDelta} baseHidden={busy && anim.baseHidden} multHidden={busy && anim.multHidden} popKey={busy ? anim.popKey : 0} growToTotal={busy && anim.growToTotal === true} />
           <p className="min-h-4 text-center text-xs text-muted-foreground">{anim.label ?? ""}</p>
-
+          {!compact && <div className="story-remaining-counters story-sidebar-counters"><span>Words left <strong className="tabular-nums text-base-ink">{story.page.wordsLeft}</strong></span><span>Discards left <strong className="tabular-nums text-mult-ink">{story.page.discardsLeft}</strong></span></div>}
 
           </>
           )}
 
-          <div className="mt-auto flex gap-1.5">
+          <div className="mt-auto flex flex-col gap-3">
+          {!compact && story.phase === "play" && <span className="story-play-coins flex items-center gap-2 text-3xl font-black tabular-nums text-gold"><Coins className="h-7 w-7 shrink-0" /><CountNumber value={story.coins + coinBonus} running={coinBonus > 0} growToTotal byDelta /></span>}
+          <div className="flex gap-1.5">
             <Button variant="outline" size="sm" className="flex-1" onClick={() => setDialog({ kind: "run-info" })}>
               Run Info
             </Button>
@@ -856,6 +858,7 @@ function StoryPlay() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+          </div>
         </aside>
 
         {/* Center — board or Bookstore */}
@@ -883,8 +886,10 @@ function StoryPlay() {
             />
           )}
           {story.phase === "play" && <div className="story-board-status" aria-live="polite">
+            {compact && <>
             <span className="story-play-coins flex items-center gap-1 text-3xl font-black tabular-nums text-gold"><Coins className="h-6 w-6 shrink-0" /><CountNumber value={story.coins + coinBonus} running={coinBonus > 0} growToTotal byDelta /></span>
             <div className="story-remaining-counters"><span>Words left <strong className="text-xl tabular-nums text-base-ink">{story.page.wordsLeft}</strong></span><span>Discards left <strong className="text-xl tabular-nums text-mult-ink">{story.page.discardsLeft}</strong></span></div>
+            </>}
             {!busy && preview && <span className="story-preview-tag-slot" data-error={preview.error ? "true" : undefined}>
               <span className={cn("story-preview-tag", preview.error ? "bg-destructive/15 text-destructive" : "bg-story-valid/15 text-story-valid")} title={preview.error ?? "Ink before Pens"}>
                 {preview.error ? <><X className="h-4 w-4 shrink-0" /><span className="truncate">{preview.error}</span></> : <><span>+{preview.ink?.toLocaleString()}</span><Droplet className="-mr-[2px] h-4 w-4" aria-label="Ink before Pens" /></>}
