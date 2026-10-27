@@ -14,6 +14,7 @@ import { penIcon } from "./PenSidebar";
 import { ScoreBoxes } from "./ScoreDisplay";
 import { ShopDetailTile } from "./ShopDetailTile";
 import { PenCurrentBonus, PenDescription } from "./PenDescription";
+import { HoverPreview, canHover } from "./HoverPreview";
 
 const UPGRADE_SHORT: Record<string, string> = {
   "bigger-rack": "+1 rack tile.",
@@ -173,6 +174,7 @@ interface BookstoreProps {
 
 export function Bookstore({ state, onBuy, compact, entering = false }: BookstoreProps) {
   const [inspect, setInspect] = useState<number | null>(null);
+  const [hover, setHover] = useState<{ index: number; rect: DOMRect; side: "left" | "right" } | null>(null);
   const offers = state.offers ?? [];
   const [popAll] = useState(entering);
   useEffect(() => {
@@ -204,7 +206,15 @@ export function Bookstore({ state, onBuy, compact, entering = false }: Bookstore
               key={index}
               type="button"
               variant="ghost"
-              onClick={() => setInspect(index)}
+              onClick={() => { setHover(null); setInspect(index); }}
+              onPointerEnter={(event) => {
+                if (compact || !canHover()) return;
+                const rect = event.currentTarget.getBoundingClientRect();
+                const grid = event.currentTarget.parentElement?.getBoundingClientRect();
+                const last = grid ? rect.right > grid.right - rect.width / 2 : false;
+                setHover({ index, rect, side: last ? "left" : "right" });
+              }}
+              onPointerLeave={() => setHover(null)}
               style={{ ["--glow" as string]: glowVar(offer), ...(entering ? { animationDelay: `${420 + popIndex++ * 110}ms` } : {}) }}
               className={cn(
                 "shop-card mb-1 flex h-auto flex-col items-center justify-between whitespace-normal rounded-lg border-2 text-center hover:bg-transparent hover:text-foreground",
@@ -229,13 +239,7 @@ export function Bookstore({ state, onBuy, compact, entering = false }: Bookstore
         <DialogContent className="max-h-[90dvh] max-w-xs overflow-y-auto border-0 bg-transparent p-0 shadow-none">
           {inspected ? (
             <ShopDetailTile glow={glowVar(inspected)}>
-              <span className={cn("self-start text-xs font-bold uppercase tracking-widest", category(inspected).text)}>
-                {category(inspected).label}
-              </span>
-              <OfferVisual offer={inspected} state={state} large />
-              <DialogTitle className="text-xl font-bold leading-tight">{offerTitle(inspected)}</DialogTitle>
-              <DialogDescription className="text-sm leading-snug">{fullText(inspected, state)}</DialogDescription>
-              {inspected.kind === "pen" && <PenCurrentBonus pen={state.pens.find((pen) => pen.penId === inspected.penId) ?? { penId: inspected.penId, bonus: 0 }} />}
+              <OfferDetailBody offer={inspected} state={state} dialog />
               <div className="flex w-full items-center justify-between gap-2">
                 <Button
                   disabled={state.coins < inspectedPrice}
@@ -258,8 +262,31 @@ export function Bookstore({ state, onBuy, compact, entering = false }: Bookstore
           ) : null}
         </DialogContent>
       </Dialog>
+      {hover && !inspected && offers[hover.index] && !offers[hover.index].sold && (
+        <HoverPreview anchor={hover.rect} side={hover.side}>
+          <ShopDetailTile glow={glowVar(offers[hover.index])}>
+            <OfferDetailBody offer={offers[hover.index]} state={state} />
+            <span className="flex items-center gap-1 self-end rounded-full bg-gold/15 px-3 py-1 text-lg font-bold text-gold">
+              <Coins className="h-4 w-4" /> {priceFor(state.upgrades, offers[hover.index].price)}
+            </span>
+          </ShopDetailTile>
+        </HoverPreview>
+      )}
     </div>
   );
+}
+
+/** Shared detail content for the click inspector and the hover preview. */
+function OfferDetailBody({ offer, state, dialog }: { offer: Offer; state: StoryState; dialog?: boolean }) {
+  const Title = dialog ? DialogTitle : "h3";
+  const Desc = dialog ? DialogDescription : "p";
+  return <>
+    <span className={cn("self-start text-xs font-bold uppercase tracking-widest", category(offer).text)}>{category(offer).label}</span>
+    <OfferVisual offer={offer} state={state} large />
+    <Title className="text-xl font-bold leading-tight">{offerTitle(offer)}</Title>
+    <Desc className="text-sm leading-snug">{fullText(offer, state)}</Desc>
+    {offer.kind === "pen" && <PenCurrentBonus pen={state.pens.find((pen) => pen.penId === offer.penId) ?? { penId: offer.penId, bonus: 0 }} />}
+  </>;
 }
 
 /** Left-sidebar Page Complete summary shown while shopping. */
@@ -301,13 +328,15 @@ export function BookstoreSummary({ state, onContinue, onOpenBag }: { state: Stor
         </div>
       ) : null}
       <div className="mt-auto flex flex-wrap items-center justify-between gap-3">
-        <Button variant="outline" size="icon" aria-label="Bag and completed pages" onClick={onOpenBag}><Menu className="h-4 w-4" /></Button>
         <span className="flex items-center gap-1.5 text-3xl font-black tabular-nums text-gold">
           <Coins className="h-7 w-7" /> {state.coins}
         </span>
-        <Button size="lg" className="relative tile-gloss" onClick={onContinue}>
-          Continue Story <ArrowRight className="ml-1 h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button size="lg" className="relative tile-gloss" onClick={onContinue}>
+            Continue Story <ArrowRight className="ml-1 h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="icon" aria-label="Bag and completed pages" onClick={onOpenBag}><Menu className="h-4 w-4" /></Button>
+        </div>
       </div>
     </div>
   );
