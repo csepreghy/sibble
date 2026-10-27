@@ -631,6 +631,7 @@ function StoryPlay() {
       // Persist now; the screen keeps showing the finished board until the Bookstore opens.
       saveStory(result.state);
       const reward = result.coinReward;
+      if (!reduced) flyLettersOut();
       if (reward > 0) {
         const from = visible(".story-current-score")?.getBoundingClientRect();
         const to = visible(".story-play-coins")?.getBoundingClientRect();
@@ -668,6 +669,35 @@ function StoryPlay() {
     } else if (result.defeated) {
       toast.error("Out of words — the Story ends here.");
     }
+  }
+
+  /** Presentation only: clones every board letter and flies it off to the right on a curve. */
+  function flyLettersOut() {
+    const cells = Array.from(document.querySelectorAll<HTMLElement>("[data-story-board] [data-cell-index]"))
+      .filter((el) => el.classList.contains("tile-gloss") && el.offsetParent !== null);
+    if (!cells.length) return;
+    const vw = window.innerWidth;
+    const minLeft = Math.min(...cells.map((el) => el.getBoundingClientRect().left));
+    cells.forEach((el) => {
+      const r = el.getBoundingClientRect();
+      const clone = el.cloneNode(true) as HTMLElement;
+      clone.removeAttribute("data-cell-index");
+      Object.assign(clone.style, { position: "fixed", left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px`, margin: "0", zIndex: "60", pointerEvents: "none", transition: "none" });
+      document.body.appendChild(clone);
+      el.style.visibility = "hidden";
+      const dx = vw - r.left + r.width * 2;
+      const lift = -(60 + Math.random() * 80);
+      const spin = 20 + Math.random() * 40;
+      const delayMs = ((r.left - minLeft) / Math.max(1, vw)) * 900 + Math.random() * 60;
+      const anim = clone.animate([
+        { transform: "translate(0,0) rotate(0deg)", offset: 0 },
+        { transform: `translate(${dx * 0.12}px, ${lift}px) rotate(${spin * 0.3}deg)`, offset: 0.35 },
+        { transform: `translate(${dx * 0.55}px, ${lift * 0.6}px) rotate(${spin * 0.7}deg)`, offset: 0.7 },
+        { transform: `translate(${dx}px, ${-lift * 0.8}px) rotate(${spin}deg)`, offset: 1 },
+      ], { duration: 750, delay: delayMs, easing: "cubic-bezier(0.45, 0, 0.75, 0.6)", fill: "both" });
+      anim.onfinish = () => clone.remove();
+      anim.oncancel = () => clone.remove();
+    });
   }
 
   function pulseSibble() {
@@ -890,11 +920,13 @@ function StoryPlay() {
             <span className="story-play-coins flex items-center gap-1 text-3xl font-black tabular-nums text-gold"><Coins className="h-6 w-6 shrink-0" /><CountNumber value={story.coins + coinBonus} running={coinBonus > 0} growToTotal byDelta /></span>
             <div className="story-remaining-counters"><span>Words left <strong className="text-xl tabular-nums text-base-ink">{story.page.wordsLeft}</strong></span><span>Discards left <strong className="text-xl tabular-nums text-mult-ink">{story.page.discardsLeft}</strong></span></div>
             </>}
-            {!busy && preview && preview.error && <span className="story-preview-tag-slot" data-error="true">
-              <span className="story-preview-tag bg-destructive/15 text-destructive" title={preview.error}>
-                <X className="h-4 w-4 shrink-0" /><span className="truncate">{preview.error}</span>
+            <span className="story-preview-tag-slot story-error-slot" data-error="true" data-open={!busy && !!preview?.error ? "true" : "false"} aria-hidden={!(!busy && preview?.error)}>
+              <span className="story-error-inner">
+                {lastError && <span className="story-preview-tag story-error-tag bg-destructive/15 text-destructive">
+                  <X className="h-4 w-4 shrink-0" /><span>{lastError}</span>
+                </span>}
               </span>
-            </span>}
+            </span>
           </div>}
         </main>
 
