@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { Medal } from "lucide-react";
 import { AppNav } from "@/components/AppNav";
 import { BrandLogo } from "@/components/BrandLogo";
 import { loadStoryStats, topLetters } from "@/lib/story/stats";
@@ -30,6 +31,12 @@ function Stat({ label, value }: { label: string; value: string | number }) {
     </div>
   );
 }
+
+const MEDALS = [
+  { className: "text-gold" },
+  { className: "text-silver" },
+  { className: "text-bronze" },
+] as const;
 
 function StoryStats() {
   const [stats] = useState(() => loadStoryStats());

@@ -795,6 +795,8 @@ html.story-board-midnight {
   --mult-ink: oklch(0.78 0.16 60);
   --gold: oklch(0.84 0.16 88);
   --gold-button: oklch(0.84 0.19 88);
+  --silver: oklch(0.8 0.02 250);
+  --bronze: oklch(0.62 0.13 55);
   --story-valid: oklch(0.78 0.19 145);
   --story-score-foreground: oklch(1 0 0);
   --story-target-bg: oklch(0.57 0.22 350);
@@ -807,6 +809,8 @@ html.story-board-midnight {
   --color-mult-ink: var(--mult-ink);
   --color-gold: var(--gold);
   --color-gold-button: var(--gold-button);
+  --color-silver: var(--silver);
+  --color-bronze: var(--bronze);
   --color-story-valid: var(--story-valid);
   --color-story-score-foreground: var(--story-score-foreground);
   --color-shop-letter: oklch(0.68 0.15 245);
