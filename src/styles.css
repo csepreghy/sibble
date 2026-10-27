@@ -1240,7 +1240,7 @@ html.story-board-midnight {
 .story-hud-wide .story-play-coins { font-size: 28px; line-height: 1; }
 .story-hud-meta { min-height: 40px; }
 .story-hud-meta > span:first-child { text-transform: none; letter-spacing: 0; font-size: 13px; }
-@media (min-width: 1440px) and (min-height: 820px) {
+@media (min-width: 1440px) and (min-height: 900px) and (min-aspect-ratio: 3/2) {
   .story-screen[data-layout="desktop"] .story-desktop-sidebar { --hud-num: 44px; }
   .story-hud-info { gap: 10px; }
   .story-hud-block { padding: 10px 14px; }
