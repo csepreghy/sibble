@@ -47,6 +47,7 @@ import { loadStoryStats, recordPageCompleted, recordStoryEnded, recordStoryStart
 import { useStoryLayout } from "@/hooks/useStoryLayout";
 import { useStoryTheme } from "@/hooks/useStoryTheme";
 import { getStorySpeed, nextStorySpeed, scaled, setStorySpeed } from "@/lib/story/speed";
+import { TILE_FLIGHT_SHADOW } from "@/lib/story/flight";
 import { penSlots, priceFor } from "@/lib/story/upgrades";
 import type { Offer, PendingPlacement, PenInstance, StoryState, StoryTile } from "@/lib/story/types";
 import { Button } from "@/components/ui/button";
@@ -425,6 +426,8 @@ function StoryPlay() {
         const el = document.querySelector<HTMLElement>(`[data-rack-tile-id="${CSS.escape(id)}"]`);
         if (!el) return [];
         const dx = window.innerWidth - el.getBoundingClientRect().left + 40;
+        // Inline so it beats .tile-face's own box-shadow: discarded letters lift as they leave.
+        el.style.boxShadow = TILE_FLIGHT_SHADOW;
         return [
           el.animate(
             [
@@ -432,7 +435,7 @@ function StoryPlay() {
               { transform: `translate(${dx}px, -30px) rotate(25deg)`, opacity: 1 },
             ],
             { duration: 450, delay: i * 60, easing: "cubic-bezier(0.5,0,0.9,0.5)", fill: "forwards" },
-          ).finished.catch(() => undefined),
+          ).finished.then(() => { el.style.boxShadow = ""; }).catch(() => undefined),
         ];
       });
       await Promise.all(animations);
@@ -697,7 +700,7 @@ function StoryPlay() {
       const r = el.getBoundingClientRect();
       const clone = el.cloneNode(true) as HTMLElement;
       clone.removeAttribute("data-cell-index");
-      Object.assign(clone.style, { position: "fixed", left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px`, margin: "0", zIndex: "60", pointerEvents: "none", transition: "none" });
+      Object.assign(clone.style, { position: "fixed", left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px`, margin: "0", zIndex: "60", pointerEvents: "none", transition: "none", boxShadow: TILE_FLIGHT_SHADOW });
       document.body.appendChild(clone);
       const dx = vw - r.left + r.width * 2;
       const lift = -(60 + Math.random() * 80);
@@ -1109,7 +1112,7 @@ function StoryPlay() {
                 fontSize: size * 0.42,
                 // Inline so it beats .tile-face's own box-shadow: the dragged
                 // tile must read as lifted off the board on phone and desktop.
-                boxShadow: "0 22px 44px -10px rgb(0 0 0 / 0.75), 0 8px 18px -6px rgb(0 0 0 / 0.6)",
+                boxShadow: TILE_FLIGHT_SHADOW,
                 transition: "width 160ms ease-out, height 160ms ease-out, font-size 160ms ease-out",
               }}
             >
