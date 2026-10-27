@@ -1031,7 +1031,7 @@ function StoryPlay() {
       {compact && story.phase === "bookstore" && <div className="story-continue">
         <span className="flex items-center gap-1.5 text-3xl font-black tabular-nums text-gold"><Coins className="h-7 w-7" />{story.coins}</span>
         <div className="flex items-center gap-2">
-          <Button variant="outline" className="px-3" onClick={() => setDialog({ kind: "run-info" })}>Stats</Button>
+          <Button variant="outline" className="px-3" onClick={() => setDialog({ kind: "run-info" })}>Info</Button>
           <Button className="relative tile-gloss px-3" onClick={() => setStory(continueToNextPage(story))}>Continue Story <ArrowRight /></Button>
         </div>
       </div>}
