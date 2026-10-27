@@ -1109,7 +1109,7 @@ function StoryPlay() {
                 fontSize: size * 0.42,
                 // Inline so it beats .tile-face's own box-shadow: the dragged
                 // tile must read as lifted off the board on phone and desktop.
-                boxShadow: "0 18px 34px -8px rgb(0 0 0 / 0.55), 0 6px 12px -4px rgb(0 0 0 / 0.45)",
+                boxShadow: "0 22px 44px -10px rgb(0 0 0 / 0.75), 0 8px 18px -6px rgb(0 0 0 / 0.6)",
                 transition: "width 160ms ease-out, height 160ms ease-out, font-size 160ms ease-out",
               }}
             >
