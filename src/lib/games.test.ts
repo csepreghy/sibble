@@ -21,7 +21,7 @@ test("a regular signed-in user can create active solo practice without an admin 
   const game = await createGame({ userId, name: "Regular player", solo: true });
   expect(game.solo).toBe(true);
   expect(game.status).toBe("active");
-  expect(inserted?.created_by).toBe(userId);
-  expect(inserted?.player1).toBe(userId);
-  expect(game.state.draft).toBeFalsy();
+  expect(inserted?.['created_by']).toBe(userId);
+  expect(inserted?.['player1']).toBe(userId);
+  expect(game.state.racks[0].length).toBe(7);
 });
