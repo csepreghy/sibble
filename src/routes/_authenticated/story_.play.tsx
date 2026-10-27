@@ -18,6 +18,8 @@ import {
   Trash2,
   Settings,
   Gauge,
+  Volume2,
+  VolumeX,
   Smartphone,
 } from "lucide-react";
 import { loadWordList } from "@/lib/words";
@@ -39,7 +41,8 @@ import { AnimationModeMenu } from "@/components/story/AnimationModeMenu";
 import { ScoreFlight, type ScoreFlightData } from "@/components/story/ScoreFlight";
 import { PenPurchaseFlight, type PenPurchaseFlightData } from "@/components/story/PenPurchaseFlight";
 import { ItemPurchaseFlight, type ItemPurchaseFlightData } from "@/components/story/ItemPurchaseFlight";
-import { RoundScore, ScoreBoxes, impactBox } from "@/components/story/ScoreDisplay";
+import { CountNumber, RoundScore, ScoreBoxes, impactBox } from "@/components/story/ScoreDisplay";
+import { loadStorySound, saveStorySound, soundCoin, soundConfetti, soundCount, soundHit, soundSlam, soundWhoosh, unlockStorySound } from "@/lib/story/sound";
 import { loadStory, saveStory } from "@/lib/story/storage";
 import { loadStoryStats, recordPageCompleted, recordStoryEnded, recordStoryStarted, recordWordsPlayed, saveStoryStats } from "@/lib/story/stats";
 import { useStoryLayout } from "@/hooks/useStoryLayout";
@@ -185,7 +188,6 @@ function StoryPlay() {
     setShopEntering(true);
     pendingCommit.current?.();
     pendingCommit.current = null;
-    if (!reducedMotion) for (let i = 0; i < 8; i++) window.setTimeout(() => soundPop(i), 420 + i * 110);
     window.setTimeout(() => setShopEntering(false), 1800);
   }
 
