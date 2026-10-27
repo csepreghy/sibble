@@ -1012,12 +1012,12 @@ html.story-board-midnight {
 /* Large desktop controls expand into spare board gutters. Negative rail margins
    retain the original 240/112px layout footprints; the board never moves.
    Discrete typography tiers avoid viewport-sized text and cap the enlargement. */
-@media (min-width: 1440px) and (min-height: 900px) {
+@media (min-width: 1440px) and (min-height: 900px) and (min-aspect-ratio: 3/2) {
   .story-screen[data-layout="desktop"]:not(.story-shopping) {
-    --story-left-width: 320px;
-    --story-pen-width: 144px;
-    --story-rack-width: 560px;
-    --story-rack-size: 64px;
+    --story-left-width: clamp(300px, calc(240px + 4.4vw), 360px);
+    --story-pen-width: clamp(136px, calc(112px + 1.8vw), 164px);
+    --story-rack-width: clamp(520px, calc(448px + 6vw), 640px);
+    --story-rack-size: clamp(60px, calc(48px + 0.9vw), 72px);
   }
   .story-screen[data-layout="desktop"]:not(.story-shopping) .story-desktop-sidebar {
     width: var(--story-left-width);
@@ -1068,8 +1068,7 @@ html.story-board-midnight {
   body:has(.story-screen[data-layout="desktop"]) .story-pen-inspector p { font-size: 18px; line-height: 1.4; }
   body:has(.story-screen[data-layout="desktop"]) .story-pen-inspector .shop-card > svg { width: 80px; height: 80px; }
 }
-@media (min-width: 1920px) and (min-height: 1100px) {
-  .story-screen[data-layout="desktop"]:not(.story-shopping) { --story-left-width: 360px; --story-pen-width: 164px; --story-rack-width: 640px; --story-rack-size: 72px; }
+@media (min-width: 1920px) and (min-height: 1100px) and (min-aspect-ratio: 3/2) {
   .story-screen[data-layout="desktop"]:not(.story-shopping) .story-number-box { height: 100px; }
   .story-screen[data-layout="desktop"]:not(.story-shopping) .story-number-box strong { font-size: 52px; }
   .story-screen[data-layout="desktop"]:not(.story-shopping) .story-target-score,
