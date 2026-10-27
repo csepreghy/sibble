@@ -1,124 +1,154 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, BarChart3, BellRing, CheckCircle2, Link2, Palette, RotateCcw, ShieldCheck, Sparkles, Users } from "lucide-react";
+import { ArrowRight, BookOpen, Coins, Feather, Flame, Link2, ListOrdered, Sparkles, Swords, Users, Zap } from "lucide-react";
 import { useSession } from "@/hooks/useSession";
 import { fetchMyGames } from "@/lib/games";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { LandingBoard } from "@/components/landing/LandingBoard";
+import { BookstoreMock, GameplayMock, ProgressionMock, ScoringMock, Tile } from "@/components/landing/StoryMocks";
 import { BrandLogo } from "@/components/BrandLogo";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [
-    { title: "Sibble — A better way to play Scrabble online" },
-    { name: "description", content: "Play Scrabble online with someone you like. Share a game, choose your look, and take your turn without adverts or clutter." },
-    { property: "og:title", content: "Sibble — A better way to play Scrabble online" },
-    { property: "og:description", content: "A vivid, ad-free Scrabble board for two. Share a link, choose a theme, and play at your own pace." },
+    { title: "Sibble — A word-game roguelike, plus Scrabble with friends" },
+    { name: "description", content: "Play Story Mode, a roguelike word adventure with Pens, upgrades and explosive scoring — or challenge a friend to ad-free multiplayer." },
+    { property: "og:title", content: "Sibble — Write your way through Story Mode" },
+    { property: "og:description", content: "A roguelike word game: chase Required Ink, build combos in the Bookstore, and watch Base × Mult explode. Multiplayer included." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary_large_image" },
   ] }),
   component: Index,
 });
 
-const FEATURES = [
-  { icon: Users, title: "Built for two", copy: "Invite someone you know and play together on a shared, live board." },
-  { icon: ShieldCheck, title: "No adverts. Ever.", copy: "Just the board, your letters and the quiet tension of a good move." },
-  { icon: Link2, title: "Invite by link", copy: "Start a game and send one simple link. They can join from any device." },
-  { icon: Sparkles, title: "Words feel rewarding", copy: "Glossy tiles, move highlights, fireworks and a playful naughty-word bonus." },
-  { icon: BellRing, title: "Know when to play", copy: "Optional notifications tell you when your opponent has taken their turn." },
-  { icon: BarChart3, title: "A history together", copy: "See wins, losses, best moves and your record against every opponent." },
-  { icon: Palette, title: "Make it yours", copy: "Choose from vivid personal themes without changing anyone else’s board." },
-  { icon: RotateCcw, title: "Run it back", copy: "Finish a game, send a rematch invitation and settle the score." },
-] as const;
-
-const THEMES = [
-  { id: "circuit", name: "Night Circuit", mood: "Orange / violet", variant: "hero" as const },
-  { id: "reef", name: "Neon Reef", mood: "Teal / navy", variant: "social" as const },
-  { id: "grape", name: "Grape Soda", mood: "Pink / purple", variant: "bold" as const },
+const STORY_FEATURES = [
+  { icon: BookOpen, title: "Chapters & Pages", copy: "Every Page sets a Required Ink target. Boards grow from 5×5 to 15×15 as the Story unfolds." },
+  { icon: Zap, title: "Base × Mult scoring", copy: "Every letter pours Base, every bonus stacks Mult, and the total slams into your Page score." },
+  { icon: Feather, title: "Pens that break the rules", copy: "Collect Pens with wild effects, reorder them, and watch synergies chain together." },
+  { icon: Coins, title: "The Bookstore", copy: "Spend coins between Pages on Pens, letter enhancements and word-length upgrades." },
+  { icon: Flame, title: "Plot Twists", copy: "Some Pages bend the rules. Adapt your build or the Story ends there." },
+  { icon: ListOrdered, title: "Every run remembered", copy: "Review completed Pages, best words and lifetime stats for each Story." },
 ] as const;
 
 function Index() {
   const { user, loading } = useSession();
   const userId = user?.id ?? "";
   const games = useQuery({ queryKey: ["games", userId], queryFn: () => fetchMyGames(userId), enabled: Boolean(userId) });
-  const ongoing = (games.data ?? []).filter((game) => game.status !== "finished").slice(0, 5);
-  const destination = user ? "/lobby" : "/auth";
-  const actionLabel = user ? "Your games" : "Play now";
+  const ongoing = (games.data ?? []).filter((g) => g.status !== "finished").slice(0, 3);
+  const storyTo = user ? "/story" : "/auth";
+  const mpTo = user ? "/multiplayer" : "/auth";
 
   return (
     <main className="min-h-screen overflow-hidden">
-      <header className="relative z-30 border-b border-border/60 bg-background/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-8">
           <BrandLogo className="h-12 w-auto sm:h-14" />
           <nav className="hidden items-center gap-7 text-sm font-semibold text-muted-foreground md:flex" aria-label="Landing page">
-            <a className="transition-colors hover:text-foreground" href="#features">Features</a>
-            <a className="transition-colors hover:text-foreground" href="#themes">Themes</a>
-            <a className="transition-colors hover:text-foreground" href="#how-it-works">How it works</a>
+            <a className="hover:text-foreground" href="#story">Story Mode</a>
+            <a className="hover:text-foreground" href="#scoring">Scoring</a>
+            <a className="hover:text-foreground" href="#bookstore">Bookstore</a>
+            <a className="hover:text-foreground" href="#multiplayer">Multiplayer</a>
           </nav>
-          {!loading ? <Button asChild size="sm"><Link to={destination}>{actionLabel}<ArrowRight /></Link></Button> : <span className="h-8 w-24" />}
+          {!loading ? <Button asChild size="sm" variant="story"><Link to={user ? "/lobby" : "/auth"}>{user ? "Play" : "Play free"}<ArrowRight /></Link></Button> : <span className="h-8 w-24" />}
         </div>
       </header>
 
-      <section className="relative mx-auto grid max-w-7xl items-center gap-12 px-5 py-14 sm:px-8 lg:min-h-[min(900px,calc(100svh-4rem))] lg:grid-cols-[0.82fr_1.18fr] lg:py-20">
-        <div className="relative z-10 max-w-xl">
-          <p className="mb-5 flex items-center gap-2 text-sm font-bold uppercase tracking-[0.16em] text-primary"><span className="h-px w-8 bg-primary" /> Scrabble, minus the noise</p>
-          <h1 className="text-5xl font-bold leading-[0.98] sm:text-6xl lg:text-7xl">Your favourite word game, <span className="text-primary">beautifully played.</span></h1>
-          <p className="mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground sm:text-xl">A vibrant, ad-free table for two. Invite someone you like, choose your own look and keep the game going for as long as it takes.</p>
-          <div className="mt-8 flex flex-wrap items-center gap-4">
-            {!loading ? <Button asChild size="lg" className="h-12 px-6 text-base"><Link to={destination}>{user ? "Continue playing" : "Start a game"}<ArrowRight /></Link></Button> : null}
-            <span className="flex items-center gap-2 text-sm text-muted-foreground"><CheckCircle2 className="size-4 text-accent" /> Google or Apple sign-in</span>
+      {/* Hero */}
+      <section className="relative mx-auto grid max-w-7xl items-center gap-14 px-5 py-14 sm:px-8 lg:min-h-[min(880px,calc(100svh-4rem))] lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="relative z-10 max-w-xl landing-rise">
+          <p className="mb-5 flex items-center gap-2 text-sm font-bold uppercase tracking-[0.16em] text-mode-story"><Sparkles className="size-4" /> New · Story Mode</p>
+          <h1 className="text-5xl font-bold leading-[0.98] sm:text-6xl lg:text-7xl">Write your way through <span className="text-mode-story">the SibbleBook.</span></h1>
+          <p className="mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground sm:text-xl">A roguelike word game. Hit each Page's ink target, collect Pens that bend the rules, and watch Base × Mult explode into ridiculous scores. Prefer a rival? Multiplayer is one tap away.</p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            {!loading ? <>
+              <Button asChild variant="story" size="lg" className="h-13 px-7 text-base font-bold"><Link to={storyTo}>Start a Story<ArrowRight /></Link></Button>
+              <Button asChild variant="multiplayer" size="lg" className="h-13 px-7 text-base font-bold"><Link to={mpTo}>Play a friend</Link></Button>
+            </> : null}
           </div>
         </div>
-        <div className="relative mx-auto w-full max-w-[680px] pb-[12%] pt-[5%] lg:translate-x-8">
-          <div className="absolute -inset-8 bg-primary/10 blur-3xl" aria-hidden="true" />
-          <div className="absolute left-0 top-0 w-[88%] -rotate-[5deg] opacity-80 shadow-panel" aria-hidden="true">
-            <LandingBoard theme="reef" variant="social" />
-          </div>
-          <div className="relative ml-auto w-[91%] rotate-[1.5deg] transition-transform duration-500 hover:rotate-0">
-            <div className="mb-3 flex items-center justify-between rounded-md border border-border bg-card/90 px-4 py-3 shadow-panel backdrop-blur">
-              <div><p className="text-xs font-bold uppercase tracking-[0.14em] text-primary">Your turn</p><p className="font-bold">Andrew <span className="text-muted-foreground">186</span></p></div>
-              <div className="text-right"><p className="text-xs text-muted-foreground">Last move</p><p className="font-bold">PLAY <span className="text-accent">+18</span></p></div>
-            </div>
-            <LandingBoard theme="circuit" variant="hero" />
-          </div>
+        <div className="relative mx-auto w-full max-w-[480px]">
+          <div className="absolute -inset-10 bg-mode-story/15 blur-3xl" aria-hidden="true" />
+          <div className="landing-float relative" style={{ ["--r" as string]: "-1deg" }}><GameplayMock /></div>
+          <div className="landing-float absolute -bottom-12 -right-24 hidden w-[60%] xl:block" style={{ ["--r" as string]: "2deg", animationDelay: "-3s" }}><ScoringMock className="scale-[0.85] origin-bottom-right" /></div>
         </div>
       </section>
 
       {user && ongoing.length > 0 ? (
-        <section className="border-y border-border bg-card/35 px-5 py-16 sm:px-8"><div className="mx-auto max-w-7xl">
-          <div className="mb-6 flex items-end justify-between gap-4"><div><p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">Welcome back</p><h2 className="mt-2 text-3xl font-bold">Pick up where you left off</h2></div><Button variant="ghost" asChild><Link to="/lobby">All games <ArrowRight /></Link></Button></div>
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{ongoing.map((game) => {
-            const history = game.state?.history ?? [];
-            const last = history[history.length - 1] ?? null;
-            const names: [string, string] = [game.player1_name, game.player2 ? game.player2_name : "waiting for a player"];
+        <section className="border-y border-border bg-card/35 px-5 py-12 sm:px-8"><div className="mx-auto max-w-7xl">
+          <div className="mb-5 flex items-end justify-between gap-4"><h2 className="text-2xl font-bold">Your multiplayer games</h2><Button variant="ghost" asChild><Link to="/multiplayer">All games <ArrowRight /></Link></Button></div>
+          <div className="grid gap-3 md:grid-cols-3">{ongoing.map((game) => {
             const scores = game.state?.scores ?? [0, 0];
-            return <Link key={game.id} to="/game/$gameId" params={{ gameId: game.id }} className="flex items-center justify-between gap-3 rounded-md border border-border bg-card p-5 transition-colors hover:border-primary"><div className="min-w-0"><p className="text-sm font-semibold">{game.solo ? "Solo practice board" : `${names[0]} vs ${names[1]}`}</p><p className="mt-1 truncate text-xs text-muted-foreground">{scores[0]} – {scores[1]}{last ? ` · ${last.description} (+${last.score})` : ""}</p></div><ArrowRight className="size-5 shrink-0 text-primary" /></Link>;
+            return <Link key={game.id} to="/game/$gameId" params={{ gameId: game.id }} className="flex items-center justify-between gap-3 rounded-md border border-border bg-card p-5 transition-colors hover:border-primary"><div className="min-w-0"><p className="text-sm font-semibold">{game.solo ? "Solo practice board" : `${game.player1_name} vs ${game.player2 ? game.player2_name : "waiting…"}`}</p><p className="mt-1 text-xs text-muted-foreground">{scores[0]} – {scores[1]}</p></div><ArrowRight className="size-5 shrink-0 text-primary" /></Link>;
           })}</div>
         </div></section>
       ) : null}
 
-      <section id="features" className="mx-auto max-w-7xl px-5 py-24 sm:px-8 sm:py-32">
-        <div className="max-w-2xl"><p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">Everything the game needs</p><h2 className="mt-3 text-4xl font-bold sm:text-5xl">All play. No clutter.</h2><p className="mt-4 text-lg leading-relaxed text-muted-foreground">Made for the small rituals that turn a word game into something you share.</p></div>
-        <div className="mt-12 grid gap-px overflow-hidden rounded-md border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">{FEATURES.map(({ icon: Icon, title, copy }) => <article key={title} className="min-h-52 bg-card p-6 transition-colors hover:bg-secondary"><Icon className="size-6 text-primary" strokeWidth={1.8} /><h3 className="mt-8 text-xl font-bold">{title}</h3><p className="mt-2 text-sm leading-relaxed text-muted-foreground">{copy}</p></article>)}</div>
+      {/* Progression */}
+      <section id="story" className="mx-auto grid max-w-7xl items-center gap-12 px-5 py-24 sm:px-8 lg:grid-cols-2">
+        <div>
+          <p className="text-sm font-bold uppercase tracking-[0.14em] text-mode-story">The run</p>
+          <h2 className="mt-3 text-4xl font-bold sm:text-5xl">Every Page is harder. Every run is different.</h2>
+          <p className="mt-4 text-lg leading-relaxed text-muted-foreground">Start on a tiny board with a handful of words and discards. Fill the Required Ink before you run out, earn coins, and turn the Page. Chapters raise the stakes, boards grow, and Plot Twists throw curveballs.</p>
+        </div>
+        <ProgressionMock />
       </section>
 
-      <section id="themes" className="border-y border-border bg-card/35 py-24 sm:py-32"><div className="mx-auto max-w-7xl px-5 sm:px-8">
-        <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div className="max-w-2xl"><p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">Ten personal themes</p><h2 className="mt-3 text-4xl font-bold sm:text-5xl">Same game. Different mood.</h2></div><p className="max-w-sm text-muted-foreground">Your palette is yours alone. Switch the entire table without changing what your opponent sees.</p></div>
-        <div className="mt-12 grid gap-6 lg:grid-cols-3">{THEMES.map((theme, index) => <article key={theme.id} className={cn("group", index === 1 && "lg:translate-y-8")}><div className="overflow-hidden rounded-md border border-border bg-background p-3 transition-transform duration-300 group-hover:-translate-y-1"><LandingBoard theme={theme.id} variant={theme.variant} compact /></div><div className="mt-4 flex items-center justify-between px-1"><h3 className="text-xl font-bold">{theme.name}</h3><span className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">{theme.mood}</span></div></article>)}</div>
+      {/* Scoring */}
+      <section id="scoring" className="border-y border-border bg-card/35 py-24"><div className="mx-auto grid max-w-7xl items-center gap-12 px-5 sm:px-8 lg:grid-cols-2">
+        <ScoringMock className="order-2 lg:order-1" />
+        <div className="order-1 lg:order-2">
+          <p className="text-sm font-bold uppercase tracking-[0.14em] text-mult-ink">The rush</p>
+          <h2 className="mt-3 text-4xl font-bold sm:text-5xl">Watch your word <span className="text-base-ink">add up</span>, then <span className="text-mult-ink">multiply</span>.</h2>
+          <p className="mt-4 text-lg leading-relaxed text-muted-foreground">Each letter flies its value into Base. Pens and premium squares pile on Mult. Then the boxes collide, the Page score counts up, and confetti bursts the moment you cross the target.</p>
+        </div>
       </div></section>
 
-      <section id="how-it-works" className="mx-auto max-w-7xl px-5 py-24 sm:px-8 sm:py-32"><div className="grid gap-12 lg:grid-cols-[0.75fr_1.25fr] lg:items-start">
-        <div className="lg:sticky lg:top-24"><p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">Start in seconds</p><h2 className="mt-3 text-4xl font-bold sm:text-5xl">A table for two, wherever you are.</h2></div>
-        <ol className="border-t border-border">{["Sign in with Google or Apple", "Send your private game link", "Take turns live or come back later"].map((step, index) => <li key={step} className="grid grid-cols-[3rem_1fr] items-center gap-4 border-b border-border py-8 sm:grid-cols-[5rem_1fr_auto]"><span className="font-display text-3xl text-primary">0{index + 1}</span><h3 className="text-xl font-bold sm:text-2xl">{step}</h3><CheckCircle2 className="hidden size-6 text-accent sm:block" /></li>)}</ol>
+      {/* Bookstore */}
+      <section id="bookstore" className="mx-auto grid max-w-7xl items-center gap-12 px-5 py-24 sm:px-8 lg:grid-cols-2">
+        <div>
+          <p className="text-sm font-bold uppercase tracking-[0.14em] text-gold">Between Pages</p>
+          <h2 className="mt-3 text-4xl font-bold sm:text-5xl">Build a broken combo in the Bookstore.</h2>
+          <p className="mt-4 text-lg leading-relaxed text-muted-foreground">Spend your coins on Pens, letter enhancements and word-length upgrades. Hover to preview, drag your Pens into the perfect order, and find the build that carries you to the last Chapter.</p>
+        </div>
+        <BookstoreMock />
+      </section>
+
+      {/* Feature grid */}
+      <section className="border-y border-border bg-card/35 py-24"><div className="mx-auto max-w-7xl px-5 sm:px-8">
+        <h2 className="max-w-2xl text-4xl font-bold sm:text-5xl">Everything in Story Mode</h2>
+        <div className="mt-12 grid gap-px overflow-hidden rounded-md border border-border bg-border sm:grid-cols-2 lg:grid-cols-3">{STORY_FEATURES.map(({ icon: Icon, title, copy }, i) => (
+          <article key={title} className="landing-rise min-h-48 bg-card p-6 transition-colors hover:bg-secondary" style={{ animationDelay: `${i * 0.06}s` }}><Icon className="size-6 text-mode-story" strokeWidth={1.8} /><h3 className="mt-6 text-xl font-bold">{title}</h3><p className="mt-2 text-sm leading-relaxed text-muted-foreground">{copy}</p></article>
+        ))}</div>
       </div></section>
 
-      <section className="border-t border-border px-5 py-20 sm:px-8 sm:py-28"><div className="mx-auto max-w-5xl text-center">
-        <div className="mx-auto mb-7 flex w-fit gap-1.5">{["T", "I", "L", "E"].map((letter) => <span key={letter} className="tile-face tile-gloss relative flex size-11 items-center justify-center rounded-md text-lg font-bold">{letter}</span>)}</div>
-        <h2 className="text-4xl font-bold sm:text-6xl">Your next great word is waiting.</h2><p className="mx-auto mt-5 max-w-xl text-lg text-muted-foreground">No adverts. No noisy extras. Just a beautiful board and someone worth playing.</p>
-        {!loading ? <Button asChild size="lg" className="mt-8 h-12 px-7 text-base"><Link to={destination}>{user ? "Return to your games" : "Play Sibble"}<ArrowRight /></Link></Button> : null}
+      {/* Multiplayer */}
+      <section id="multiplayer" className="mx-auto grid max-w-7xl items-center gap-12 px-5 py-24 sm:px-8 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="relative mx-auto w-full max-w-[560px]"><div className="absolute -inset-8 bg-mode-multiplayer/15 blur-3xl" aria-hidden="true" /><div className="relative rotate-[-1.5deg]"><LandingBoard theme="grape" variant="bold" /></div></div>
+        <div>
+          <p className="text-sm font-bold uppercase tracking-[0.14em] text-mode-multiplayer">Multiplayer</p>
+          <h2 className="mt-3 text-4xl font-bold sm:text-5xl">Classic Scrabble, without the clutter.</h2>
+          <p className="mt-4 text-lg leading-relaxed text-muted-foreground">When you want a real opponent, play the traditional 15×15 board with a friend — live or at your own pace.</p>
+          <ul className="mt-6 space-y-3 text-muted-foreground">
+            {[[Link2, "Invite with one link, join from any device"], [Swords, "Coin toss, tile picks, rematches and head-to-head stats"], [Users, "Ad-free, notifications when it's your turn, ten personal themes"]].map(([Icon, t]) => {
+              const I = Icon as typeof Link2;
+              return <li key={t as string} className="flex gap-3"><I className="mt-0.5 size-5 shrink-0 text-mode-multiplayer" />{t as string}</li>;
+            })}
+          </ul>
+          {!loading ? <Button asChild variant="multiplayer" size="lg" className="mt-8 font-bold"><Link to={mpTo}>Challenge a friend<ArrowRight /></Link></Button> : null}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="border-t border-border px-5 py-24 sm:px-8"><div className="mx-auto max-w-4xl text-center">
+        <div className="mx-auto mb-8 flex w-fit gap-1.5">{["S", "T", "O", "R", "Y"].map((l, i) => <Tile key={l} letter={l} className="landing-drop size-12 text-xl" style={{ animationDelay: `${i * 0.1}s` }} />)}</div>
+        <h2 className="text-4xl font-bold sm:text-6xl">Your first Page is waiting.</h2>
+        <p className="mx-auto mt-5 max-w-xl text-lg text-muted-foreground">Free, ad-free, and impossible to play just once.</p>
+        {!loading ? <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <Button asChild variant="story" size="lg" className="font-bold"><Link to={storyTo}>Start a Story<ArrowRight /></Link></Button>
+          <Button asChild variant="multiplayer" size="lg" className="font-bold"><Link to={mpTo}>Multiplayer</Link></Button>
+        </div> : null}
       </div></section>
 
-      <footer className="border-t border-border px-5 py-8 sm:px-8"><div className="mx-auto flex max-w-7xl flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between"><BrandLogo className="h-10 w-auto" /><p>Made for good words and better company.</p></div></footer>
+      <footer className="border-t border-border px-5 py-8 sm:px-8"><div className="mx-auto flex max-w-7xl flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between"><BrandLogo className="h-10 w-auto" /><p>Made for good words and better combos.</p></div></footer>
     </main>
   );
 }
