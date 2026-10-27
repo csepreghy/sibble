@@ -3,10 +3,10 @@
 Source spec: uploaded `Sibble_-_Singleplayer_Story_Mode_pasted.md`. Multiplayer stays untouched.
 
 ## Two-mode lobby redesign
-- [ ] Replace lobby with centered logo and shiny Story Mode / Multiplayer buttons.
-- [ ] Add centered per-mode menus with Play, History, Statistics and Theme, without a mode toggle.
-- [ ] Allow solo practice for every authenticated user and test access.
-- [ ] Verify signed-in navigation, theme selection and starting both modes.
+- [x] Replace lobby with centered logo and shiny Story Mode / Multiplayer buttons.
+- [x] Add centered per-mode menus with Play, History, Statistics and Theme, without a mode toggle.
+- [x] Allow solo practice for every authenticated user; verified ownership-only insert policy, signed-in creation and regression test without role lookup.
+- [x] Verify signed-in navigation, personal theme change, starting both modes and phone layout; all 50 checks pass.
 
 ## Returning letters and centre logo
 - [x] Animate tapped pending Story letters back into their rack slot while other rack letters make space.
