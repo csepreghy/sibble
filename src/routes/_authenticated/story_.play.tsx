@@ -890,9 +890,9 @@ function StoryPlay() {
             <span className="story-play-coins flex items-center gap-1 text-3xl font-black tabular-nums text-gold"><Coins className="h-6 w-6 shrink-0" /><CountNumber value={story.coins + coinBonus} running={coinBonus > 0} growToTotal byDelta /></span>
             <div className="story-remaining-counters"><span>Words left <strong className="text-xl tabular-nums text-base-ink">{story.page.wordsLeft}</strong></span><span>Discards left <strong className="text-xl tabular-nums text-mult-ink">{story.page.discardsLeft}</strong></span></div>
             </>}
-            {!busy && preview && preview.error && <span className="story-preview-tag-slot" data-error={preview.error ? "true" : undefined}>
-              <span className={cn("story-preview-tag", preview.error ? "bg-destructive/15 text-destructive" : "bg-story-valid/15 text-story-valid")} title={preview.error ?? "Ink before Pens"}>
-                {preview.error ? <><X className="h-4 w-4 shrink-0" /><span className="truncate">{preview.error}</span></> : <><span>+{preview.ink?.toLocaleString()}</span><Droplet className="-mr-[2px] h-4 w-4" aria-label="Ink before Pens" /></>}
+            {!busy && preview && preview.error && <span className="story-preview-tag-slot" data-error="true">
+              <span className="story-preview-tag bg-destructive/15 text-destructive" title={preview.error}>
+                <X className="h-4 w-4 shrink-0" /><span className="truncate">{preview.error}</span>
               </span>
             </span>}
           </div>}
