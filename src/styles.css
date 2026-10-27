@@ -1209,3 +1209,12 @@ html.story-board-midnight {
 @media (prefers-reduced-motion: reduce) {
   .story-board-status .story-error-slot, .story-board-status .story-error-slot .story-error-tag { transition: none; }
 }
+
+/* Very large screens: five Bookstore items per row. */
+@media (min-width: 1920px) { .story-shop-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+/* The decorative SIBBLEBOOK rack uses gameplay tile sizes (capacity = gameplay rack), so it may be wider than the gameplay rack. */
+.story-shopping .story-footer > div:first-child:has([data-story-deco-rack]) { max-width: none; width: auto; }
+.story-shopping.story-compact .story-footer > div:first-child:has([data-story-deco-rack]) { width: 100%; }
+@media (min-width: 1440px) and (min-height: 900px) and (min-aspect-ratio: 3/2) {
+  .story-screen[data-layout="desktop"] [data-story-deco-rack] .story-letter-rack [data-rack-tile-id] { width: min(var(--story-rack-size), calc((var(--story-rack-width) - 22px - (var(--rack-capacity) - 1) * 8px) / var(--rack-capacity))); }
+}

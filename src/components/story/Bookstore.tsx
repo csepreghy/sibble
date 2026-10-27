@@ -193,7 +193,7 @@ export function Bookstore({ state, onBuy, compact, entering = false }: Bookstore
         <p className="text-xs text-muted-foreground">Tools for writing your next Page. Tap an item for details.</p>
       </header>}
 
-      <div aria-label="Bookstore offers" className={cn("grid content-start overflow-y-auto", compact ? "story-shop-offers grid-cols-2 gap-3" : "grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4")}>
+      <div aria-label="Bookstore offers" className={cn("grid content-start overflow-y-auto", compact ? "story-shop-offers grid-cols-2 gap-3" : "story-shop-grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4")}>
         {offers.map((offer, index) => {
           if (offer.sold) return null;
           const price = priceFor(state.upgrades, offer.price);
