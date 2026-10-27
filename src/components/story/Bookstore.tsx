@@ -1,3 +1,4 @@
+import { soundPop } from "@/lib/story/sound";
 import { wordLengthMult } from "@/lib/story/scoring";
 import { ArrowRight, CheckCircle2, Coins, Menu, Sparkles, Star } from "lucide-react";
 import { useState, type ReactNode } from "react";
@@ -166,11 +167,22 @@ interface BookstoreProps {
   state: StoryState;
   onBuy: (offerIndex: number, source?: DOMRect) => void;
   compact?: boolean;
+  /** Items pop into place one by one when the Bookstore first opens. */
+  entering?: boolean;
 }
 
-export function Bookstore({ state, onBuy, compact }: BookstoreProps) {
+export function Bookstore({ state, onBuy, compact, entering = false }: BookstoreProps) {
   const [inspect, setInspect] = useState<number | null>(null);
   const offers = state.offers ?? [];
+  const [popAll] = useState(entering);
+  useEffect(() => {
+    if (!popAll || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const count = offers.filter((offer) => !offer.sold).length;
+    const timers = Array.from({ length: count }, (_, i) => window.setTimeout(() => soundPop(i), 420 + i * 110));
+    return () => timers.forEach(window.clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [popAll]);
+  let popIndex = 0;
   const inspected = inspect !== null ? offers[inspect] : undefined;
   const inspectedPrice = inspected ? priceFor(state.upgrades, inspected.price) : 0;
 
@@ -193,11 +205,12 @@ export function Bookstore({ state, onBuy, compact }: BookstoreProps) {
               type="button"
               variant="ghost"
               onClick={() => setInspect(index)}
-              style={{ ["--glow" as string]: glowVar(offer) }}
+              style={{ ["--glow" as string]: glowVar(offer), ...(popAll ? { animationDelay: `${420 + popIndex++ * 110}ms` } : {}) }}
               className={cn(
                 "shop-card mb-1 flex h-auto flex-col items-center justify-between whitespace-normal rounded-lg border-2 text-center hover:bg-transparent hover:text-foreground",
                 compact ? "gap-0.5 p-1.5" : "aspect-square gap-1 p-2",
                 !affordable && "opacity-70",
+                popAll && "story-offer-pop",
               )}
             >
               <span className={cn("self-start text-[0.55rem] font-bold uppercase tracking-widest", cat.text)}>{cat.label}</span>
