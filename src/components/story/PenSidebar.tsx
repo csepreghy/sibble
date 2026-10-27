@@ -71,7 +71,6 @@ function SortablePen({ pen, index, activePenId, arrivingPenId, onArrivalEnd, onI
       onClick={() => { setHoverRect(null); if (!isDragging) onInspect(pen); }}
       onPointerEnter={(event) => { if (!horizontal && canHover()) setHoverRect(event.currentTarget.getBoundingClientRect()); }}
       onPointerLeave={() => setHoverRect(null)}
-      onPointerDown={(event) => { setHoverRect(null); listeners?.onPointerDown?.(event); }}
       variant="ghost"
       title={def.name}
       aria-label={def.name}

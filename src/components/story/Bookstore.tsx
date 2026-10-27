@@ -186,6 +186,7 @@ export function Bookstore({ state, onBuy, compact, entering = false }: Bookstore
   }, [popAll]);
   let popIndex = 0;
   const inspected = inspect !== null ? offers[inspect] : undefined;
+  const hovered = hover && !offers[hover.index]?.sold ? offers[hover.index] : undefined;
   const inspectedPrice = inspected ? priceFor(state.upgrades, inspected.price) : 0;
 
   return (
@@ -262,12 +263,12 @@ export function Bookstore({ state, onBuy, compact, entering = false }: Bookstore
           ) : null}
         </DialogContent>
       </Dialog>
-      {hover && !inspected && offers[hover.index] && !offers[hover.index].sold && (
+      {hovered && hover && !inspected && (
         <HoverPreview anchor={hover.rect} side={hover.side}>
-          <ShopDetailTile glow={glowVar(offers[hover.index])}>
-            <OfferDetailBody offer={offers[hover.index]} state={state} />
+          <ShopDetailTile glow={glowVar(hovered)}>
+            <OfferDetailBody offer={hovered} state={state} />
             <span className="flex items-center gap-1 self-end rounded-full bg-gold/15 px-3 py-1 text-lg font-bold text-gold">
-              <Coins className="h-4 w-4" /> {priceFor(state.upgrades, offers[hover.index].price)}
+              <Coins className="h-4 w-4" /> {priceFor(state.upgrades, hovered.price)}
             </span>
           </ShopDetailTile>
         </HoverPreview>
