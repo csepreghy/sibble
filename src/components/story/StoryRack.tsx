@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef } from "react";
 import { LETTER_VALUES } from "@/lib/scrabble";
 import type { Enhancement, StoryTile } from "@/lib/story/types";
+import { TILE_FLIGHT_SHADOW } from "@/lib/story/flight";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -100,6 +101,7 @@ export function StoryRack({
         width: `${to.width}px`, height: `${to.height}px`, margin: "0",
         visibility: "visible", pointerEvents: "none", zIndex: "100",
         transition: "none", transformOrigin: "center", opacity: "1",
+        boxShadow: TILE_FLIGHT_SHADOW,
       });
       root.appendChild(clone);
       const dx = from.left + from.width / 2 - to.left - to.width / 2;
