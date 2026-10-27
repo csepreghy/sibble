@@ -703,6 +703,7 @@ function StoryPlay() {
               <DropdownMenuItem onClick={() => setDialog({ kind: "run-info" })}><Info /> Run Info</DropdownMenuItem>
               <DropdownMenuItem onSelect={(e) => { e.preventDefault(); cycleSpeed(); }}><Gauge /> Animation speed: {speed}×</DropdownMenuItem>
               <AnimationModeMenu mode={animationMode} onChange={changeAnimationMode} disabled={busy} />
+              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); toggleSound(); }}>{soundOn ? <Volume2 /> : <VolumeX />} Sound: {soundOn ? "On" : "Off"}</DropdownMenuItem>
               <DropdownMenuItem className="text-destructive" onClick={endStory}><Trash2 /> End this Story</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -771,6 +772,9 @@ function StoryPlay() {
                   <Gauge className="mr-2 h-4 w-4" /> Animation speed: {speed}×
                 </DropdownMenuItem>
                 <AnimationModeMenu mode={animationMode} onChange={changeAnimationMode} disabled={busy} />
+                <DropdownMenuItem onSelect={(e) => { e.preventDefault(); toggleSound(); }}>
+                  {soundOn ? <Volume2 className="mr-2 h-4 w-4" /> : <VolumeX className="mr-2 h-4 w-4" />} Sound: {soundOn ? "On" : "Off"}
+                </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={endStory}
                   className="text-destructive"
@@ -783,9 +787,9 @@ function StoryPlay() {
         </aside>
 
         {/* Center — board or Bookstore */}
-        <main className="story-main flex min-w-0 flex-1 flex-col justify-center overflow-y-auto rounded-xl border border-border bg-card/30 p-3">
+        <main key={story.phase === "bookstore" ? "shop" : "play"} className={cn("story-main flex min-w-0 flex-1 flex-col justify-center overflow-y-auto rounded-xl border border-border bg-card/30 p-3", shopEntering && story.phase === "bookstore" && "story-shop-enter")}>
           {story.phase === "bookstore" ? (
-            <Bookstore state={story} onBuy={handleBuy} compact={compact} />
+            <Bookstore state={story} onBuy={handleBuy} compact={compact} entering={shopEntering} />
           ) : (
             <StoryBoard
               compact={compact}
@@ -807,7 +811,7 @@ function StoryPlay() {
             />
           )}
           {story.phase === "play" && <div className="story-board-status" aria-live="polite">
-            <span className="story-play-coins flex items-center gap-1 text-3xl font-black tabular-nums text-gold"><Coins className="h-6 w-6 shrink-0" />{story.coins}</span>
+            <span className="story-play-coins flex items-center gap-1 text-3xl font-black tabular-nums text-gold"><Coins className="h-6 w-6 shrink-0" /><CountNumber value={story.coins + coinBonus} running={coinBonus > 0} growToTotal byDelta /></span>
             <div className="story-remaining-counters"><span>Words left <strong className="text-xl tabular-nums text-base-ink">{story.page.wordsLeft}</strong></span><span>Discards left <strong className="text-xl tabular-nums text-mult-ink">{story.page.discardsLeft}</strong></span></div>
             {!busy && preview && <span className="story-preview-tag-slot">
               <span className={cn("story-preview-tag", preview.error ? "bg-destructive/15 text-destructive" : "bg-story-valid/15 text-story-valid")} title={preview.error ?? "Ink before Pens"}>
@@ -919,7 +923,8 @@ function StoryPlay() {
       {/* Dialogs */}
       {showIntro ? <PageIntroDialog state={story} onStart={() => setIntroDismissed(story.pageIndex)} /> : null}
       {showEnd ? <StoryEndDialog state={story} won={story.phase === "victory"} onNewStory={startNewStory} /> : null}
-      {pageStats ? <PageCompleteDialog stats={pageStats} onClose={() => setPageStats(null)} /> : null}
+      {pageStats ? <PageCompleteDialog stats={pageStats} onClose={visitBookstore} /> : null}
+      {coinFlight && <span key={coinFlight.id} className="story-coin-flight text-gold" style={{ left: coinFlight.x, top: coinFlight.y, ["--dx" as string]: `${coinFlight.dx}px`, ["--dy" as string]: `${coinFlight.dy}px` }}>+{coinFlight.amount}</span>}
       {dialog?.kind === "run-info" ? <RunInfoDialog state={story} onClose={() => setDialog(null)} /> : null}
       {dialog?.kind === "bag" ? <BagDialog state={story} onClose={() => setDialog(null)} /> : null}
       {dialog?.kind === "tile" ? <TileInspectDialog tile={dialog.tile} state={story} onClose={() => setDialog(null)} /> : null}
