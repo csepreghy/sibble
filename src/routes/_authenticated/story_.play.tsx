@@ -147,6 +147,7 @@ function StoryPlay() {
   const [discardSelection, setDiscardSelection] = useState<string[]>([]);
   const discardOutRef = useRef(false);
   const [anim, setAnim] = useState<AnimState>(IDLE_ANIM);
+  const [lettersExited, setLettersExited] = useState(false);
   const [introDismissed, setIntroDismissed] = useState(-1);
   const [dialog, setDialog] = useState<
     | { kind: "run-info" }
@@ -627,6 +628,7 @@ function StoryPlay() {
       setStory(result.state);
       setPending([]);
       setAnim(IDLE_ANIM);
+      setLettersExited(false);
       setCoinBonus(0);
     };
 
@@ -635,6 +637,9 @@ function StoryPlay() {
       saveStory(result.state);
       const reward = result.coinReward;
       if (!reduced) flyLettersOut();
+      // Restore the original empty squares underneath the presentation-only flights.
+      // The completed board remains untouched in the saved run and Page history.
+      setLettersExited(true);
       if (reward > 0) {
         const from = visible(".story-current-score")?.getBoundingClientRect();
         const to = visible(".story-play-coins")?.getBoundingClientRect();
@@ -694,7 +699,6 @@ function StoryPlay() {
       clone.removeAttribute("data-cell-index");
       Object.assign(clone.style, { position: "fixed", left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px`, margin: "0", zIndex: "60", pointerEvents: "none", transition: "none" });
       document.body.appendChild(clone);
-      el.style.visibility = "hidden";
       const dx = vw - r.left + r.width * 2;
       const lift = -(60 + Math.random() * 80);
       const spin = 20 + Math.random() * 40;
@@ -909,13 +913,13 @@ function StoryPlay() {
             <StoryBoard
               compact={compact}
               size={config.size}
-              board={story.page.board}
+              board={lettersExited ? story.page.board.map(() => null) : story.page.board}
               tiles={story.tiles}
               premiums={config.premiums}
-              usedPremiums={story.page.usedPremiums}
-              pending={pending}
+              usedPremiums={lettersExited ? [] : story.page.usedPremiums}
+              pending={lettersExited ? [] : pending}
               letterUpgrades={story.letterUpgrades}
-              activeIndex={anim.activeIndex}
+              activeIndex={lettersExited ? null : anim.activeIndex}
               activeWord={anim.activeWord}
               wordHighlights={busy ? [] : preview?.wordHighlights ?? []}
               disabled={busy || story.phase !== "play"}
