@@ -5,6 +5,14 @@
  * Per-device on/off preference in localStorage.
  */
 const KEY = "sibble:story:sound";
+
+/**
+ * Which effects are currently switched on. Every sound below stays implemented;
+ * add its name back to this list to bring it back.
+ */
+const ENABLED = new Set(["confetti"]);
+const isOn = (name: string) => ENABLED.has(name);
+
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
 let dry: GainNode | null = null;
@@ -148,6 +156,7 @@ const pitch = (step: number, root: number) => root * 2 ** ((Math.floor(step / 5)
 
 /** A number landing in Base (wooden marimba) or Mult (bright struck bell); pitch climbs each step. */
 export function soundHit(kind: "base" | "mult", step: number) {
+  if (!isOn("hit")) return;
   const s = Math.min(step, 14);
   if (kind === "base") {
     const f = pitch(s, 262);
@@ -171,6 +180,7 @@ export function soundHit(kind: "base" | "mult", step: number) {
 
 /** Heavy box-into-box smash: saturated sub drop, crack and room tail. */
 export function soundSlam() {
+  if (!isOn("slam")) return;
   thump(130, 38, 0.55, 0.9, 0, 0.25);
   burst(0.05, { vol: 0.5, freq: 3200, q: 0.6, send: 0.4 });
   burst(0.35, { vol: 0.35, freq: 600, type: "lowpass", send: 0.5 });
@@ -180,7 +190,7 @@ export function soundSlam() {
 
 /** Mechanical odometer clicks over a count-up; they accelerate and brighten. */
 export function soundCount(durationMs: number) {
-  if (durationMs < 60) return;
+  if (!isOn("count") || durationMs < 60) return;
   const ticks = Math.min(36, Math.max(4, Math.round(durationMs / 50)));
   for (let i = 0; i < ticks; i++) {
     const p = i / ticks;
@@ -200,6 +210,7 @@ export function soundConfetti() {
     burst(0.03, { vol: 0.07, at: 0.05 + Math.random() * 0.9, freq: 3000 + Math.random() * 4000, q: 2, send: 0.4 });
   }
   // Afterglow: tuned bell chimes (major 9) shimmering into the reverb.
+  if (!isOn("confetti-afterglow")) return;
   const chord = [1046.5, 1318.5, 1568, 1975.5, 2349.3, 2637];
   for (let i = 0; i < 14; i++) {
     const f = chord[Math.floor(Math.random() * chord.length)]! * (Math.random() < 0.3 ? 2 : 1);
@@ -217,6 +228,7 @@ function clink(at: number, base: number, vol: number) {
   burst(0.01, { vol: vol * 1.2, at, freq: 7000, q: 1, send: 0.1 });
 }
 export function soundCoin() {
+  if (!isOn("coin")) return;
   clink(0, 2100, 0.12);
   clink(0.06, 2450, 0.1);
   clink(0.13, 1900, 0.08);
@@ -224,11 +236,13 @@ export function soundCoin() {
 
 /** Modal sliding up: airy swept whoosh. */
 export function soundWhoosh() {
+  if (!isOn("whoosh")) return;
   burst(0.45, { vol: 0.35, freq: 300, q: 1.2, sweepTo: 2200, send: 0.3 });
 }
 
 /** A shop item slapping onto the table like a card. */
 export function soundPop(i = 0) {
+  if (!isOn("pop")) return;
   const v = 1 + (i % 4) * 0.04;
   burst(0.03, { vol: 0.5, freq: 2200 * v, q: 0.6, send: 0.2 });
   burst(0.08, { vol: 0.25, freq: 900, type: "lowpass", send: 0.15 });
