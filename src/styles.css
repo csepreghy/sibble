@@ -1009,6 +1009,77 @@ html.story-board-midnight {
   .anim-tile-bump, .anim-score-pop, .shop-card-live { animation: none; }
 }
 
+/* Large desktop controls expand into spare board gutters. Negative rail margins
+   retain the original 240/112px layout footprints; the board never moves.
+   Discrete typography tiers avoid viewport-sized text and cap the enlargement. */
+@media (min-width: 1440px) and (min-height: 900px) {
+  .story-screen[data-layout="desktop"]:not(.story-shopping) {
+    --story-left-width: 320px;
+    --story-pen-width: 144px;
+    --story-rack-width: 560px;
+    --story-rack-size: 64px;
+  }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-desktop-sidebar {
+    width: var(--story-left-width);
+    margin-right: calc(240px - var(--story-left-width));
+    z-index: 1;
+    padding: 20px;
+    gap: 20px;
+  }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-desktop-sidebar h1 { font-size: 20px; line-height: 1.4; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-desktop-sidebar button { min-height: 42px; font-size: 16px; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-number-box { height: 86px; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-number-box strong { font-size: 44px; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-target-score,
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-current-score { height: 98px; gap: 8px; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-round-score > div > span:first-child { font-size: 14px; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-round-score > div > span:last-child { font-size: 38px; line-height: 1; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-round-score svg { width: 24px; height: 24px; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-score-times { font-size: 38px; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-number-delta { font-size: 16px; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) aside[aria-label="Pens"] {
+    width: var(--story-pen-width);
+    margin-left: calc(112px - var(--story-pen-width));
+    z-index: 1;
+    padding: 12px;
+    gap: 12px;
+  }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) aside[aria-label="Pens"] h2 { font-size: 13px; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) [data-pen-slot] { flex-shrink: 0; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) [data-pen-slot] svg { width: 36px; height: 36px; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) [data-owned-pen] > span { font-size: 13px; }
+  /* Preserve the workspace's original height. Larger controls rise into the
+     existing space below the board, rather than taking space from the board. */
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-footer { height: 78px; flex: 0 0 78px; align-items: flex-end; gap: 14px; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-footer > div:first-child { max-width: var(--story-rack-width); }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-letter-rack { min-height: 86px; gap: 8px; padding: 10px; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-letter-rack [data-rack-tile-id] { width: min(var(--story-rack-size), calc((100% - (var(--rack-capacity) - 1) * 8px) / var(--rack-capacity))); font-size: 28px; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-letter-rack [data-rack-tile-id] > span:nth-child(2) { font-size: 14px; bottom: 5px; left: 5px; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-letter-rack [data-rack-tile-id] > span:nth-child(3) { font-size: 12px; bottom: 5px; right: 5px; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-actions { align-self: center; flex-wrap: nowrap; gap: 8px; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-actions button { height: 46px; padding-inline: 16px; font-size: 16px; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-actions .story-play-button { height: 52px; font-size: 18px; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-actions svg { width: 20px; height: 20px; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-play-coins { font-size: 36px; line-height: 36px; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-remaining-counters { font-size: 15px; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-remaining-counters strong { font-size: 24px; }
+  body:has(.story-screen[data-layout="desktop"]) .story-pen-inspector { max-width: 380px; }
+  body:has(.story-screen[data-layout="desktop"]) .story-pen-inspector h2 { font-size: 26px; }
+  body:has(.story-screen[data-layout="desktop"]) .story-pen-inspector p { font-size: 18px; line-height: 1.4; }
+  body:has(.story-screen[data-layout="desktop"]) .story-pen-inspector .shop-card > svg { width: 80px; height: 80px; }
+}
+@media (min-width: 1920px) and (min-height: 1100px) {
+  .story-screen[data-layout="desktop"]:not(.story-shopping) { --story-left-width: 360px; --story-pen-width: 164px; --story-rack-width: 640px; --story-rack-size: 72px; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-number-box { height: 100px; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-number-box strong { font-size: 52px; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-target-score,
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-current-score { height: 112px; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-round-score > div > span:last-child { font-size: 44px; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) [data-pen-slot] svg { width: 44px; height: 44px; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-letter-rack { min-height: 96px; }
+  .story-screen[data-layout="desktop"]:not(.story-shopping) .story-letter-rack [data-rack-tile-id] { font-size: 32px; }
+}
+
 /* Bookstore cards: tactile, raised, glossy, with a slow pulsing category glow.
    Set --glow on the element to the category colour. */
 @keyframes shop-glow-pulse {
