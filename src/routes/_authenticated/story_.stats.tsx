@@ -32,11 +32,10 @@ function Stat({ label, value }: { label: string; value: string | number }) {
   );
 }
 
-const MEDALS = [
-  { className: "text-gold" },
-  { className: "text-silver" },
-  { className: "text-bronze" },
-] as const;
+const GOLD = { className: "text-gold" } as const;
+const SILVER = { className: "text-silver" } as const;
+const BRONZE = { className: "text-bronze" } as const;
+const MEDALS = [GOLD, SILVER, BRONZE] as const;
 
 function StoryStats() {
   const [stats] = useState(() => loadStoryStats());
@@ -89,7 +88,7 @@ function StoryStats() {
             ) : (
               <div className="mt-3 grid grid-cols-3 gap-3">
                 {top.map((entry, index) => {
-                  const medal = MEDALS[index] ?? MEDALS[MEDALS.length - 1];
+                  const medal = MEDALS[index] ?? BRONZE;
                   return (
                     <div
                       key={entry.letter}
