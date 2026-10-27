@@ -1199,3 +1199,13 @@ html.story-board-midnight {
   .story-coin-flight, .story-sheet-up[data-state="open"], .story-shop-enter, .story-offer-pop { animation: none; }
   .story-screen[data-layout="desktop"] .story-preview-tag-action { animation: none; }
 }
+
+/* Invalid-word message: never truncated; wraps when needed and slides in/out. */
+.story-board-status .story-error-slot { display: grid; grid-template-rows: 0fr; flex-basis: 100%; max-width: 100%; justify-content: stretch; transition: grid-template-rows 280ms cubic-bezier(.2,.8,.3,1); }
+.story-board-status .story-error-slot[data-open="true"] { grid-template-rows: 1fr; }
+.story-error-slot .story-error-inner { min-height: 0; overflow: hidden; display: flex; justify-content: flex-end; }
+.story-board-status .story-error-slot .story-error-tag { max-width: 100%; white-space: normal; text-align: left; line-height: 1.25; justify-content: flex-start; margin-block: 2px; opacity: 0; transform: translateY(-8px) scale(0.96); transition: opacity 220ms ease, transform 280ms cubic-bezier(.2,.8,.3,1.2); }
+.story-error-slot[data-open="true"] .story-error-tag { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .story-board-status .story-error-slot, .story-board-status .story-error-slot .story-error-tag { transition: none; }
+}

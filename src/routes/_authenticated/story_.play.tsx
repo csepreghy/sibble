@@ -246,6 +246,9 @@ function StoryPlay() {
       longestThisPage: story.page.longestWord,
     }, w => words.has(w));
   }, [story, config, words, pending]);
+  // Keep the last message mounted while it animates out.
+  const previewError = preview?.error ?? null;
+  useEffect(() => { if (previewError) setLastError(previewError); }, [previewError]);
 
   if (!story || !config) {
     // No saved run — back to the intro.
