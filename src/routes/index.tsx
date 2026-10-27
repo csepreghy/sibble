@@ -65,10 +65,10 @@ function Index() {
             </> : null}
           </div>
         </div>
-        <div className="relative mx-auto w-full max-w-[620px]">
+        <div className="relative mx-auto w-full max-w-[480px]">
           <div className="absolute -inset-10 bg-mode-story/15 blur-3xl" aria-hidden="true" />
           <div className="landing-float relative" style={{ ["--r" as string]: "-1deg" }}><GameplayMock /></div>
-          <div className="landing-float absolute -bottom-10 -right-4 hidden w-[52%] sm:block" style={{ ["--r" as string]: "2deg", animationDelay: "-3s" }}><ScoringMock className="scale-[0.85] origin-bottom-right" /></div>
+          <div className="landing-float absolute -bottom-12 -right-24 hidden w-[60%] xl:block" style={{ ["--r" as string]: "2deg", animationDelay: "-3s" }}><ScoringMock className="scale-[0.85] origin-bottom-right" /></div>
         </div>
       </section>
 

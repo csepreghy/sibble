@@ -158,11 +158,11 @@ export function GameplayMock({ className }: { className?: string }) {
         <span className="landing-outline pointer-events-none absolute rounded-md border-[3px] border-accent" style={{ left: "calc(1.5% + 14.1%)", top: "calc(42.6%)", width: "71%", height: "14.4%" }} />
       </div>
       <div className="mt-3 flex items-center gap-2">
-        <div className="grid flex-1 grid-cols-5 gap-1.5 rounded-lg bg-background/60 p-1.5">
+        <div className="grid min-w-0 flex-1 grid-cols-5 gap-1 rounded-lg bg-background/60 p-1">
           {["E", "A", "K", "I", "N"].map((l) => <Tile key={l} letter={l} className="text-sm" />)}
         </div>
-        <span className="tile-gloss relative rounded-lg bg-mode-story px-3 py-2 text-sm font-bold text-mode-foreground">Play word</span>
-        <span className="landing-pop rounded-lg bg-accent/20 px-2 py-2 text-sm font-bold text-accent" style={{ animationDelay: "0.8s" }}>+64</span>
+        <span className="tile-gloss relative rounded-lg bg-mode-story shrink-0 px-3 py-2 text-sm font-bold text-mode-foreground">Play word</span>
+        <span className="landing-pop shrink-0 rounded-lg bg-accent/20 px-2 py-2 text-sm font-bold text-accent" style={{ animationDelay: "0.8s" }}>+64</span>
       </div>
     </div>
   );
