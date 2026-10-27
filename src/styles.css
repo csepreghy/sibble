@@ -1078,8 +1078,8 @@ html.story-board-midnight {
 .story-sheet-up[data-state="open"] { animation: story-sheet-up 560ms cubic-bezier(.2,.9,.3,1.08) both; }
 @keyframes story-shop-enter { from { transform: translateX(110%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 .story-shop-enter { animation: story-shop-enter 420ms cubic-bezier(.2,.8,.3,1) both; }
-@keyframes story-offer-pop { 0% { transform: scale(0); opacity: 0; } 60% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(1); } }
-.story-offer-pop { animation: story-offer-pop 360ms cubic-bezier(.3,1.5,.5,1) both; }
+@keyframes story-offer-pop { 0% { transform: scale(0.35); opacity: 0; } 70% { transform: scale(1.04); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+.story-offer-pop { animation: story-offer-pop 300ms cubic-bezier(.25,1.2,.5,1) both; }
 @media (prefers-reduced-motion: reduce) {
   .story-coin-flight, .story-sheet-up[data-state="open"], .story-shop-enter, .story-offer-pop { animation: none; }
 }
