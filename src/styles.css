@@ -1230,7 +1230,7 @@ html.story-board-midnight {
 .story-hud-scores { display: flex; flex-direction: column; gap: 10px; }
 .story-desktop-sidebar .story-number-box, .story-desktop-sidebar .story-target-score, .story-desktop-sidebar .story-current-score { container-type: inline-size; padding-inline: 6px; }
 .story-desktop-sidebar .story-number-box strong { font-size: min(var(--hud-num, 32px), 26cqi); }
-.story-desktop-sidebar .story-round-score > div > span:last-child { font-size: min(var(--hud-num, 30px), 22cqi) !important; flex-wrap: nowrap; max-width: 100%; }
+.story-desktop-sidebar .story-round-score > div > span:last-child { font-size: min(var(--hud-num, 32px), 26cqi) !important; flex-wrap: nowrap; max-width: 100%; }
 .story-desktop-sidebar .story-round-score > div > span:last-child svg { width: min(22px, 14cqi) !important; height: min(22px, 14cqi) !important; }
 .story-hud-info { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .story-hud-block { display: flex; flex-direction: column; justify-content: center; gap: 2px; min-width: 0; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border); background: color-mix(in oklab, var(--muted) 70%, transparent); box-shadow: inset 0 1px 0 color-mix(in oklab, var(--foreground) 6%, transparent); }
