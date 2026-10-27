@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { Medal } from "lucide-react";
 import { AppNav } from "@/components/AppNav";
 import { BrandLogo } from "@/components/BrandLogo";
 import { loadStoryStats, topLetters } from "@/lib/story/stats";
@@ -30,6 +31,11 @@ function Stat({ label, value }: { label: string; value: string | number }) {
     </div>
   );
 }
+
+const GOLD = { className: "text-gold" } as const;
+const SILVER = { className: "text-silver" } as const;
+const BRONZE = { className: "text-bronze" } as const;
+const MEDALS = [GOLD, SILVER, BRONZE] as const;
 
 function StoryStats() {
   const [stats] = useState(() => loadStoryStats());
@@ -81,18 +87,22 @@ function StoryStats() {
               <p className="mt-3 text-sm text-muted-foreground">Play some words to see your favourites.</p>
             ) : (
               <div className="mt-3 grid grid-cols-3 gap-3">
-                {top.map((entry, index) => (
-                  <div
-                    key={entry.letter}
-                    className="flex items-center gap-3 rounded-xl border border-border bg-card p-4"
-                  >
-                    <span className="text-xs font-bold text-muted-foreground">#{index + 1}</span>
-                    <span className="text-2xl font-black text-primary">{entry.letter}</span>
-                    <span className="ml-auto text-sm text-muted-foreground">
-                      {entry.count} {entry.count === 1 ? "time" : "times"}
-                    </span>
-                  </div>
-                ))}
+                {top.map((entry, index) => {
+                  const medal = MEDALS[index] ?? BRONZE;
+                  return (
+                    <div
+                      key={entry.letter}
+                      className="flex flex-col items-center gap-1 rounded-xl border border-border bg-card p-3 sm:flex-row sm:gap-3 sm:p-4"
+                    >
+                      <span className="sr-only">{`Rank ${index + 1}`}</span>
+                      <Medal className={`size-5 shrink-0 ${medal.className}`} aria-hidden />
+                      <span className="text-2xl font-black text-primary">{entry.letter}</span>
+                      <span className="text-xs font-semibold text-muted-foreground sm:ml-auto sm:text-sm">
+                        x {entry.count}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </section>
