@@ -690,8 +690,8 @@ function StoryPlay() {
     }
   }
 
-  /** Presentation only: clones every board letter and flies it off to the right on a curve. */
-  function flyLettersOut() {
+  /** Presentation only: clones every board letter and flies it off to the right on a curve, one letter at a time. */
+  async function flyLettersOut(): Promise<void> {
     const cells = Array.from(document.querySelectorAll<HTMLElement>("[data-story-board] [data-cell-index]"))
       .filter((el) => el.classList.contains("tile-gloss") && el.offsetParent !== null);
     if (!cells.length) return;
@@ -703,26 +703,35 @@ function StoryPlay() {
     }
 
     const vw = window.innerWidth;
-    const minLeft = Math.min(...cells.map((el) => el.getBoundingClientRect().left));
-    cells.forEach((el) => {
-      const r = el.getBoundingClientRect();
-      const clone = el.cloneNode(true) as HTMLElement;
-      clone.removeAttribute("data-cell-index");
-      Object.assign(clone.style, { position: "fixed", left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px`, margin: "0", zIndex: "60", pointerEvents: "none", transition: "none", boxShadow: TILE_FLIGHT_SHADOW });
-      document.body.appendChild(clone);
-      const dx = vw - r.left + r.width * 2;
-      const lift = -(60 + Math.random() * 80);
-      const spin = 20 + Math.random() * 40;
-      const delayMs = ((r.left - minLeft) / Math.max(1, vw)) * 900 + Math.random() * 60;
-      const anim = clone.animate([
-        { transform: "translate(0,0) rotate(0deg)", offset: 0 },
-        { transform: `translate(${dx * 0.12}px, ${lift}px) rotate(${spin * 0.3}deg)`, offset: 0.35 },
-        { transform: `translate(${dx * 0.55}px, ${lift * 0.6}px) rotate(${spin * 0.7}deg)`, offset: 0.7 },
-        { transform: `translate(${dx}px, ${-lift * 0.8}px) rotate(${spin}deg)`, offset: 1 },
-      ], { duration: 750, delay: delayMs, easing: "cubic-bezier(0.45, 0, 0.75, 0.6)", fill: "both" });
-      anim.onfinish = () => clone.remove();
-      anim.oncancel = () => clone.remove();
+    // Left-to-right, top-to-bottom so the page empties in reading order.
+    cells.sort((a, b) => {
+      const ra = a.getBoundingClientRect();
+      const rb = b.getBoundingClientRect();
+      return Math.abs(ra.left - rb.left) > 2 ? ra.left - rb.left : ra.top - rb.top;
     });
+    const flights: Promise<void>[] = [];
+    for (const [i, el] of cells.entries()) {
+      if (i > 0) await new Promise((resolve) => setTimeout(resolve, LETTER_OUT_STAGGER_MS));
+      flights.push(new Promise<void>((resolve) => {
+        const r = el.getBoundingClientRect();
+        const clone = el.cloneNode(true) as HTMLElement;
+        clone.removeAttribute("data-cell-index");
+        Object.assign(clone.style, { position: "fixed", left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px`, margin: "0", zIndex: "60", pointerEvents: "none", transition: "none", boxShadow: TILE_FLIGHT_SHADOW });
+        document.body.appendChild(clone);
+        const dx = vw - r.left + r.width * 2;
+        const lift = -(60 + Math.random() * 80);
+        const spin = 20 + Math.random() * 40;
+        const anim = clone.animate([
+          { transform: "translate(0,0) rotate(0deg)", offset: 0 },
+          { transform: `translate(${dx * 0.12}px, ${lift}px) rotate(${spin * 0.3}deg)`, offset: 0.35 },
+          { transform: `translate(${dx * 0.55}px, ${lift * 0.6}px) rotate(${spin * 0.7}deg)`, offset: 0.7 },
+          { transform: `translate(${dx}px, ${-lift * 0.8}px) rotate(${spin}deg)`, offset: 1 },
+        ], { duration: LETTER_OUT_MS, easing: "cubic-bezier(0.45, 0, 0.75, 0.6)", fill: "both" });
+        anim.onfinish = () => { clone.remove(); resolve(); };
+        anim.oncancel = () => { clone.remove(); resolve(); };
+      }));
+    }
+    await Promise.all(flights);
   }
 
   function pulseSibble() {
