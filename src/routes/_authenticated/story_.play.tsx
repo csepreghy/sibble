@@ -18,6 +18,8 @@ import {
   Trash2,
   Settings,
   Gauge,
+  Volume2,
+  VolumeX,
   Smartphone,
 } from "lucide-react";
 import { loadWordList } from "@/lib/words";
@@ -39,7 +41,8 @@ import { AnimationModeMenu } from "@/components/story/AnimationModeMenu";
 import { ScoreFlight, type ScoreFlightData } from "@/components/story/ScoreFlight";
 import { PenPurchaseFlight, type PenPurchaseFlightData } from "@/components/story/PenPurchaseFlight";
 import { ItemPurchaseFlight, type ItemPurchaseFlightData } from "@/components/story/ItemPurchaseFlight";
-import { RoundScore, ScoreBoxes, impactBox } from "@/components/story/ScoreDisplay";
+import { CountNumber, RoundScore, ScoreBoxes, impactBox } from "@/components/story/ScoreDisplay";
+import { loadStorySound, saveStorySound, soundCoin, soundConfetti, soundCount, soundHit, soundSlam, soundWhoosh, unlockStorySound } from "@/lib/story/sound";
 import { loadStory, saveStory } from "@/lib/story/storage";
 import { loadStoryStats, recordPageCompleted, recordStoryEnded, recordStoryStarted, recordWordsPlayed, saveStoryStats } from "@/lib/story/stats";
 import { useStoryLayout } from "@/hooks/useStoryLayout";
@@ -165,6 +168,28 @@ function StoryPlay() {
   const [pageStats, setPageStats] = useState<PageStats | null>(null);
   const flightId = useRef(0);
   const [confetti, setConfetti] = useState<ScoreConfettiData | null>(null);
+  const [coinFlight, setCoinFlight] = useState<{ id: number; amount: number; x: number; y: number; dx: number; dy: number } | null>(null);
+  const [coinBonus, setCoinBonus] = useState(0);
+  const [shopEntering, setShopEntering] = useState(false);
+  const pendingCommit = useRef<(() => void) | null>(null);
+  const [soundOn, setSoundOn] = useState(true);
+  useEffect(() => setSoundOn(loadStorySound()), []);
+  const toggleSound = () => { const v = !soundOn; saveStorySound(v); setSoundOn(v); if (v) unlockStorySound(); };
+
+  /** Page Complete -> push the board away, slide the Bookstore in, pop the items. */
+  async function visitBookstore() {
+    setPageStats(null);
+    const main = document.querySelector(".story-main");
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (main && !reducedMotion) {
+      await main.animate([{ transform: "translateX(0)", opacity: 1 }, { transform: "translateX(-110%)", opacity: 0 }], { duration: 380, easing: "cubic-bezier(.5,0,.8,.4)", fill: "forwards" }).finished.catch(() => {});
+    }
+    soundWhoosh();
+    setShopEntering(true);
+    pendingCommit.current?.();
+    pendingCommit.current = null;
+    window.setTimeout(() => setShopEntering(false), 1800);
+  }
 
   // --- drag and drop (mirrors the multiplayer game) -------------------------
   type DragSource = { type: "rack"; tileId: string } | { type: "board"; index: number };
@@ -445,6 +470,8 @@ function StoryPlay() {
     let confettiFired = false;
     let confettiDone: Promise<void> | null = null;
     let popKey = 0;
+    let hitStep = 0;
+    unlockStorySound();
     for (const event of animationEvents(result.score.events, animationMode)) {
       if (cancelAnim.current) return;
       const next: AnimState = { ...current, running: true, activeIndex: null, activePenId: null, baseDelta: null, multDelta: null, growToTotal: false };
@@ -531,26 +558,35 @@ function StoryPlay() {
           if (cancelAnim.current) return;
         }
         setFlight(null);
+        soundHit(kind, hitStep++);
       }
       setAnim(next);
       current = next;
-      if (next.growToTotal) await wait(Math.max(totalCountDuration(next.base), totalCountDuration(next.mult)) + 100);
+      if (next.growToTotal) {
+        const ms = Math.max(totalCountDuration(next.base), totalCountDuration(next.mult));
+        soundCount(scaled(ms));
+        await wait(ms + 100);
+      }
       else await delay();
       if (cancelAnim.current) return;
       if (event.type === "result") {
         // Mult -> Base: the blue box counts up to the word's Ink with the accelerating count.
         await flyBox('[data-score-box="mult"]', '[data-score-box="base"]', "mult", `×${event.mult.toLocaleString(undefined, { maximumFractionDigits: 1 })}`);
         if (cancelAnim.current) return;
+        soundSlam();
         current = { ...current, multHidden: true, base: event.ink, baseDelta: `×${event.mult}`, activePenId: null, growToTotal: true };
         setAnim(current);
+        soundCount(scaled(totalCountDuration(event.ink)));
         await wait(totalCountDuration(event.ink) + 100);
         // Base -> Round score: purple box counts up.
         await flyBox('[data-score-box="base"]', ".story-current-score", "base", event.ink.toLocaleString());
         if (cancelAnim.current) return;
+        soundSlam();
         const roundFrom = roundShown;
         roundShown += event.ink;
         current = { ...current, baseHidden: true, baseDelta: null, roundScore: roundShown };
         setAnim(current);
+        soundCount(scaled(totalCountDuration(event.ink)));
         const purple = visible(".story-current-score");
         if (purple) impactBox(purple);
         // Confetti pops the moment the count passes the target; the count keeps going.
@@ -558,8 +594,10 @@ function StoryPlay() {
           confettiFired = true;
           const at = scaled(countCrossingTime(roundFrom, roundShown, inkTarget));
           confettiDone = new Promise((resolve) => setTimeout(() => {
+            if (cancelAnim.current) { resolve(); return; }
+            soundConfetti();
             const box = visible(".story-current-score")?.getBoundingClientRect();
-            if (!box || cancelAnim.current || window.matchMedia("(prefers-reduced-motion: reduce)").matches) { resolve(); return; }
+            if (!box || window.matchMedia("(prefers-reduced-motion: reduce)").matches) { resolve(); return; }
             setConfetti({ id: ++flightId.current, x: box.left + box.width / 2, y: box.top + box.height / 2 });
             setTimeout(() => { setConfetti(null); resolve(); }, STORY_CONFETTI_MS);
           }, at));
@@ -576,23 +614,57 @@ function StoryPlay() {
 
     if (confettiDone) await confettiDone;
 
-    setStory(result.state);
-    setPending([]);
-    setAnim(IDLE_ANIM);
     let stats = recordWordsPlayed(loadStoryStats(), result.score.words.map((word) => ({ word: word.word, ink: word.ink })));
     if (result.pageCompleted) stats = recordPageCompleted(stats, result.state.pageIndex, result.state.page.ink);
     if (result.storyWon) stats = recordStoryEnded(stats, result.state, true);
     else if (result.defeated) stats = recordStoryEnded(stats, result.state, false);
     saveStoryStats(stats);
-    if (result.storyWon) {
-      toast.success("Story complete!");
-    } else if (result.pageCompleted) {
+
+    const commit = () => {
+      setStory(result.state);
+      setPending([]);
+      setAnim(IDLE_ANIM);
+      setCoinBonus(0);
+    };
+
+    if (result.pageCompleted && !result.storyWon) {
+      // Persist now; the screen keeps showing the finished board until the Bookstore opens.
+      saveStory(result.state);
+      const reward = result.coinReward;
+      if (reward > 0) {
+        const from = visible(".story-current-score")?.getBoundingClientRect();
+        const to = visible(".story-play-coins")?.getBoundingClientRect();
+        if (from && to && !reduced) {
+          const x = from.left + from.width / 2, y = from.top + from.height / 2;
+          setCoinFlight({ id: ++flightId.current, amount: reward, x, y, dx: to.left + to.width / 2 - x, dy: to.top + to.height / 2 - y });
+          await new Promise((resolve) => setTimeout(resolve, 900));
+          setCoinFlight(null);
+        }
+        if (cancelAnim.current) return;
+        const coinsEl = visible(".story-play-coins");
+        if (coinsEl) impactBox(coinsEl);
+        soundCoin();
+        setCoinBonus(reward);
+        const countMs = scaled(totalCountDuration(reward));
+        soundCount(countMs);
+        await new Promise((resolve) => setTimeout(resolve, countMs + 100));
+      }
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      if (cancelAnim.current) return;
+      pendingCommit.current = commit;
+      soundWhoosh();
       setPageStats({
         ink: result.state.page.ink,
         words: result.state.page.wordsPlayed ?? 0,
         bestWordInk: result.state.page.bestWordInk ?? 0,
         coins: result.coinReward,
       });
+      return;
+    }
+
+    commit();
+    if (result.storyWon) {
+      toast.success("Story complete!");
     } else if (result.defeated) {
       toast.error("Out of words — the Story ends here.");
     }
@@ -703,6 +775,7 @@ function StoryPlay() {
               <DropdownMenuItem onClick={() => setDialog({ kind: "run-info" })}><Info /> Run Info</DropdownMenuItem>
               <DropdownMenuItem onSelect={(e) => { e.preventDefault(); cycleSpeed(); }}><Gauge /> Animation speed: {speed}×</DropdownMenuItem>
               <AnimationModeMenu mode={animationMode} onChange={changeAnimationMode} disabled={busy} />
+              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); toggleSound(); }}>{soundOn ? <Volume2 /> : <VolumeX />} Sound: {soundOn ? "On" : "Off"}</DropdownMenuItem>
               <DropdownMenuItem className="text-destructive" onClick={endStory}><Trash2 /> End this Story</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -771,6 +844,9 @@ function StoryPlay() {
                   <Gauge className="mr-2 h-4 w-4" /> Animation speed: {speed}×
                 </DropdownMenuItem>
                 <AnimationModeMenu mode={animationMode} onChange={changeAnimationMode} disabled={busy} />
+                <DropdownMenuItem onSelect={(e) => { e.preventDefault(); toggleSound(); }}>
+                  {soundOn ? <Volume2 className="mr-2 h-4 w-4" /> : <VolumeX className="mr-2 h-4 w-4" />} Sound: {soundOn ? "On" : "Off"}
+                </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={endStory}
                   className="text-destructive"
@@ -783,9 +859,9 @@ function StoryPlay() {
         </aside>
 
         {/* Center — board or Bookstore */}
-        <main className="story-main flex min-w-0 flex-1 flex-col justify-center overflow-y-auto rounded-xl border border-border bg-card/30 p-3">
+        <main key={story.phase === "bookstore" ? "shop" : "play"} className={cn("story-main flex min-w-0 flex-1 flex-col justify-center overflow-y-auto rounded-xl border border-border bg-card/30 p-3", shopEntering && story.phase === "bookstore" && "story-shop-enter")}>
           {story.phase === "bookstore" ? (
-            <Bookstore state={story} onBuy={handleBuy} compact={compact} />
+            <Bookstore state={story} onBuy={handleBuy} compact={compact} entering={shopEntering} />
           ) : (
             <StoryBoard
               compact={compact}
@@ -807,7 +883,7 @@ function StoryPlay() {
             />
           )}
           {story.phase === "play" && <div className="story-board-status" aria-live="polite">
-            <span className="story-play-coins flex items-center gap-1 text-3xl font-black tabular-nums text-gold"><Coins className="h-6 w-6 shrink-0" />{story.coins}</span>
+            <span className="story-play-coins flex items-center gap-1 text-3xl font-black tabular-nums text-gold"><Coins className="h-6 w-6 shrink-0" /><CountNumber value={story.coins + coinBonus} running={coinBonus > 0} growToTotal byDelta /></span>
             <div className="story-remaining-counters"><span>Words left <strong className="text-xl tabular-nums text-base-ink">{story.page.wordsLeft}</strong></span><span>Discards left <strong className="text-xl tabular-nums text-mult-ink">{story.page.discardsLeft}</strong></span></div>
             {!busy && preview && <span className="story-preview-tag-slot">
               <span className={cn("story-preview-tag", preview.error ? "bg-destructive/15 text-destructive" : "bg-story-valid/15 text-story-valid")} title={preview.error ?? "Ink before Pens"}>
@@ -919,7 +995,8 @@ function StoryPlay() {
       {/* Dialogs */}
       {showIntro ? <PageIntroDialog state={story} onStart={() => setIntroDismissed(story.pageIndex)} /> : null}
       {showEnd ? <StoryEndDialog state={story} won={story.phase === "victory"} onNewStory={startNewStory} /> : null}
-      {pageStats ? <PageCompleteDialog stats={pageStats} onClose={() => setPageStats(null)} /> : null}
+      {pageStats ? <PageCompleteDialog stats={pageStats} onClose={visitBookstore} /> : null}
+      {coinFlight && <span key={coinFlight.id} className="story-coin-flight text-gold" style={{ left: coinFlight.x, top: coinFlight.y, ["--dx" as string]: `${coinFlight.dx}px`, ["--dy" as string]: `${coinFlight.dy}px` }}>+{coinFlight.amount}</span>}
       {dialog?.kind === "run-info" ? <RunInfoDialog state={story} onClose={() => setDialog(null)} /> : null}
       {dialog?.kind === "bag" ? <BagDialog state={story} onClose={() => setDialog(null)} /> : null}
       {dialog?.kind === "tile" ? <TileInspectDialog tile={dialog.tile} state={story} onClose={() => setDialog(null)} /> : null}

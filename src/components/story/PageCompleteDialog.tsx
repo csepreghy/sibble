@@ -19,7 +19,7 @@ export function PageCompleteDialog({ stats, onClose }: { stats: PageStats; onClo
   ];
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-xs text-center" showCloseButton={false}>
+      <DialogContent className="story-sheet-up max-w-xs text-center" showCloseButton={false}>
         <DialogTitle className="text-center text-2xl font-bold">Page Complete!</DialogTitle>
         <div className="grid grid-cols-2 gap-2">
           {rows.map((row) => (
