@@ -885,8 +885,12 @@ html.story-board-midnight {
 .story-confetti-piece { position: absolute; width: 7px; height: 11px; border-radius: 2px; animation: story-confetti 800ms cubic-bezier(.15,.7,.4,1) both; }
 @media (prefers-reduced-motion: reduce) { .story-confetti-piece { display: none; } }
 @media (prefers-reduced-motion: reduce) { .story-score-flight { display: none; } }
-.story-board-status .story-preview-tag-slot { display: flex; justify-content: flex-end; flex-basis: 100%; }
-.story-preview-tag { display: inline-flex; width: fit-content; align-items: center; justify-content: center; gap: 4px; min-width: 0; max-width: 60%; border-radius: 4px; padding: 4px; line-height: 1; font-size: 14px; font-weight: 700; }
+/* The Ink tag shares the same row as the Words/Discards counters; it only wraps when the row truly runs out of room. */
+.story-board-status .story-preview-tag-slot { display: flex; justify-content: flex-end; min-width: 0; max-width: 60%; }
+/* A problem message keeps its own full line under the counters. */
+.story-board-status .story-preview-tag-slot[data-error] { flex-basis: 100%; max-width: 100%; }
+.story-board-status .story-preview-tag-slot[data-error] .story-preview-tag { max-width: 60%; }
+.story-preview-tag { display: inline-flex; width: fit-content; align-items: center; justify-content: center; gap: 4px; min-width: 0; max-width: 100%; border-radius: 4px; padding: 4px; line-height: 1; font-size: 14px; font-weight: 700; }
 .story-word-valid { outline: 3px solid var(--story-valid); outline-offset: -3px; }
 .story-word-invalid { outline: 3px solid var(--destructive); outline-offset: -3px; }
 .story-hud {
