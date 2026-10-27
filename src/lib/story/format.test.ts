@@ -1,10 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { test } from "node:test";
+import { strict as assert } from "node:assert";
 import { compactNumber } from "./format";
 
-describe("compactNumber", () => {
-  it("keeps 1,200", () => expect(compactNumber(1200)).toBe("1,200"));
-  it("keeps 12,500", () => expect(compactNumber(12500)).toBe("12,500"));
-  it("150,000 → 150K", () => expect(compactNumber(150000)).toBe("150K"));
-  it("1,250,000 → 1.25M", () => expect(compactNumber(1250000)).toBe("1.25M"));
-  it("7,365,772,260 → 7.37B", () => expect(compactNumber(7365772260)).toBe("7.37B"));
-});
+test("1,200 stays exact", () => assert.equal(compactNumber(1200), "1,200"));
+test("12,500 stays exact", () => assert.equal(compactNumber(12500), "12,500"));
+test("150,000 → 150K", () => assert.equal(compactNumber(150000), "150K"));
+test("1,250,000 → 1.25M", () => assert.equal(compactNumber(1250000), "1.25M"));
+test("7,365,772,260 → 7.37B", () => assert.equal(compactNumber(7365772260), "7.37B"));
