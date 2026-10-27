@@ -1035,19 +1035,35 @@ function StoryPlay() {
       <ScoreConfetti burst={confetti} />
       <PenPurchaseFlight flight={penFlight} onArrive={() => { setArrivingPenId(penFlight?.penId ?? null); setPenFlight(null); }} />
       <ItemPurchaseFlight flight={itemFlight} state={story} onArrive={() => { setItemFlight(null); pulseSibble(); }} />
-      {drag ? (
-        <div
-          className="pointer-events-none fixed z-50"
-          style={{ left: drag.x, top: drag.y, transform: "translate(-50%, -50%)" }}
-        >
-          <div className="tile-face relative flex h-12 w-12 rotate-[-6deg] scale-125 items-center justify-center rounded-md text-xl font-bold shadow-2xl transition-transform">
-            {drag.letter === "?" ? "" : drag.letter}
-            <span className="absolute bottom-0.5 right-1 text-[0.6rem] font-semibold opacity-70">
-              {drag.blank ? "" : LETTER_VALUES[drag.letter]}
-            </span>
+      {drag ? (() => {
+        // Desktop: over the board, the dragged tile shrinks/grows to the board's cell size.
+        const cell = layout === "desktop" && hoverIndex !== null
+          ? document.querySelector<HTMLElement>(`[data-cell-index="${hoverIndex}"]`)
+          : null;
+        const cellSize = cell ? cell.getBoundingClientRect().width : null;
+        const size = cellSize ?? 60; // 48px × scale-125 when off the board
+        return (
+          <div
+            className="pointer-events-none fixed z-50"
+            style={{ left: drag.x, top: drag.y, transform: "translate(-50%, -50%)" }}
+          >
+            <div
+              className="tile-face relative flex rotate-[-6deg] items-center justify-center rounded-md font-bold shadow-2xl"
+              style={{
+                width: size,
+                height: size,
+                fontSize: size * 0.42,
+                transition: "width 160ms ease-out, height 160ms ease-out, font-size 160ms ease-out",
+              }}
+            >
+              {drag.letter === "?" ? "" : drag.letter}
+              <span className="absolute bottom-0.5 right-1 font-semibold opacity-70" style={{ fontSize: Math.max(7, size * 0.17) }}>
+                {drag.blank ? "" : LETTER_VALUES[drag.letter]}
+              </span>
+            </div>
           </div>
-        </div>
-      ) : null}
+        );
+      })() : null}
     </div>
   );
 }
