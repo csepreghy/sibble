@@ -647,6 +647,10 @@ function StoryPlay() {
       // Restore the original empty squares underneath the presentation-only flights.
       // The completed board remains untouched in the saved run and Page history.
       setLettersExited(true);
+      // Once the word outline has faded (600ms), drop it from the render entirely so
+      // later re-renders can't bring it back over the emptied board.
+      if (reduced) setOutlineGone(true);
+      else window.setTimeout(() => setOutlineGone(true), 600);
       if (reward > 0) {
         const from = visible(".story-current-score")?.getBoundingClientRect();
         const to = visible(".story-play-coins")?.getBoundingClientRect();
@@ -927,8 +931,8 @@ function StoryPlay() {
               pending={lettersExited ? [] : pending}
               letterUpgrades={story.letterUpgrades}
               activeIndex={lettersExited ? null : anim.activeIndex}
-              activeWord={anim.activeWord}
-              wordHighlights={busy ? [] : preview?.wordHighlights ?? []}
+              activeWord={outlineGone ? null : anim.activeWord}
+              wordHighlights={lettersExited || busy ? [] : preview?.wordHighlights ?? []}
               disabled={busy || story.phase !== "play"}
               hoverIndex={hoverIndex}
               draggingIndex={draggingBoardIndex}
