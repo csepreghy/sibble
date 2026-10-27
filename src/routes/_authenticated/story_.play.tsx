@@ -679,6 +679,13 @@ function StoryPlay() {
     const cells = Array.from(document.querySelectorAll<HTMLElement>("[data-story-board] [data-cell-index]"))
       .filter((el) => el.classList.contains("tile-gloss") && el.offsetParent !== null);
     if (!cells.length) return;
+    // The orange outline around the word that just scored dissolves with the letters.
+    for (const outline of document.querySelectorAll<HTMLElement>("[data-story-board] [data-word-valid]")) {
+      const fade = outline.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 600, easing: "ease-out", fill: "both" });
+      fade.onfinish = () => { outline.style.opacity = "0"; };
+      fade.oncancel = () => { outline.style.opacity = "0"; };
+    }
+
     const vw = window.innerWidth;
     const minLeft = Math.min(...cells.map((el) => el.getBoundingClientRect().left));
     cells.forEach((el) => {
