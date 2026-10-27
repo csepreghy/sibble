@@ -1221,3 +1221,7 @@ html.story-board-midnight {
 .story-hover-preview[data-side="left"] { transform-origin: right center; }
 .story-hover-preview[data-side="right"] { transform-origin: left center; }
 @media (prefers-reduced-motion: reduce) { .story-hover-preview { animation: none; } }
+
+.story-hover-spotlight { border-radius: 10px; box-shadow: 0 0 0 200vmax color-mix(in oklab, var(--background) 55%, transparent); animation: story-hover-dim 160ms ease-out both; }
+@keyframes story-hover-dim { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .story-hover-spotlight { animation: none; } }
