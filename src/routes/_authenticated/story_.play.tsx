@@ -10,7 +10,6 @@ import {
   Info,
   Layers,
   Menu,
-  MoreVertical,
   Play,
   RotateCcw,
   Shuffle,
