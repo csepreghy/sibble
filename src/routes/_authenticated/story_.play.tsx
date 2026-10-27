@@ -955,7 +955,7 @@ function StoryPlay() {
             <div data-story-deco-rack className={cn("pointer-events-none", sibblePulse && "story-sibble-arrival")}>
               <StoryRack
                 compact={compact}
-                capacity={compact ? 6 : 10}
+                capacity={story.upgrades.includes("bigger-rack") ? 8 : 7}
                 gloss={false}
                 tiles={(compact ? "SIBBLE" : "SIBBLEBOOK").split("").map((letter, i) => ({ id: `deco-${i}`, letter, enhancement: null }))}
                 selectedId={null}
@@ -1030,11 +1030,11 @@ function StoryPlay() {
       </footer>
 
       {compact && story.phase === "bookstore" && <div className="story-continue">
+        <span className="flex items-center gap-1.5 text-3xl font-black tabular-nums text-gold"><Coins className="h-7 w-7" />{story.coins}</span>
         <div className="flex items-center gap-2">
+          <Button className="relative tile-gloss px-3" onClick={() => setStory(continueToNextPage(story))}>Continue Story <ArrowRight /></Button>
           <Button variant="outline" size="icon" aria-label="Bag and completed pages" onClick={() => setDialog({ kind: "bag" })}><Menu className="h-4 w-4" /></Button>
-          <span className="flex items-center gap-1.5 text-3xl font-black tabular-nums text-gold"><Coins className="h-7 w-7" />{story.coins}</span>
         </div>
-        <Button className="relative tile-gloss px-3" onClick={() => setStory(continueToNextPage(story))}>Continue Story <ArrowRight /></Button>
       </div>}
       {/* Dialogs */}
       {showIntro ? <PageIntroDialog state={story} onStart={() => setIntroDismissed(story.pageIndex)} /> : null}
