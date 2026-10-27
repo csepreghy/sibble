@@ -88,18 +88,22 @@ function StoryStats() {
               <p className="mt-3 text-sm text-muted-foreground">Play some words to see your favourites.</p>
             ) : (
               <div className="mt-3 grid grid-cols-3 gap-3">
-                {top.map((entry, index) => (
-                  <div
-                    key={entry.letter}
-                    className="flex items-center gap-3 rounded-xl border border-border bg-card p-4"
-                  >
-                    <span className="text-xs font-bold text-muted-foreground">#{index + 1}</span>
-                    <span className="text-2xl font-black text-primary">{entry.letter}</span>
-                    <span className="ml-auto text-sm text-muted-foreground">
-                      {entry.count} {entry.count === 1 ? "time" : "times"}
-                    </span>
-                  </div>
-                ))}
+                {top.map((entry, index) => {
+                  const medal = MEDALS[index] ?? MEDALS[MEDALS.length - 1];
+                  return (
+                    <div
+                      key={entry.letter}
+                      className="flex flex-col items-center gap-1 rounded-xl border border-border bg-card p-3 sm:flex-row sm:gap-3 sm:p-4"
+                    >
+                      <span className="sr-only">{`Rank ${index + 1}`}</span>
+                      <Medal className={`size-5 shrink-0 ${medal.className}`} aria-hidden />
+                      <span className="text-2xl font-black text-primary">{entry.letter}</span>
+                      <span className="text-xs font-semibold text-muted-foreground sm:ml-auto sm:text-sm">
+                        x {entry.count}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </section>
