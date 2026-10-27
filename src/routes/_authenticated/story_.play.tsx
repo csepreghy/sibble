@@ -713,28 +713,30 @@ function StoryPlay() {
       const rb = b.getBoundingClientRect();
       return Math.abs(ra.left - rb.left) > 2 ? ra.left - rb.left : ra.top - rb.top;
     });
+    // Every clone is appended synchronously, before the board re-render clears the
+    // letters underneath: each clone keeps covering its square until its own flight
+    // starts, so the board tiles stay in place and only the letters fly out.
     const flights: Promise<void>[] = [];
-    for (const [i, el] of cells.entries()) {
-      if (i > 0) await new Promise((resolve) => setTimeout(resolve, LETTER_OUT_STAGGER_MS));
+    cells.forEach((el, i) => {
+      const r = el.getBoundingClientRect();
+      const clone = el.cloneNode(true) as HTMLElement;
+      clone.removeAttribute("data-cell-index");
+      Object.assign(clone.style, { position: "fixed", left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px`, margin: "0", zIndex: "60", pointerEvents: "none", transition: "none", boxShadow: TILE_FLIGHT_SHADOW });
+      document.body.appendChild(clone);
+      const dx = vw - r.left + r.width * 2;
+      const lift = -(60 + Math.random() * 80);
+      const spin = 20 + Math.random() * 40;
       flights.push(new Promise<void>((resolve) => {
-        const r = el.getBoundingClientRect();
-        const clone = el.cloneNode(true) as HTMLElement;
-        clone.removeAttribute("data-cell-index");
-        Object.assign(clone.style, { position: "fixed", left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px`, margin: "0", zIndex: "60", pointerEvents: "none", transition: "none", boxShadow: TILE_FLIGHT_SHADOW });
-        document.body.appendChild(clone);
-        const dx = vw - r.left + r.width * 2;
-        const lift = -(60 + Math.random() * 80);
-        const spin = 20 + Math.random() * 40;
         const anim = clone.animate([
           { transform: "translate(0,0) rotate(0deg)", offset: 0 },
           { transform: `translate(${dx * 0.12}px, ${lift}px) rotate(${spin * 0.3}deg)`, offset: 0.35 },
           { transform: `translate(${dx * 0.55}px, ${lift * 0.6}px) rotate(${spin * 0.7}deg)`, offset: 0.7 },
           { transform: `translate(${dx}px, ${-lift * 0.8}px) rotate(${spin}deg)`, offset: 1 },
-        ], { duration: LETTER_OUT_MS, easing: "cubic-bezier(0.45, 0, 0.75, 0.6)", fill: "both" });
+        ], { duration: LETTER_OUT_MS, delay: i * LETTER_OUT_STAGGER_MS, easing: "cubic-bezier(0.45, 0, 0.75, 0.6)", fill: "both" });
         anim.onfinish = () => { clone.remove(); resolve(); };
         anim.oncancel = () => { clone.remove(); resolve(); };
       }));
-    }
+    });
     await Promise.all(flights);
   }
 
