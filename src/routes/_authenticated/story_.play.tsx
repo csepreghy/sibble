@@ -576,23 +576,57 @@ function StoryPlay() {
 
     if (confettiDone) await confettiDone;
 
-    setStory(result.state);
-    setPending([]);
-    setAnim(IDLE_ANIM);
     let stats = recordWordsPlayed(loadStoryStats(), result.score.words.map((word) => ({ word: word.word, ink: word.ink })));
     if (result.pageCompleted) stats = recordPageCompleted(stats, result.state.pageIndex, result.state.page.ink);
     if (result.storyWon) stats = recordStoryEnded(stats, result.state, true);
     else if (result.defeated) stats = recordStoryEnded(stats, result.state, false);
     saveStoryStats(stats);
-    if (result.storyWon) {
-      toast.success("Story complete!");
-    } else if (result.pageCompleted) {
+
+    const commit = () => {
+      setStory(result.state);
+      setPending([]);
+      setAnim(IDLE_ANIM);
+      setCoinBonus(0);
+    };
+
+    if (result.pageCompleted && !result.storyWon) {
+      // Persist now; the screen keeps showing the finished board until the Bookstore opens.
+      saveStory(result.state);
+      const reward = result.coinReward;
+      if (reward > 0) {
+        const from = visible(".story-current-score")?.getBoundingClientRect();
+        const to = visible(".story-play-coins")?.getBoundingClientRect();
+        if (from && to && !reduced) {
+          const x = from.left + from.width / 2, y = from.top + from.height / 2;
+          setCoinFlight({ id: ++flightId.current, amount: reward, x, y, dx: to.left + to.width / 2 - x, dy: to.top + to.height / 2 - y });
+          await new Promise((resolve) => setTimeout(resolve, 900));
+          setCoinFlight(null);
+        }
+        if (cancelAnim.current) return;
+        const coinsEl = visible(".story-play-coins");
+        if (coinsEl) impactBox(coinsEl);
+        soundCoin();
+        setCoinBonus(reward);
+        const countMs = scaled(totalCountDuration(reward));
+        soundCount(countMs);
+        await new Promise((resolve) => setTimeout(resolve, countMs + 100));
+      }
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      if (cancelAnim.current) return;
+      pendingCommit.current = commit;
+      soundWhoosh();
       setPageStats({
         ink: result.state.page.ink,
         words: result.state.page.wordsPlayed ?? 0,
         bestWordInk: result.state.page.bestWordInk ?? 0,
         coins: result.coinReward,
       });
+      return;
+    }
+
+    commit();
+    if (result.storyWon) {
+      toast.success("Story complete!");
     } else if (result.defeated) {
       toast.error("Out of words — the Story ends here.");
     }
