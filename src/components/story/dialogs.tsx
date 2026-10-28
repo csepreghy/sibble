@@ -532,7 +532,7 @@ export function StoryEndDialog({
               Start a new Story
             </Button>
             <Button variant="outline" asChild>
-              <Link to="/lobby">
+              <Link to="/story">
                 <Home className="mr-1 h-4 w-4" /> Back to Menu
               </Link>
             </Button>

@@ -861,7 +861,7 @@ function StoryPlay() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild><Button variant="outline" size="icon" aria-label="Story settings"><Settings /></Button></DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => navigate({ to: "/lobby" })}><Home /> Return to main menu</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate({ to: "/story" })}><Home /> Return to main menu</DropdownMenuItem>
               <DropdownMenuItem onClick={startNewStory}><Sparkles /> Start new Story</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setDialog({ kind: "run-info" })}><Info /> Run Info &amp; Stats</DropdownMenuItem>
               <DropdownMenuItem onSelect={(e) => { e.preventDefault(); cycleSpeed(); }}><Gauge /> Animation speed: {speed}×</DropdownMenuItem>
@@ -927,7 +927,7 @@ function StoryPlay() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => navigate({ to: "/lobby" })}>
+                <DropdownMenuItem onClick={() => navigate({ to: "/story" })}>
                   <Home className="mr-2 h-4 w-4" /> Back to Menu
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={startNewStory}>
