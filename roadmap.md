@@ -2,6 +2,11 @@
 
 Source spec: uploaded `Sibble_-_Singleplayer_Story_Mode_pasted.md`. Multiplayer stays untouched.
 
+## Coin bonus terminology
+- [ ] Rename visible bonuses to Page Bonus and Coin Upgrades without changing gameplay.
+- [ ] Show actual excess Ink percentage and capped reward in the compact Page Complete breakdown.
+- [ ] Verify reward tests and signed-in completion/upgrade displays.
+
 ## Two-mode lobby redesign
 - [x] Replace lobby with centered logo and shiny Story Mode / Multiplayer buttons.
 - [x] Add centered per-mode menus with Play, History, Statistics and Theme, without a mode toggle.
