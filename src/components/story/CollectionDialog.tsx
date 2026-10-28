@@ -76,7 +76,7 @@ export function CollectionDialog() {
           <TabsTrigger value="upgrades">Upgrades · {UPGRADES.length}</TabsTrigger>
         </TabsList>
       </Tabs>
-      <div ref={setGridEl} aria-label={category === "pens" ? "All Pens" : "All upgrades"} className="grid min-h-0 flex-1 grid-cols-2 gap-3 overflow-hidden p-1 sm:grid-cols-3 lg:grid-cols-5">
+      <div ref={setGridEl} aria-label={category === "pens" ? "All Pens" : "All upgrades"} className="grid min-h-0 flex-1 grid-cols-2 content-center gap-3 overflow-hidden p-1 sm:grid-cols-3 lg:grid-cols-5">
         {visible.map(item => <Button key={item.id} variant="ghost" onClick={() => setSelected(item)}
           style={{ ["--glow" as string]: glow }}
           className="shop-card flex aspect-square h-auto flex-col items-center justify-between gap-2 whitespace-normal rounded-lg border-2 p-2 text-center hover:bg-transparent hover:text-foreground">
