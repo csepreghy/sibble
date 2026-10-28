@@ -62,9 +62,8 @@ export function AppNav({ showSignOut = true }: { showSignOut?: boolean }) {
     navigate({ to: "/story/play" });
   }
 
-  const tabs = story
-    ? [{ to: "/story/history", label: "History", icon: History }, { to: "/story/stats", label: "Statistics", icon: ChartNoAxesCombined }] as const
-    : [{ to: "/history", label: "History", icon: History }, { to: "/stats", label: "Statistics", icon: ChartNoAxesCombined }] as const;
+  const statsTo = story ? "/story/stats" : "/stats";
+  const historyTo = story ? "/story/history" : "/history";
 
   return (
     <>
@@ -95,14 +94,18 @@ export function AppNav({ showSignOut = true }: { showSignOut?: boolean }) {
             </DropdownMenuContent>
           </DropdownMenu>
         )}
-        {tabs.map((tab) => (
-          <Button key={tab.to} asChild variant="secondary" size="sm" className="h-10 px-2 text-sm sm:px-4">
-            <Link to={tab.to} activeProps={{ className: "ring-1 ring-ring" }}>
-              <tab.icon className="hidden sm:block" /> {tab.label}
-            </Link>
-          </Button>
-        ))}
         {story && <CollectionDialog />}
+        <Button asChild variant="secondary" size="sm" className="h-10 px-2 text-sm sm:px-4">
+          <Link to={historyTo} activeProps={{ className: "ring-1 ring-ring" }}>
+            <History className="hidden sm:block" /> History
+          </Link>
+        </Button>
+        <Button asChild variant="secondary" size="icon" className="h-10 w-10" aria-label="Statistics" title="Statistics">
+          <Link to={statsTo} activeProps={{ className: "ring-1 ring-ring" }}>
+            <ChartNoAxesCombined />
+            <span className="sr-only">Statistics</span>
+          </Link>
+        </Button>
         <MenuSettings story={story} />
       </nav>
       {showSignOut ? <SignOutButton /> : null}

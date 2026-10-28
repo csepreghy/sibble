@@ -20,8 +20,9 @@ export function MenuSettings({ story }: { story: boolean }) {
 
   return <DropdownMenu>
     <DropdownMenuTrigger asChild>
-      <Button variant="secondary" size="sm" className="h-10 px-2 text-sm sm:px-4">
-        <Settings className="hidden sm:block" /> Settings
+      <Button variant="secondary" size="icon" className="h-10 w-10" aria-label="Settings" title="Settings">
+        <Settings />
+        <span className="sr-only">Settings</span>
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end" className="w-64">
