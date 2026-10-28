@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Library } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -23,16 +23,45 @@ function CollectionVisual({ item, category, large = false }: { item: Item; categ
 
 export function CollectionDialog() {
   const [category, setCategory] = useState<Category>("pens");
+  const [page, setPage] = useState(0);
+  const [perPage, setPerPage] = useState(0);
   const [selected, setSelected] = useState<Item | null>(null);
+  const gridRef = useRef<HTMLDivElement | null>(null);
   const items = category === "pens" ? PENS : UPGRADES;
   const glow = category === "pens" ? "var(--color-shop-pen)" : "var(--color-shop-upgrade)";
   const categoryColor = category === "pens" ? "text-shop-pen" : "text-shop-upgrade";
   const label = category === "pens" ? "Pen" : "Permanent";
+  const totalPages = perPage > 0 ? Math.max(1, Math.ceil(items.length / perPage)) : 1;
+  const shownPage = Math.min(page, totalPages - 1);
+  const visible = perPage > 0 ? items.slice(shownPage * perPage, (shownPage + 1) * perPage) : [];
+
   function changeCategory(value: string) {
     if (value !== "pens" && value !== "upgrades") return;
     setSelected(null);
+    setPage(0);
     setCategory(value);
   }
+
+  // Measure how many square cards actually fit in the grid area, so every
+  // item of a page is visible at once without scrolling.
+  useLayoutEffect(() => {
+    const grid = gridRef.current;
+    if (!grid) return;
+    const measure = () => {
+      const style = getComputedStyle(grid);
+      const tracks = style.gridTemplateColumns.split(" ").filter(Boolean);
+      const cols = tracks.length;
+      const colW = parseFloat(tracks[0] ?? "0");
+      const gapRow = parseFloat(style.rowGap) || 0;
+      const rowH = colW + gapRow;
+      const rows = rowH > 0 ? Math.max(1, Math.floor((grid.clientHeight + gapRow) / rowH)) : 1;
+      setPerPage(Math.max(1, cols * rows));
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(grid);
+    return () => observer.disconnect();
+  }, []);
 
   return <Dialog onOpenChange={() => setSelected(null)}>
     <DialogTrigger asChild>
@@ -47,8 +76,8 @@ export function CollectionDialog() {
           <TabsTrigger value="upgrades">Upgrades · {UPGRADES.length}</TabsTrigger>
         </TabsList>
       </Tabs>
-      <div aria-label={category === "pens" ? "All Pens" : "All upgrades"} className="grid min-h-0 grid-cols-2 gap-3 overflow-y-auto p-1 sm:grid-cols-3 lg:grid-cols-5">
-        {items.map(item => <Button key={item.id} variant="ghost" onClick={() => setSelected(item)}
+      <div ref={gridRef} aria-label={category === "pens" ? "All Pens" : "All upgrades"} className="grid min-h-0 flex-1 grid-cols-2 gap-3 overflow-hidden p-1 sm:grid-cols-3 lg:grid-cols-5">
+        {visible.map(item => <Button key={item.id} variant="ghost" onClick={() => setSelected(item)}
           style={{ ["--glow" as string]: glow }}
           className="shop-card flex aspect-square h-auto flex-col items-center justify-between gap-2 whitespace-normal rounded-lg border-2 p-2 text-center hover:bg-transparent hover:text-foreground">
           <span className={`self-start text-[0.55rem] font-bold uppercase tracking-widest ${categoryColor}`}>{label}</span>
@@ -57,9 +86,9 @@ export function CollectionDialog() {
         </Button>)}
       </div>
       <div className="flex shrink-0 items-center justify-center gap-4">
-        <Button variant="outline" size="icon" aria-label="Previous category" disabled={category === "pens"} onClick={() => changeCategory("pens")}><ChevronLeft /></Button>
-        <span className="text-sm tabular-nums text-muted-foreground">{category === "pens" ? "1" : "2"} / 2</span>
-        <Button variant="outline" size="icon" aria-label="Next category" disabled={category === "upgrades"} onClick={() => changeCategory("upgrades")}><ChevronRight /></Button>
+        <Button variant="outline" size="icon" aria-label="Previous page" disabled={shownPage === 0} onClick={() => setPage(Math.max(0, shownPage - 1))}><ChevronLeft /></Button>
+        <span className="text-sm tabular-nums text-muted-foreground">{totalPages > 1 ? `${shownPage + 1} / ${totalPages}` : `${category === "pens" ? "1" : "2"} / 2`}</span>
+        <Button variant="outline" size="icon" aria-label="Next page" disabled={shownPage >= totalPages - 1} onClick={() => setPage(Math.min(totalPages - 1, shownPage + 1))}><ChevronRight /></Button>
       </div>
       <Dialog open={selected !== null} onOpenChange={open => { if (!open) setSelected(null); }}>
         <DialogContent className="max-h-[90dvh] max-w-xs overflow-y-auto border-0 bg-transparent p-0 shadow-none">
