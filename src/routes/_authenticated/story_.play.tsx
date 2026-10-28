@@ -1082,7 +1082,21 @@ function StoryPlay() {
           {!busy && preview && !preview.error && <span className="story-preview-tag story-preview-tag-action bg-story-valid/15 text-story-valid" title="Ink before Pens" aria-live="polite">
             <span>+{preview.ink?.toLocaleString()}</span><Droplet className="-mr-[2px] h-4 w-4" aria-label="Ink before Pens" />
           </span>}
+          {pending.length > 0 && !discardMode && (
+            <Button
+              title="Recall letters"
+              aria-label="Recall letters"
+              variant="outline"
+              size="sm"
+              className="story-recall-button"
+              disabled={busy || story.phase !== "play"}
+              onClick={recallLetters}
+            >
+              <Undo2 className="mr-1 h-4 w-4" /><span className="story-action-label">Recall Letters</span>
+            </Button>
+          )}
         </div>
+
       </footer>
 
       {compact && story.phase === "bookstore" && <div className="story-continue">
