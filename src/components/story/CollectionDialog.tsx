@@ -87,7 +87,7 @@ export function CollectionDialog() {
       </div>
       <div className="flex shrink-0 items-center justify-center gap-4">
         <Button variant="outline" size="icon" aria-label="Previous page" disabled={shownPage === 0} onClick={() => setPage(Math.max(0, shownPage - 1))}><ChevronLeft /></Button>
-        <span className="text-sm tabular-nums text-muted-foreground">{totalPages > 1 ? `${shownPage + 1} / ${totalPages}` : `${category === "pens" ? "1" : "2"} / 2`}</span>
+        <span className="text-sm tabular-nums text-muted-foreground">{shownPage + 1} / {totalPages}</span>
         <Button variant="outline" size="icon" aria-label="Next page" disabled={shownPage >= totalPages - 1} onClick={() => setPage(Math.min(totalPages - 1, shownPage + 1))}><ChevronRight /></Button>
       </div>
       <Dialog open={selected !== null} onOpenChange={open => { if (!open) setSelected(null); }}>
