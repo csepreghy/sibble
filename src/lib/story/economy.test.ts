@@ -40,7 +40,7 @@ test("buying and selling use the new Pen price", () => {
   }
 });
 
-test("Golden Payday costs 10 and pays +3", () => {
+test("Coin Upgrades costs 10 and pays +3", () => {
   assert.equal(upgradeDef("golden-payday").price, 10);
   assert.equal(GOLDEN_PAYDAY_BONUS, 3);
 });
