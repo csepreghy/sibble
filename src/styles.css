@@ -997,7 +997,6 @@ html.story-board-midnight {
 /* Phones only have room for the short wording; larger screens keep the full label. */
 .story-compact-label { display: none; }
 .story-compact .story-compact-label { display: inline; }
-.story-compact .story-actions .story-play-button .story-compact-label { display: inline; }
 /* The ink score pops in beside Play word. Its opening width is what squeezes
    Play word down, so the two animations are one continuous motion. */
 .story-compact .story-actions .story-preview-tag-action {
