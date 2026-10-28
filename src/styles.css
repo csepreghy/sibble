@@ -994,6 +994,9 @@ html.story-board-midnight {
 .story-actions.hidden { display: none; }
 .story-compact .story-actions > button { height: 44px; min-width: 44px; padding-inline: 10px; order: 1; }
 .story-compact .story-actions .story-play-button { order: -1; flex: 1; min-width: 0; }
+/* Phones only have room for the short wording; larger screens keep the full label. */
+.story-compact-label { display: none; }
+.story-compact .story-compact-label { display: inline; }
 /* The ink score pops in beside Play word. Its opening width is what squeezes
    Play word down, so the two animations are one continuous motion. */
 .story-compact .story-actions .story-preview-tag-action {

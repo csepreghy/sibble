@@ -1078,7 +1078,9 @@ function StoryPlay() {
             className="story-play-button relative tile-gloss text-base"
             onClick={playWord}
           >
-            <Play className="mr-1 h-4 w-4" /> Play word
+            <Play className="mr-1 h-4 w-4" />
+            <span className="story-compact-label">Play</span>
+            <span className="story-action-label">Play word</span>
           </Button>
           {!busy && preview && !preview.error && <span className="story-preview-tag story-preview-tag-action bg-story-valid/15 text-story-valid" title="Ink before Pens" aria-live="polite">
             <span>+{preview.ink?.toLocaleString()}</span><Droplet className="-mr-[2px] h-4 w-4" aria-label="Ink before Pens" />
