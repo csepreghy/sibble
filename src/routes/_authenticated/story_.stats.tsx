@@ -29,7 +29,7 @@ function Stat({ label, value, ink }: { label: string; value: ReactNode; ink?: bo
     <div className="rounded-xl border border-border bg-card p-4">
       <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
       <p className="mt-1 flex items-center gap-1 text-2xl font-bold">
-        {value}
+        <span className="min-w-0 break-words">{value}</span>
         {ink && <Droplet className="h-5 w-5 shrink-0 text-base-ink" aria-label="Ink" />}
       </p>
     </div>
