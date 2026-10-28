@@ -686,6 +686,8 @@ function StoryPlay() {
 
   /** Page-complete presentation: letters fly out, Coins fly/count, then the Page Complete sheet. */
   async function celebratePage(next: StoryState, rewards: PageRewards, commit: () => void) {
+    const completedConfig = PAGES[next.pageIndex];
+    if (!completedConfig) return;
     const visible = (selector: string) => [...document.querySelectorAll(selector)].find(el => el.getBoundingClientRect().width > 0);
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     // Persist now; the screen keeps showing the finished board until the Bookstore opens.
@@ -721,7 +723,7 @@ function StoryPlay() {
     soundWhoosh();
     setPageStats({
       ink: next.page.ink,
-      inkTarget: config.inkTarget,
+      inkTarget: completedConfig.inkTarget,
       words: next.page.wordsPlayed ?? 0,
       bestWordInk: next.page.bestWordInk ?? 0,
       coins: rewards.total,
