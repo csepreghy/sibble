@@ -75,9 +75,69 @@ export function newStory(): StoryState {
   return startPage(base, 0);
 }
 
+/** Royalties: +1 Coin per full 10% of Ink above the target, capped at 5. Exact integer comparisons. */
+export const ROYALTY_MAX = 5;
+export function royaltyCoins(ink: number, target: number): number {
+  if (target <= 0 || ink < target) return 0;
+  for (let k = ROYALTY_MAX; k >= 1; k--) if (ink * 10 >= target * (10 + k)) return k;
+  return 0;
+}
+
+/** Ink needed for the next Royalty Coin, or null once the maximum is earned. */
+export function nextRoyaltyThreshold(ink: number, target: number): number | null {
+  const current = royaltyCoins(ink, target);
+  if (current >= ROYALTY_MAX) return null;
+  return Math.ceil((target * (11 + current)) / 10);
+}
+
+export interface PageRewards {
+  base: number;
+  royalties: number;
+  goldenPayday: number;
+  total: number;
+}
+
+export function pageRewards(state: StoryState): PageRewards {
+  const config = PAGES[state.pageIndex]!;
+  const base = config.coins;
+  const royalties = royaltyCoins(state.page.ink, config.inkTarget);
+  const goldenPayday = state.upgrades.includes("golden-payday") ? GOLDEN_PAYDAY_BONUS : 0;
+  return { base, royalties, goldenPayday, total: base + royalties + goldenPayday };
+}
+
+/** True once the Page's Ink target is met during play: the Page can no longer be lost. */
+export function pageSecured(state: StoryState): boolean {
+  return state.phase === "play" && state.page.ink >= PAGES[state.pageIndex]!.inkTarget;
+}
+
+export interface FinishResult {
+  state: StoryState;
+  storyWon: boolean;
+  rewards: PageRewards;
+}
+
+/** Completes a secured Page once, granting its Coins. Returns an error if already finished or not secured. */
+export function finishPage(state: StoryState): FinishResult | { error: string } {
+  if (!pageSecured(state)) return { error: "This Page can't be finished yet." };
+  const rewards = pageRewards(state);
+  const storyWon = state.pageIndex === LAST_PAGE_INDEX;
+  const next: StoryState = {
+    ...state,
+    coins: state.coins + rewards.total,
+    pagesCompleted: state.pagesCompleted + 1,
+    phase: storyWon ? "victory" : "bookstore",
+    offers: storyWon ? null : generateOffers(state),
+  };
+  next.completedPages = [...(state.completedPages ?? []).filter(page => page.pageIndex !== state.pageIndex), snapshotPage(next, rewards.total)];
+  return { state: next, storyWon, rewards };
+}
+
 export interface PlayResult {
   state: StoryState;
   score: PlacementScore;
+  /** target met (now or earlier) but the Page is still open for more words */
+  secured: boolean;
+  rewards: PageRewards | null;
   pageCompleted: boolean;
   storyWon: boolean;
   defeated: boolean;
@@ -140,20 +200,15 @@ export function playPlacement(
       state.bestWord,
     ) ?? state.bestWord;
 
-  const pageCompleted = ink >= config.inkTarget;
-  const storyWon = pageCompleted && state.pageIndex === LAST_PAGE_INDEX;
-  const defeated = !pageCompleted && wordsLeft <= 0;
-  const coinReward = pageCompleted
-    ? config.coins + (state.upgrades.includes("golden-payday") ? GOLDEN_PAYDAY_BONUS : 0)
-    : 0;
+  const secured = ink >= config.inkTarget;
+  const pageCompleted = secured && wordsLeft <= 0;
+  const defeated = !secured && wordsLeft <= 0;
 
-  const next: StoryState = {
+  const played: StoryState = {
     ...state,
     pens,
     totalInk: state.totalInk + score.totalInk,
     bestWord,
-    coins: state.coins + coinReward,
-    pagesCompleted: pageCompleted ? state.pagesCompleted + 1 : state.pagesCompleted,
     page: {
       ...state.page,
       board,
@@ -167,14 +222,16 @@ export function playPlacement(
       playedWords: [...(state.page.playedWords ?? []), ...score.words.map(word => ({ ...word, move: (state.page.wordsPlayed ?? 0) + 1 }))],
       usedPremiums,
     },
-    phase: storyWon ? "victory" : defeated ? "defeat" : pageCompleted ? "bookstore" : "play",
-    offers: pageCompleted && !storyWon ? generateOffers({ ...state, pens }) : null,
+    phase: defeated ? "defeat" : "play",
+    offers: null,
   };
 
   if (pageCompleted) {
-    next.completedPages = [...(state.completedPages ?? []).filter(page => page.pageIndex !== state.pageIndex), snapshotPage(next, coinReward)];
+    const finished = finishPage(played);
+    if ("error" in finished) throw new Error(finished.error);
+    return { state: finished.state, score, secured, rewards: finished.rewards, pageCompleted, storyWon: finished.storyWon, defeated, coinReward: finished.rewards.total };
   }
-  return { state: next, score, pageCompleted, storyWon, defeated, coinReward };
+  return { state: played, score, secured, rewards: null, pageCompleted, storyWon: false, defeated, coinReward: 0 };
 }
 
 /** Discards 1–3 (or 4 with Flexible Fingers) rack tiles and draws replacements. */
