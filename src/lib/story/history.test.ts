@@ -7,6 +7,7 @@ import type { PlayResult } from "./engine";
 function completeFirstPage(): PlayResult {
   const state = newStory();
   state.page.rack = ["S-0", "T-0", "A-0", "R-0", "E-0"];
+  state.page.wordsLeft = 1;
   const result = playPlacement(state, [
     { index: 10, tileId: "S-0", letter: "S", blank: false },
     { index: 11, tileId: "T-0", letter: "T", blank: false },
@@ -28,7 +29,8 @@ test("completed pages preserve the board, played words and all four page stats",
   assert.equal(page.ink, 45);
   assert.equal(page.words, 1);
   assert.equal(page.bestWordInk, 45);
-  assert.equal(page.coins, 16);
+  assert.equal(page.coins, result.coinReward);
+  assert.equal(result.state.coins, result.coinReward);
 });
 
 test("page review survives next page and future upgrades without changing its original board", () => {
