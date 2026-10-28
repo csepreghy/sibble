@@ -6,7 +6,11 @@ export interface PageStats {
   ink: number;
   words: number;
   bestWordInk: number;
+  /** total Coins credited — always base + royalties + Golden Payday */
   coins: number;
+  base?: number;
+  royalties?: number;
+  goldenPayday?: number;
 }
 
 /** Shown once when a Page's Ink target is reached, before the Bookstore. */
@@ -16,6 +20,11 @@ export function PageCompleteDialog({ stats, onClose }: { stats: PageStats; onClo
     { icon: PenLine, label: "Words played", value: String(stats.words), color: "text-shop-pen" },
     { icon: Crown, label: "Best word", value: `${stats.bestWordInk.toLocaleString()} Ink`, color: "text-mult-ink" },
     { icon: Coins, label: "Coins earned", value: `+${stats.coins}`, color: "text-gold" },
+  ];
+  const breakdown = [
+    { label: "Base reward", value: stats.base ?? stats.coins },
+    { label: "Royalties", value: stats.royalties ?? 0 },
+    ...(stats.goldenPayday ? [{ label: "Golden Payday", value: stats.goldenPayday }] : []),
   ];
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
@@ -29,6 +38,16 @@ export function PageCompleteDialog({ stats, onClose }: { stats: PageStats; onClo
               <p className="text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{row.label}</p>
             </div>
           ))}
+        </div>
+        <div className="rounded-lg bg-secondary/70 p-3 text-sm">
+          {breakdown.map((row) => (
+            <div key={row.label} className="flex justify-between text-muted-foreground">
+              <span>{row.label}</span><span className="font-bold tabular-nums text-gold">+{row.value}</span>
+            </div>
+          ))}
+          <div className="mt-1 flex justify-between border-t border-border pt-1 font-bold">
+            <span>Total earned</span><span className="tabular-nums text-gold">+{stats.coins}</span>
+          </div>
         </div>
         <Button size="lg" className="w-full" onClick={onClose}>
           Visit the Bookstore
