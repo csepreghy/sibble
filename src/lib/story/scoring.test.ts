@@ -210,11 +210,11 @@ test("First Edition only for a 5+ letter first word", () => {
 test("Longform gains +3 per 5+ word, applying only to later words", () => {
   const r = score({ word: "STARE", pens: ["longform"], bonuses: { longform: 0 } });
   assert.equal(r.totalInk, 45);
-  assert.equal(r.penGains.longform, 3);
+  assert.equal(r.penGains["longform"], 3);
   assert.equal(score({ word: "STARE", pens: ["longform"], bonuses: { longform: 6 } }).totalInk, 5 * 15);
   assert.equal(score({ word: "COAT", pens: ["longform"], bonuses: { longform: 6 } }).totalInk, 30);
   const re = score({ word: "STARE", pens: ["longform", "linguist"], bonuses: { longform: 3 }, longest: 0 });
-  assert.equal(re.penGains.longform, 3);
+  assert.equal(re.penGains["longform"], 3);
   assert.equal(re.totalInk, 5 * 15); // 9 + 3 + 3 (retrigger)
 });
 
