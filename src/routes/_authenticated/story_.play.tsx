@@ -18,6 +18,7 @@ import {
   Settings,
   Gauge,
   Undo2,
+  Flag,
 
   Volume2,
   VolumeX,
@@ -32,8 +33,14 @@ import {
   continueToNextPage,
   discardTiles,
   newStory,
+  finishPage,
+  nextRoyaltyThreshold,
+  pageSecured,
   playPlacement,
+  royaltyCoins,
+  ROYALTY_MAX,
   sellPen,
+  type PageRewards,
 } from "@/lib/story/engine";
 import { inspectPlacement } from "@/lib/story/preview";
 import { reorderPens } from "@/lib/story/pens";
@@ -182,6 +189,7 @@ function StoryPlay() {
   const [lastError, setLastError] = useState<string | null>(null);
   const [shopEntering, setShopEntering] = useState(false);
   const pendingCommit = useRef<(() => void) | null>(null);
+  const finishing = useRef(false);
   const [soundOn, setSoundOn] = useState(true);
   useEffect(() => setSoundOn(loadStorySound()), []);
   const toggleSound = () => { const v = !soundOn; saveStorySound(v); setSoundOn(v); if (v) unlockStorySound(); };
@@ -663,47 +671,8 @@ function StoryPlay() {
       setCoinBonus(0);
     };
 
-    if (result.pageCompleted && !result.storyWon) {
-      // Persist now; the screen keeps showing the finished board until the Bookstore opens.
-      saveStory(result.state);
-      const reward = result.coinReward;
-      const flightsDone = reduced ? null : flyLettersOut();
-      // Restore the original empty squares underneath the presentation-only flights.
-      // The completed board remains untouched in the saved run and Page history.
-      setLettersExited(true);
-      // Once the word outline has faded (600ms), drop it from the render entirely so
-      // later re-renders can't bring it back over the emptied board.
-      if (reduced) setOutlineGone(true);
-      else window.setTimeout(() => setOutlineGone(true), 600);
-      if (reward > 0) {
-        const from = visible(".story-current-score")?.getBoundingClientRect();
-        const to = visible(".story-play-coins")?.getBoundingClientRect();
-        if (from && to && !reduced) {
-          const x = from.left + from.width / 2, y = from.top + from.height / 2;
-          setCoinFlight({ id: ++flightId.current, amount: reward, x, y, dx: to.left + to.width / 2 - x, dy: to.top + to.height / 2 - y });
-          await new Promise((resolve) => setTimeout(resolve, 900));
-          setCoinFlight(null);
-        }
-        if (cancelAnim.current) return;
-        const coinsEl = visible(".story-play-coins");
-        if (coinsEl) impactBox(coinsEl);
-        soundCoin();
-        setCoinBonus(reward);
-        const countMs = scaled(totalCountDuration(reward));
-        soundCount(countMs);
-        await new Promise((resolve) => setTimeout(resolve, countMs + 100));
-      }
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      if (flightsDone) await flightsDone;
-      if (cancelAnim.current) return;
-      pendingCommit.current = commit;
-      soundWhoosh();
-      setPageStats({
-        ink: result.state.page.ink,
-        words: result.state.page.wordsPlayed ?? 0,
-        bestWordInk: result.state.page.bestWordInk ?? 0,
-        coins: result.coinReward,
-      });
+    if (result.pageCompleted && !result.storyWon && result.rewards) {
+      await celebratePage(result.state, result.rewards, commit);
       return;
     }
 
@@ -713,6 +682,79 @@ function StoryPlay() {
     } else if (result.defeated) {
       toast.error("Out of words — the Story ends here.");
     }
+  }
+
+  /** Page-complete presentation: letters fly out, Coins fly/count, then the Page Complete sheet. */
+  async function celebratePage(next: StoryState, rewards: PageRewards, commit: () => void) {
+    const visible = (selector: string) => [...document.querySelectorAll(selector)].find(el => el.getBoundingClientRect().width > 0);
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Persist now; the screen keeps showing the finished board until the Bookstore opens.
+    saveStory(next);
+    const reward = rewards.total;
+    const flightsDone = reduced ? null : flyLettersOut();
+    // Restore the original empty squares underneath the presentation-only flights.
+    setLettersExited(true);
+    if (reduced) setOutlineGone(true);
+    else window.setTimeout(() => setOutlineGone(true), 600);
+    if (reward > 0) {
+      const from = visible(".story-current-score")?.getBoundingClientRect();
+      const to = visible(".story-play-coins")?.getBoundingClientRect();
+      if (from && to && !reduced) {
+        const x = from.left + from.width / 2, y = from.top + from.height / 2;
+        setCoinFlight({ id: ++flightId.current, amount: reward, x, y, dx: to.left + to.width / 2 - x, dy: to.top + to.height / 2 - y });
+        await new Promise((resolve) => setTimeout(resolve, 900));
+        setCoinFlight(null);
+      }
+      if (cancelAnim.current) return;
+      const coinsEl = visible(".story-play-coins");
+      if (coinsEl) impactBox(coinsEl);
+      soundCoin();
+      setCoinBonus(reward);
+      const countMs = scaled(totalCountDuration(reward));
+      soundCount(countMs);
+      await new Promise((resolve) => setTimeout(resolve, countMs + 100));
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    if (flightsDone) await flightsDone;
+    if (cancelAnim.current) return;
+    pendingCommit.current = commit;
+    soundWhoosh();
+    setPageStats({
+      ink: next.page.ink,
+      words: next.page.wordsPlayed ?? 0,
+      bestWordInk: next.page.bestWordInk ?? 0,
+      coins: rewards.total,
+      base: rewards.base,
+      royalties: rewards.royalties,
+      goldenPayday: rewards.goldenPayday,
+    });
+  }
+
+  /** Finish a secured Page early; the engine rejects repeats, the ref blocks double clicks. */
+  async function handleFinishPage() {
+    if (!story || busy || finishing.current) return;
+    const result = finishPage(story);
+    if ("error" in result) return;
+    finishing.current = true;
+    let stats = recordPageCompleted(loadStoryStats(), result.state.pageIndex, result.state.page.ink);
+    if (result.storyWon) stats = recordStoryEnded(stats, result.state, true);
+    saveStoryStats(stats);
+    const commit = () => {
+      setStory(result.state);
+      setPending([]);
+      setAnim(IDLE_ANIM);
+      setLettersExited(false);
+      setCoinBonus(0);
+      finishing.current = false;
+    };
+    if (result.storyWon) {
+      commit();
+      toast.success("Story complete!");
+      return;
+    }
+    setPending([]);
+    setAnim({ ...IDLE_ANIM, running: true });
+    await celebratePage(result.state, result.rewards, commit);
   }
 
   /** Presentation only: clones every board letter and flies it off to the right on a curve, one letter at a time. */
@@ -840,6 +882,9 @@ function StoryPlay() {
     setStory({ ...story, phase: "defeat" });
   }
 
+  // Royalties only show once victory is secured and the scoring sequence has finished.
+  const secured = !busy && pageSecured(story);
+  const royalty = secured ? { coins: royaltyCoins(story.page.ink, config.inkTarget), next: nextRoyaltyThreshold(story.page.ink, config.inkTarget) } : null;
   const showIntro = story.phase === "play" && introDismissed !== story.pageIndex;
   const showEnd = story.phase === "victory" || story.phase === "defeat";
 
@@ -894,6 +939,7 @@ function StoryPlay() {
             <div className="story-hud-block"><span>Words left</span><strong className="text-base-ink">{story.page.wordsLeft}</strong></div>
             <div className="story-hud-block"><span>Discards left</span><strong className="text-mult-ink">{story.page.discardsLeft}</strong></div>
             <div className="story-hud-block story-hud-wide"><span>Coins</span><span className="story-play-coins flex items-center gap-2 font-black tabular-nums text-gold"><Coins className="h-6 w-6 shrink-0" /><CountNumber value={story.coins + coinBonus} running={coinBonus > 0} growToTotal byDelta /></span></div>
+            {royalty && <div className="story-hud-block story-hud-wide story-royalty"><span>Royalties</span><RoyaltyText {...royalty} /></div>}
             <div className="story-hud-block"><span>Chapter</span><strong>{config.chapter}</strong></div>
             <div className="story-hud-block"><span>Page</span><strong>{config.page}</strong></div>
             <div className="story-hud-block story-hud-wide story-hud-meta"><span>{config.size}×{config.size} board</span>
@@ -980,6 +1026,7 @@ function StoryPlay() {
             {compact && <>
             <span className="story-play-coins flex items-center gap-1 text-3xl font-black tabular-nums text-gold"><Coins className="h-6 w-6 shrink-0" /><CountNumber value={story.coins + coinBonus} running={coinBonus > 0} growToTotal byDelta /></span>
             <div className="story-remaining-counters"><span>Words left <strong className="text-xl tabular-nums text-base-ink">{story.page.wordsLeft}</strong></span><span>Discards left <strong className="text-xl tabular-nums text-mult-ink">{story.page.discardsLeft}</strong></span></div>
+            {royalty && <span className="story-royalty-compact"><RoyaltyText {...royalty} compact /></span>}
             </>}
             <span className="story-preview-tag-slot story-error-slot" data-error="true" data-open={!busy && !!preview?.error ? "true" : "false"} aria-hidden={!(!busy && preview?.error)}>
               <span className="story-error-inner">
@@ -1082,6 +1129,11 @@ function StoryPlay() {
             <span className="story-compact-label">Play</span>
             <span className="story-action-label">Play word</span>
           </Button>
+          {secured && pending.length === 0 && !discardMode && (
+            <Button size="sm" className="story-finish-button relative tile-gloss bg-gold text-background hover:bg-gold/90" disabled={busy} onClick={handleFinishPage}>
+              <Flag className="mr-1 h-4 w-4" /><span>Finish Page</span>
+            </Button>
+          )}
           {!busy && preview && !preview.error && <span className="story-preview-tag story-preview-tag-action bg-story-valid/15 text-story-valid" title="Ink before Pens" aria-live="polite">
             <span>+{preview.ink?.toLocaleString()}</span><Droplet className="-mr-[2px] h-4 w-4" aria-label="Ink before Pens" />
           </span>}
@@ -1185,5 +1237,19 @@ function StoryPlay() {
         );
       })() : null}
     </div>
+  );
+}
+
+/** "+3 Coins · next 1,680" — secondary, gold, no per-threshold effects. */
+function RoyaltyText({ coins, next, compact }: { coins: number; next: number | null; compact?: boolean }) {
+  const max = coins >= ROYALTY_MAX;
+  return (
+    <span className="flex min-w-0 flex-col leading-tight" title={next ? `Next Royalty at ${next.toLocaleString()} Ink` : "Maximum Royalties earned"}>
+      <span className="flex items-center gap-1 font-black tabular-nums text-gold">
+        {compact && <span className="text-[0.65rem] font-bold uppercase tracking-wide text-muted-foreground">Royalties</span>}
+        <Coins className="h-4 w-4 shrink-0" />+{coins}{max ? " MAX" : ""}
+      </span>
+      {next && <span className="text-[0.65rem] font-semibold text-muted-foreground tabular-nums">Next: {next.toLocaleString()} Ink</span>}
+    </span>
   );
 }
