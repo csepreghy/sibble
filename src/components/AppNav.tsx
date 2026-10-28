@@ -3,7 +3,7 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { LogOut, Play, History, ChartNoAxesCombined, User, Users, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import { ThemeSelector } from "@/components/ThemeSelector";
+import { MenuSettings } from "@/components/MenuSettings";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useSession } from "@/hooks/useSession";
@@ -101,7 +101,7 @@ export function AppNav({ showSignOut = true }: { showSignOut?: boolean }) {
             </Link>
           </Button>
         ))}
-        <ThemeSelector />
+        <MenuSettings story={story} />
       </nav>
       {showSignOut ? <SignOutButton /> : null}
     </>
