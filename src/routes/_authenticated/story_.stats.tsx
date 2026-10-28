@@ -28,9 +28,9 @@ function Stat({ label, value, ink }: { label: string; value: ReactNode; ink?: bo
   return (
     <div className="rounded-xl border border-border bg-card p-4">
       <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
-      <p className="mt-1 flex items-center gap-1 text-2xl font-bold">
-        <span className="min-w-0 break-words">{value}</span>
-        {ink && <Droplet className="h-5 w-5 shrink-0 text-base-ink" aria-label="Ink" />}
+      <p className="mt-1 break-words text-2xl font-bold">
+        {value}
+        {ink && <Droplet className="ml-1 inline h-5 w-5 shrink-0 align-[-3px] text-base-ink" aria-label="Ink" />}
       </p>
     </div>
   );
