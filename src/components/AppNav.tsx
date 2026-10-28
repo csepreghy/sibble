@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { LogOut, Play, History, ChartNoAxesCombined, User, Users, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { MenuSettings } from "@/components/MenuSettings";
+import { CollectionDialog } from "@/components/story/CollectionDialog";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useSession } from "@/hooks/useSession";
@@ -67,7 +68,7 @@ export function AppNav({ showSignOut = true }: { showSignOut?: boolean }) {
 
   return (
     <>
-      <nav aria-label={story ? "Story menu" : "Multiplayer menu"} className="flex max-w-full items-center justify-center gap-1 sm:gap-2">
+      <nav aria-label={story ? "Story menu" : "Multiplayer menu"} className="flex max-w-full flex-wrap items-center justify-center gap-1 sm:gap-2">
         {story && !hasRun ? (
           <Button size="sm" variant="story" disabled={start.isPending || !userId} className="h-10 px-3 text-sm sm:px-5" onClick={startStory}>
             <Play /> Play
@@ -101,6 +102,7 @@ export function AppNav({ showSignOut = true }: { showSignOut?: boolean }) {
             </Link>
           </Button>
         ))}
+        {story && <CollectionDialog />}
         <MenuSettings story={story} />
       </nav>
       {showSignOut ? <SignOutButton /> : null}
