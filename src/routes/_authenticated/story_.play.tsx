@@ -1147,7 +1147,7 @@ function StoryPlay() {
               disabled={busy || story.phase !== "play"}
               onClick={recallLetters}
             >
-              <Undo2 className="mr-1 h-4 w-4" /><span className="story-action-label">Recall Letters</span>
+              <Undo2 className="h-4 w-4" />
             </Button>
           )}
         </div>
