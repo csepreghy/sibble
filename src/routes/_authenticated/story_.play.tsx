@@ -868,7 +868,10 @@ function StoryPlay() {
   }
 
   function startNewStory() {
-    if (!window.confirm("Start a new Story? This replaces your current Story.")) return;
+    // A finished run has nothing left to lose, so "Start a new Story" from the
+    // Story Over sheet begins immediately; mid-run it still asks first.
+    const finished = story.phase === "victory" || story.phase === "defeat";
+    if (!finished && !window.confirm("Start a new Story? This replaces your current Story.")) return;
     const fresh = newStory();
     saveStoryStats(recordStoryStarted(loadStoryStats()));
     setStory(fresh);
@@ -877,6 +880,7 @@ function StoryPlay() {
     setIntroDismissed(-1);
     setDialog(null);
   }
+
 
   function endStory() {
     if (!story) return;
