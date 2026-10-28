@@ -45,7 +45,7 @@ export function CollectionDialog() {
   // Measure how many square cards actually fit in the grid area, so every
   // item of a page is visible at once without scrolling.
   useLayoutEffect(() => {
-    const grid = gridRef.current;
+    const grid = gridEl;
     if (!grid) return;
     const measure = () => {
       const style = getComputedStyle(grid);
@@ -61,7 +61,7 @@ export function CollectionDialog() {
     const observer = new ResizeObserver(measure);
     observer.observe(grid);
     return () => observer.disconnect();
-  }, []);
+  }, [gridEl]);
 
   return <Dialog onOpenChange={() => setSelected(null)}>
     <DialogTrigger asChild>
@@ -76,7 +76,7 @@ export function CollectionDialog() {
           <TabsTrigger value="upgrades">Upgrades · {UPGRADES.length}</TabsTrigger>
         </TabsList>
       </Tabs>
-      <div ref={gridRef} aria-label={category === "pens" ? "All Pens" : "All upgrades"} className="grid min-h-0 flex-1 grid-cols-2 gap-3 overflow-hidden p-1 sm:grid-cols-3 lg:grid-cols-5">
+      <div ref={setGridEl} aria-label={category === "pens" ? "All Pens" : "All upgrades"} className="grid min-h-0 flex-1 grid-cols-2 gap-3 overflow-hidden p-1 sm:grid-cols-3 lg:grid-cols-5">
         {visible.map(item => <Button key={item.id} variant="ghost" onClick={() => setSelected(item)}
           style={{ ["--glow" as string]: glow }}
           className="shop-card flex aspect-square h-auto flex-col items-center justify-between gap-2 whitespace-normal rounded-lg border-2 p-2 text-center hover:bg-transparent hover:text-foreground">
