@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Medal } from "lucide-react";
+import type { ReactNode } from "react";
+import { Droplet, Medal } from "lucide-react";
 import { AppNav } from "@/components/AppNav";
 import { BrandLogo } from "@/components/BrandLogo";
 import { loadStoryStats, topLetters } from "@/lib/story/stats";
-import { PAGES } from "@/lib/story/boards";
 
 export const Route = createFileRoute("/_authenticated/story_/stats")({
   head: () => ({
@@ -23,11 +23,15 @@ export const Route = createFileRoute("/_authenticated/story_/stats")({
   component: StoryStats,
 });
 
-function Stat({ label, value }: { label: string; value: string | number }) {
+/** A record card. `ink` puts the Ink drop beside the number. */
+function Stat({ label, value, ink }: { label: string; value: ReactNode; ink?: boolean }) {
   return (
     <div className="rounded-xl border border-border bg-card p-4">
       <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
-      <p className="mt-1 text-2xl font-bold">{value}</p>
+      <p className="mt-1 flex items-center gap-1 text-2xl font-bold">
+        {value}
+        {ink && <Droplet className="h-5 w-5 shrink-0 text-base-ink" aria-label="Ink" />}
+      </p>
     </div>
   );
 }
@@ -40,7 +44,6 @@ const MEDALS = [GOLD, SILVER, BRONZE] as const;
 function StoryStats() {
   const [stats] = useState(() => loadStoryStats());
   const top = topLetters(stats, 3);
-  const bestPage = stats.bestPage ? PAGES[stats.bestPage.pageIndex] : null;
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-12">
@@ -59,9 +62,8 @@ function StoryStats() {
           <section className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <Stat label="Stories started" value={stats.storiesStarted} />
             <Stat label="Stories won" value={stats.storiesWon} />
-            <Stat label="Stories lost" value={stats.storiesLost} />
             <Stat label="Pages completed" value={stats.pagesCompleted} />
-            <Stat label="Total Ink" value={stats.totalInk.toLocaleString()} />
+            <Stat label="Total Ink" value={stats.totalInk.toLocaleString()} ink />
             <Stat label="Words played" value={stats.wordsPlayed} />
             <Stat
               label="Longest word"
@@ -69,15 +71,13 @@ function StoryStats() {
             />
             <Stat
               label="Best single word"
-              value={stats.bestWord ? `${stats.bestWord.word} · ${stats.bestWord.ink}` : "—"}
+              value={stats.bestWord ? `${stats.bestWord.word} · ${stats.bestWord.ink.toLocaleString()}` : "—"}
+              ink
             />
             <Stat
               label="Highest page score"
-              value={
-                stats.bestPage && bestPage
-                  ? `${stats.bestPage.ink} · Ch. ${bestPage.chapter} p. ${bestPage.page}`
-                  : "—"
-              }
+              value={stats.bestPage ? stats.bestPage.ink.toLocaleString() : "—"}
+              ink
             />
           </section>
 
