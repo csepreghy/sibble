@@ -1015,7 +1015,25 @@ html.story-board-midnight {
   55% { max-width: var(--tag-pop-w); opacity: 1; transform: scale(1.06); }
   100% { max-width: var(--tag-pop-w); padding-inline: var(--tag-pop-pad); opacity: 1; transform: scale(1); }
 }
-.story-compact .story-action-label { display: none; }
+/* Recall Letters only exists while letters sit on the board, so it pops in the
+   same fixed 360ms way as the ink tag and never scales with animation speed. */
+.story-recall-button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  --tag-pop-w: 190px;
+  --tag-pop-pad: 12px;
+  animation: story-tag-pop 360ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+/* The shared 44px button floor would hold it open at zero width, so the phone
+   variant starts truly closed and lands on a 44px tap target. */
+.story-compact .story-actions > button.story-recall-button {
+  order: 0;
+  min-width: 0;
+  --tag-pop-w: 44px;
+  --tag-pop-pad: 14px;
+}
+
 .story-compact .story-actions svg { margin: 0; }
 .story-shopping.story-compact .story-workspace { flex: 1 1 0; min-height: 0; }
 .story-shopping.story-compact .story-main { min-height: 0; overflow: hidden; align-items: stretch; justify-content: stretch; }
