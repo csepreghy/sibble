@@ -1051,6 +1051,8 @@ html.story-board-midnight {
 @media (prefers-reduced-motion: reduce) {
   .anim-tile-bump, .anim-score-pop, .shop-card-live { animation: none; }
   .story-compact .story-actions .story-preview-tag-action { animation: none; }
+  .story-recall-button { animation: none; }
+
 }
 
 /* The actual board supplies its own frame. Keep the centre layout footprint
@@ -1117,6 +1119,8 @@ html.story-board-midnight {
   .story-screen[data-layout="desktop"] .story-actions button { height: 46px; padding-inline: 16px; font-size: 16px; }
   .story-screen[data-layout="desktop"] .story-actions .story-play-button { height: 52px; font-size: 18px; }
   .story-screen[data-layout="desktop"] .story-preview-tag-action { height: 52px; padding-inline: 16px; font-size: 18px; --tag-pop-w: 170px; --tag-pop-pad: 16px; }
+  .story-screen[data-layout="desktop"] .story-actions > button.story-recall-button { --tag-pop-w: 210px; --tag-pop-pad: 16px; }
+
   .story-screen[data-layout="desktop"] .story-actions svg { width: 20px; height: 20px; }
   .story-screen[data-layout="desktop"] .story-play-coins { font-size: 36px; line-height: 36px; }
   .story-screen[data-layout="desktop"] .story-sidebar-counters { font-size: 20px; }
