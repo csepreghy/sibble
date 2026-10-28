@@ -17,6 +17,8 @@ import {
   Trash2,
   Settings,
   Gauge,
+  Undo2,
+
   Volume2,
   VolumeX,
   Smartphone,
@@ -302,6 +304,24 @@ function StoryPlay() {
     setSelectedRackId(null);
     setPending(current => current.filter(item => item.tileId !== placement.tileId));
   }
+
+  function recallLetters() {
+    if (busy || !story || story.phase !== "play" || discardMode || pending.length === 0) return;
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      // Measure every square before the board re-renders: each clone must cover
+      // its own cell the moment the letter leaves it.
+      const flights = pending.flatMap((placement) => {
+        const cell = document.querySelector(`[data-story-board] [data-cell-index="${placement.index}"]`);
+        const from = cell?.getBoundingClientRect();
+        if (!from) return [];
+        return [{ tileId: placement.tileId, from: { left: from.left, top: from.top, width: from.width, height: from.height } }];
+      });
+      setReturningTiles(current => [...current, ...flights]);
+    }
+    setSelectedRackId(null);
+    setPending([]);
+  }
+
 
   function beginDrag(event: React.PointerEvent, tileId: string, letter: string, blank: boolean, source: DragSource) {
     if (busy || story?.phase !== "play" || discardMode) return;
