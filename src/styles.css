@@ -1030,9 +1030,11 @@ html.story-board-midnight {
 .story-compact .story-actions > button.story-recall-button {
   order: 0;
   min-width: 0;
+  padding-inline: 14px;
   --tag-pop-w: 44px;
   --tag-pop-pad: 14px;
 }
+
 
 .story-compact .story-action-label { display: none; }
 .story-compact .story-actions svg { margin: 0; }
