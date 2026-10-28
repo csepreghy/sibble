@@ -1,5 +1,5 @@
 import { soundPop } from "@/lib/story/sound";
-import { wordLengthMult } from "@/lib/story/scoring";
+import { wordLengthMult, wordLengthStep } from "@/lib/story/scoring";
 import { ArrowRight, CheckCircle2, Coins, Menu, Sparkles, Star } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { LETTER_VALUES } from "@/lib/scrabble";

@@ -253,6 +253,7 @@ function StoryPlay() {
       plotTwist: config.plotTwist, letterUpgrades: story.letterUpgrades,
       wordLengthUpgrades: story.wordLengthUpgrades, pens: story.pens,
       longestThisPage: story.page.longestWord,
+      firstMoveOfPage: (story.page.wordsPlayed ?? 0) === 0,
     }, w => words.has(w));
   }, [story, config, words, pending]);
   // Keep the last message mounted while it animates out.
