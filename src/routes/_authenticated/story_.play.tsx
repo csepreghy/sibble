@@ -17,6 +17,8 @@ import {
   Trash2,
   Settings,
   Gauge,
+  Undo2,
+
   Volume2,
   VolumeX,
   Smartphone,
@@ -302,6 +304,24 @@ function StoryPlay() {
     setSelectedRackId(null);
     setPending(current => current.filter(item => item.tileId !== placement.tileId));
   }
+
+  function recallLetters() {
+    if (busy || !story || story.phase !== "play" || discardMode || pending.length === 0) return;
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      // Measure every square before the board re-renders: each clone must cover
+      // its own cell the moment the letter leaves it.
+      const flights = pending.flatMap((placement) => {
+        const cell = document.querySelector(`[data-story-board] [data-cell-index="${placement.index}"]`);
+        const from = cell?.getBoundingClientRect();
+        if (!from) return [];
+        return [{ tileId: placement.tileId, from: { left: from.left, top: from.top, width: from.width, height: from.height } }];
+      });
+      setReturningTiles(current => [...current, ...flights]);
+    }
+    setSelectedRackId(null);
+    setPending([]);
+  }
+
 
   function beginDrag(event: React.PointerEvent, tileId: string, letter: string, blank: boolean, source: DragSource) {
     if (busy || story?.phase !== "play" || discardMode) return;
@@ -1062,7 +1082,21 @@ function StoryPlay() {
           {!busy && preview && !preview.error && <span className="story-preview-tag story-preview-tag-action bg-story-valid/15 text-story-valid" title="Ink before Pens" aria-live="polite">
             <span>+{preview.ink?.toLocaleString()}</span><Droplet className="-mr-[2px] h-4 w-4" aria-label="Ink before Pens" />
           </span>}
+          {pending.length > 0 && !discardMode && (
+            <Button
+              title="Recall letters"
+              aria-label="Recall letters"
+              variant="outline"
+              size="sm"
+              className="story-recall-button"
+              disabled={busy || story.phase !== "play"}
+              onClick={recallLetters}
+            >
+              <Undo2 className="mr-1 h-4 w-4" /><span className="story-action-label">Recall Letters</span>
+            </Button>
+          )}
         </div>
+
       </footer>
 
       {compact && story.phase === "bookstore" && <div className="story-continue">
