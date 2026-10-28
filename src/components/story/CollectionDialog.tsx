@@ -26,7 +26,7 @@ export function CollectionDialog() {
   const [page, setPage] = useState(0);
   const [perPage, setPerPage] = useState(0);
   const [selected, setSelected] = useState<Item | null>(null);
-  const gridRef = useRef<HTMLDivElement | null>(null);
+  const [gridEl, setGridEl] = useState<HTMLDivElement | null>(null);
   const items = category === "pens" ? PENS : UPGRADES;
   const glow = category === "pens" ? "var(--color-shop-pen)" : "var(--color-shop-upgrade)";
   const categoryColor = category === "pens" ? "text-shop-pen" : "text-shop-upgrade";
