@@ -721,6 +721,7 @@ function StoryPlay() {
     soundWhoosh();
     setPageStats({
       ink: next.page.ink,
+      inkTarget: config.inkTarget,
       words: next.page.wordsPlayed ?? 0,
       bestWordInk: next.page.bestWordInk ?? 0,
       coins: rewards.total,
@@ -939,7 +940,7 @@ function StoryPlay() {
             <div className="story-hud-block"><span>Words left</span><strong className="text-base-ink">{story.page.wordsLeft}</strong></div>
             <div className="story-hud-block"><span>Discards left</span><strong className="text-mult-ink">{story.page.discardsLeft}</strong></div>
             <div className="story-hud-block story-hud-wide"><span>Coins</span><span className="story-play-coins flex items-center gap-2 font-black tabular-nums text-gold"><Coins className="h-6 w-6 shrink-0" /><CountNumber value={story.coins + coinBonus} running={coinBonus > 0} growToTotal byDelta /></span></div>
-            {royalty && <div className="story-hud-block story-hud-wide story-royalty"><span>Royalties</span><RoyaltyText {...royalty} /></div>}
+            {royalty && <div className="story-hud-block story-hud-wide story-royalty"><span>Page Bonus</span><RoyaltyText {...royalty} /></div>}
             <div className="story-hud-block"><span>Chapter</span><strong>{config.chapter}</strong></div>
             <div className="story-hud-block"><span>Page</span><strong>{config.page}</strong></div>
             <div className="story-hud-block story-hud-wide story-hud-meta"><span>{config.size}×{config.size} board</span>
@@ -1244,9 +1245,9 @@ function StoryPlay() {
 function RoyaltyText({ coins, next, compact }: { coins: number; next: number | null; compact?: boolean }) {
   const max = coins >= ROYALTY_MAX;
   return (
-    <span className="flex min-w-0 flex-col leading-tight" title={next ? `Next Royalty at ${next.toLocaleString()} Ink` : "Maximum Royalties earned"}>
+    <span className="flex min-w-0 flex-col leading-tight" title={next ? `Next Page Bonus at ${next.toLocaleString()} Ink` : "Maximum Page Bonus earned"}>
       <span className="flex items-center gap-1 font-black tabular-nums text-gold">
-        {compact && <span className="text-[0.65rem] font-bold uppercase tracking-wide text-muted-foreground">Royalties</span>}
+        {compact && <span className="text-[0.65rem] font-bold uppercase tracking-wide text-muted-foreground">Page Bonus</span>}
         <Coins className="h-4 w-4 shrink-0" />+{coins}{max ? " MAX" : ""}
       </span>
       {next && <span className="text-[0.65rem] font-semibold text-muted-foreground tabular-nums">Next: {next.toLocaleString()} Ink</span>}

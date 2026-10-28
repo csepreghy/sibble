@@ -15,7 +15,7 @@ export const UPGRADES: UpgradeDef[] = [
   { id: "bargain-hunter", name: "Bargain Hunter", icon: "BadgePercent", price: 10, description: "Bookstore prices are 20% lower." },
   { id: "extra-shelf", name: "Extra Shelf", icon: "LibraryBig", price: 12, description: "+1 Pen slot." },
   { id: "flexible-fingers", name: "Flexible Fingers", icon: "Hand", price: 8, description: "Discard up to 4 tiles instead of 3." },
-  { id: "golden-payday", name: "Golden Payday", icon: "Coins", price: 10, description: "+3 Coins after each successful future Page." },
+  { id: "golden-payday", name: "Coin Upgrades", icon: "Coins", price: 10, description: "+3 Coins after each successful future Page." },
 ];
 
 export function upgradeDef(id: string): UpgradeDef {

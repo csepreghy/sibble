@@ -1,12 +1,15 @@
 import { Coins, Crown, Droplet, PenLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { ROYALTY_MAX } from "@/lib/story/engine";
+import { pageExcessPercent } from "@/lib/story/reward-presentation";
 
 export interface PageStats {
   ink: number;
+  inkTarget: number;
   words: number;
   bestWordInk: number;
-  /** total Coins credited — always base + royalties + Golden Payday */
+  /** Total Coins credited — always Page Reward + Page Bonus + Coin Upgrades. */
   coins: number;
   base?: number;
   royalties?: number;
@@ -22,9 +25,9 @@ export function PageCompleteDialog({ stats, onClose }: { stats: PageStats; onClo
     { icon: Coins, label: "Coins earned", value: `+${stats.coins}`, color: "text-gold" },
   ];
   const breakdown = [
-    { label: "Base reward", value: stats.base ?? stats.coins },
-    { label: "Royalties", value: stats.royalties ?? 0 },
-    ...(stats.goldenPayday ? [{ label: "Golden Payday", value: stats.goldenPayday }] : []),
+    { label: "Page Reward", value: stats.base ?? stats.coins },
+    { label: `Page Bonus (+${pageExcessPercent(stats.ink, stats.inkTarget).toLocaleString(undefined, { maximumFractionDigits: 2 })}%)`, value: stats.royalties ?? 0, max: (stats.royalties ?? 0) >= ROYALTY_MAX },
+    ...(stats.goldenPayday ? [{ label: "Coin Upgrades", value: stats.goldenPayday }] : []),
   ];
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
@@ -42,11 +45,11 @@ export function PageCompleteDialog({ stats, onClose }: { stats: PageStats; onClo
         <div className="rounded-lg bg-secondary/70 p-3 text-sm">
           {breakdown.map((row) => (
             <div key={row.label} className="flex justify-between text-muted-foreground">
-              <span>{row.label}</span><span className="font-bold tabular-nums text-gold">+{row.value}</span>
+              <span>{row.label}</span><span className="font-bold tabular-nums text-gold">+{row.value}{"max" in row && row.max ? " (max)" : ""}</span>
             </div>
           ))}
           <div className="mt-1 flex justify-between border-t border-border pt-1 font-bold">
-            <span>Total earned</span><span className="tabular-nums text-gold">+{stats.coins}</span>
+            <span>Total</span><span className="tabular-nums text-gold">{stats.coins} Coins</span>
           </div>
         </div>
         <Button size="lg" className="w-full" onClick={onClose}>
