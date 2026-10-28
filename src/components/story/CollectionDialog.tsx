@@ -67,7 +67,7 @@ export function CollectionDialog() {
     <DialogTrigger asChild>
       <Button variant="secondary" size="sm" className="h-10 px-2 text-sm sm:px-4"><Library className="hidden sm:block" /> Collection</Button>
     </DialogTrigger>
-    <DialogContent className="flex max-h-[90dvh] w-[calc(100%-2rem)] max-w-3xl flex-col gap-4 overflow-hidden">
+    <DialogContent className="flex h-[85dvh] max-h-[90dvh] w-[calc(100%-2rem)] max-w-3xl flex-col gap-4 overflow-hidden">
       <DialogTitle>Collection</DialogTitle>
       <DialogDescription className="sr-only">All Story Pens and permanent upgrades.</DialogDescription>
       <Tabs value={category} onValueChange={changeCategory}>
