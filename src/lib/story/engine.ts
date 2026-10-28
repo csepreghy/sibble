@@ -5,7 +5,7 @@ import { validateStoryMove } from "./placement";
 import { scorePlacement, type PlacementScore } from "./scoring";
 import type { Offer, PageState, PendingPlacement, StoryState, StoryTile } from "./types";
 import { PENS } from "./pens";
-import { UPGRADES, discardsPerPage, penSlots, priceFor, rackCapacity } from "./upgrades";
+import { GOLDEN_PAYDAY_BONUS, UPGRADES, discardsPerPage, penSlots, priceFor, rackCapacity } from "./upgrades";
 import { snapshotPage } from "./history";
 
 const DISTRIBUTION: Record<string, number> = {
@@ -107,6 +107,7 @@ export function playPlacement(
     wordLengthUpgrades: state.wordLengthUpgrades,
     pens: state.pens,
     longestThisPage: state.page.longestWord,
+    firstMoveOfPage: (state.page.wordsPlayed ?? 0) === 0,
   });
 
   // Commit tiles to the board.
@@ -143,7 +144,7 @@ export function playPlacement(
   const storyWon = pageCompleted && state.pageIndex === LAST_PAGE_INDEX;
   const defeated = !pageCompleted && wordsLeft <= 0;
   const coinReward = pageCompleted
-    ? config.coins + (state.upgrades.includes("golden-payday") ? 2 : 0)
+    ? config.coins + (state.upgrades.includes("golden-payday") ? GOLDEN_PAYDAY_BONUS : 0)
     : 0;
 
   const next: StoryState = {
@@ -193,6 +194,7 @@ export function discardTiles(state: StoryState, tileIds: string[]): StoryState |
 
 // --- Bookstore -----------------------------------------------------------
 
+export const WORD_LENGTH_PRICE = 7;
 const ENHANCEMENT_PRICES = { DL: 6, TL: 9, DW: 12, TW: 16 } as const;
 
 /** Longest word-length upgrade offered, based on the next Page's board. */
@@ -222,7 +224,7 @@ export function generateOffers(state: Pick<StoryState, "tiles" | "pens" | "upgra
   offers.push({ kind: "enhancement", enhancement, price: ENHANCEMENT_PRICES[enhancement], sold: false });
 
   const length = 2 + Math.floor(Math.random() * (maxOfferLength(state.pageIndex) - 1));
-  offers.push({ kind: "word-length", length, price: 5, sold: false });
+  offers.push({ kind: "word-length", length, price: WORD_LENGTH_PRICE, sold: false });
 
   const ownedPens = new Set(state.pens.map((pen) => pen.penId));
   const penPool = PENS.filter((pen) => !ownedPens.has(pen.id));

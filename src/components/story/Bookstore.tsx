@@ -1,5 +1,5 @@
 import { soundPop } from "@/lib/story/sound";
-import { wordLengthMult } from "@/lib/story/scoring";
+import { wordLengthMult, wordLengthStep } from "@/lib/story/scoring";
 import { ArrowRight, CheckCircle2, Coins, Menu, Sparkles, Star } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { LETTER_VALUES } from "@/lib/scrabble";
@@ -23,7 +23,7 @@ const UPGRADE_SHORT: Record<string, string> = {
   "bargain-hunter": "20% off the Bookstore.",
   "extra-shelf": "+1 Pen slot.",
   "flexible-fingers": "Discard up to 4 tiles.",
-  "golden-payday": "+2 Coins per Page.",
+  "golden-payday": "+3 Coins per Page.",
 };
 const ENH_SHORT = { DL: "×2 letter Base.", TL: "×3 letter Base.", DW: "×2 Word Mult.", TW: "×3 Word Mult." };
 const ENH_FULL = {
@@ -86,7 +86,7 @@ function shortText(offer: Offer, state: StoryState): ReactNode {
     }
     case "word-length": {
       const m = lengthMult(offer, state);
-      return `Mult ×${m} → ×${m + 1}.`;
+      return `Mult ×${m} → ×${m + wordLengthStep(offer.length)}.`;
     }
     case "enhancement":
       return ENH_SHORT[offer.enhancement];
@@ -103,7 +103,8 @@ function fullText(offer: Offer, state: StoryState): ReactNode {
       return <>Every {offer.letter} tile permanently scores <span className="text-base-ink">+1</span> Base Ink.</>;
     case "word-length": {
       const m = lengthMult(offer, state);
-      return `Words of exactly ${offer.length} letters start with +1 Mult (×${m} → ×${m + 1}) for the rest of this Story.`;
+      const step = wordLengthStep(offer.length);
+      return `Current Mult: ×${m}. Upgrade: +${step} Mult. After purchase: ×${m + step}. Applies to words of exactly ${offer.length} letters for the rest of this Story.`;
     }
     case "enhancement":
       return `${ENH_FULL[offer.enhancement]} You'll choose which letter it lands on.`;
@@ -130,7 +131,7 @@ export function OfferVisual({ offer, state, large, small }: { offer: Offer; stat
       return (
         <span className={cn("flex flex-col items-center justify-center rounded-md border border-shop-length/50 bg-shop-length/10 font-bold text-mult-ink", box)}>
           <span className={large ? "text-2xl leading-none" : "text-lg leading-none"}>{offer.length}</span>
-          <span className="text-[0.6rem] leading-none">×{lengthMult(offer, state) + 1}</span>
+          <span className="text-[0.6rem] leading-none">×{lengthMult(offer, state) + wordLengthStep(offer.length)}</span>
         </span>
       );
     case "enhancement": {
@@ -317,7 +318,7 @@ export function BookstoreSummary({ state, onContinue, onOpenRunInfo }: { state: 
         </p>
         <p className="mt-2 text-xs text-muted-foreground">Reward</p>
         <p className="flex items-center justify-center gap-1 text-lg font-bold text-gold">
-          +{done.coins + (state.upgrades.includes("golden-payday") ? 2 : 0)} <Coins className="h-4 w-4" />
+          +{done.coins + (state.upgrades.includes("golden-payday") ? 3 : 0)} <Coins className="h-4 w-4" />
         </p>
       </div>
       <ScoreBoxes />

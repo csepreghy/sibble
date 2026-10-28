@@ -15,7 +15,7 @@ export const UPGRADES: UpgradeDef[] = [
   { id: "bargain-hunter", name: "Bargain Hunter", icon: "BadgePercent", price: 10, description: "Bookstore prices are 20% lower." },
   { id: "extra-shelf", name: "Extra Shelf", icon: "LibraryBig", price: 12, description: "+1 Pen slot." },
   { id: "flexible-fingers", name: "Flexible Fingers", icon: "Hand", price: 8, description: "Discard up to 4 tiles instead of 3." },
-  { id: "golden-payday", name: "Golden Payday", icon: "Coins", price: 14, description: "+2 additional Coins when completing future Pages." },
+  { id: "golden-payday", name: "Golden Payday", icon: "Coins", price: 10, description: "+3 Coins after each successful future Page." },
 ];
 
 export function upgradeDef(id: string): UpgradeDef {
@@ -32,3 +32,5 @@ export const discardLimit = (upgrades: string[]) => (hasUpgrade(upgrades, "flexi
 export const penSlots = (upgrades: string[]) => 5 + (hasUpgrade(upgrades, "extra-shelf") ? 1 : 0);
 export const priceFor = (upgrades: string[], price: number) =>
   hasUpgrade(upgrades, "bargain-hunter") ? Math.floor(price * 0.8) : price;
+
+export const GOLDEN_PAYDAY_BONUS = 3;

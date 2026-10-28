@@ -1,3 +1,4 @@
+import { GOLDEN_PAYDAY_BONUS } from "./upgrades";
 import type { CompletedPage, StoryState } from "./types";
 import { PAGES } from "./boards";
 
@@ -23,7 +24,7 @@ export function restorePageHistory(state: StoryState): StoryState {
   const config = PAGES[state.pageIndex];
   if (config && (state.phase === "bookstore" || state.phase === "victory") &&
       !completedPages.some(page => page.pageIndex === state.pageIndex)) {
-    return { ...state, completedPages: [...completedPages, snapshotPage(state, config.coins + (state.upgrades.includes("golden-payday") ? 2 : 0))] };
+    return { ...state, completedPages: [...completedPages, snapshotPage(state, config.coins + (state.upgrades.includes("golden-payday") ? GOLDEN_PAYDAY_BONUS : 0))] };
   }
   return { ...state, completedPages };
 }
