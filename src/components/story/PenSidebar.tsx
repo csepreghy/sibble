@@ -9,6 +9,16 @@ import {
   Library,
   PenLine,
   Zap,
+  Newspaper,
+  BookText,
+  Droplets,
+  BookA,
+  Repeat,
+  Type,
+  ScrollText,
+  Gem,
+  Award,
+  Copy,
   type LucideIcon,
 } from "lucide-react";
 import { penDef } from "@/lib/story/pens";
@@ -34,6 +44,16 @@ const ICONS: Record<string, LucideIcon> = {
   Library,
   Zap,
   GraduationCap,
+  Newspaper,
+  BookText,
+  Droplets,
+  BookA,
+  Repeat,
+  Type,
+  ScrollText,
+  Gem,
+  Award,
+  Copy,
 };
 
 export function penIcon(id: string): LucideIcon {

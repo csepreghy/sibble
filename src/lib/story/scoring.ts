@@ -11,8 +11,12 @@ const WORD_LENGTH_MULT: Record<number, number> = {
   2: 2, 3: 3, 4: 5, 5: 9, 6: 16, 7: 28, 8: 45, 9: 70, 10: 105, 11: 154, 12: 220, 13: 308, 14: 420, 15: 560,
 };
 export const baseWordMult = (length: number) => WORD_LENGTH_MULT[length] ?? length;
+/** Each purchased upgrade adds a fixed 20% of the original starting Mult, rounded up (never compounds). */
+export const wordLengthStep = (length: number) => Math.ceil(baseWordMult(length) * 0.2);
 export const wordLengthMult = (length: number, upgrades: Record<number, number>) =>
-  baseWordMult(length) + (upgrades[length] ?? 0);
+  baseWordMult(length) + (upgrades[length] ?? 0) * wordLengthStep(length);
+
+export const RARE_LETTERS = new Set(["J", "Q", "X", "Z"]);
 
 export const VOWELS = new Set(["A", "E", "I", "O", "U"]);
 
@@ -66,6 +70,8 @@ export function scorePlacement(args: {
   wordLengthUpgrades: Record<number, number>;
   pens: PenInstance[];
   longestThisPage: number;
+  /** true when no word has been scored on this Page yet (First Edition) */
+  firstMoveOfPage?: boolean;
 }): PlacementScore {
   const {
     words,
@@ -92,7 +98,7 @@ export function scorePlacement(args: {
   let longest = args.longestThisPage;
   let totalInk = 0;
 
-  for (const storyWord of words) {
+  for (const [wordIndex, storyWord] of words.entries()) {
     const letters: LetterContext[] = storyWord.indices.map((index) => {
       const placed = pendingByIndex.get(index);
       if (placed) {
@@ -120,7 +126,12 @@ export function scorePlacement(args: {
 
     const length = letters.length;
     const setsRecord = length > longest;
-    const linguist = hasPen("linguist") && setsRecord;
+    const linguist = hasPen("linguist") && setsRecord && length >= 4;
+    const newCount = letters.filter((l) => l.isNew).length;
+    const reusedCount = length - newCount;
+    const distinct = new Set(letters.map((l) => l.letter)).size;
+    const hasRepeat = distinct < length;
+    const firstWord = !!args.firstMoveOfPage && wordIndex === 0;
     // The Linguist re-triggers the other pens once; scaling pens don't gain twice.
     const penRuns = linguist ? 2 : 1;
 
@@ -214,6 +225,28 @@ export function scorePlacement(args: {
           events.push({ type: "pen-base", penId: "echo-chamber", text: `+${extra} Base`, runningBase: base });
         }
       }
+      if (hasPen("rare-talent")) {
+        let extra = 0;
+        for (const letter of letters) {
+          if (letter.blank || !RARE_LETTERS.has(letter.letter)) continue;
+          if (plotTwist === "silent-consonants") continue;
+          const raw = (LETTER_VALUES[letter.letter] ?? 0) + (letterUpgrades[letter.letter] ?? 0);
+          let factor = 1;
+          if (letter.enhancement === "DL") factor *= 2;
+          if (letter.enhancement === "TL") factor *= 3;
+          if (letter.boardPremium === "DL") factor *= 2;
+          if (letter.boardPremium === "TL") factor *= 3;
+          extra += raw * factor * 2;
+        }
+        if (extra > 0) {
+          base += extra;
+          events.push({ type: "pen-base", penId: "rare-talent", text: `+${extra} Base`, runningBase: base });
+        }
+      }
+      if (hasPen("fresh-ink") && length >= 4 && newCount > 0) {
+        base += 4 * newCount;
+        events.push({ type: "pen-base", penId: "fresh-ink", text: `+${4 * newCount} Base`, runningBase: base });
+      }
     }
 
     if (plotTwist === "fading-ink") {
@@ -253,6 +286,14 @@ export function scorePlacement(args: {
           runningMult: mult,
         });
       }
+      if (hasPen("typesetter") && length >= 4 && newCount > 0) {
+        mult += 5 * newCount;
+        events.push({ type: "pen-mult", penId: "typesetter", text: `+${5 * newCount} Mult`, runningMult: mult });
+      }
+      if (hasPen("longform") && length >= 5 && penBonus("longform") > 0) {
+        mult += penBonus("longform");
+        events.push({ type: "pen-mult", penId: "longform", text: `+${penBonus("longform")} Mult`, runningMult: mult });
+      }
     }
 
     // DW/TW: permanent tile enhancements + newly activated board squares.
@@ -290,6 +331,16 @@ export function scorePlacement(args: {
         mult *= 3;
         events.push({ type: "pen-mult", penId: "architect", text: "×3 Mult", runningMult: mult });
       }
+      const times = (penId: string, factor: number) => {
+        mult *= factor;
+        events.push({ type: "pen-mult", penId, text: `×${factor} Mult`, runningMult: mult });
+      };
+      if (hasPen("columnist") && length === 4) times("columnist", 3);
+      if (hasPen("novelist") && length === 5) times("novelist", 4);
+      if (hasPen("lexicographer") && length >= 4 && !hasRepeat) times("lexicographer", 2);
+      if (hasPen("double-trouble") && length >= 4 && hasRepeat) times("double-trouble", 2);
+      if (hasPen("rewriter") && length >= 4 && reusedCount >= 2) times("rewriter", 2);
+      if (hasPen("first-edition") && firstWord && length >= 5) times("first-edition", 3);
     }
 
     if (linguist) {
@@ -304,6 +355,9 @@ export function scorePlacement(args: {
     // --- Post-scoring gains --------------------------------------------
     if (hasPen("growing-vocabulary") && length === 5) {
       penGains["growing-vocabulary"] = (penGains["growing-vocabulary"] ?? 0) + 1;
+    }
+    if (hasPen("longform") && length >= 5) {
+      penGains["longform"] = (penGains["longform"] ?? 0) + 3;
     }
     if (length > longest) longest = length;
   }
@@ -329,6 +383,7 @@ export function previewPlacement(
   pens: PenInstance[],
   words: StoryWord[],
 ): number {
+  const firstMoveOfPage = (page.wordsPlayed ?? 0) === 0;
   return scorePlacement({
     words,
     size,
@@ -342,5 +397,6 @@ export function previewPlacement(
     wordLengthUpgrades,
     pens,
     longestThisPage: page.longestWord,
+    firstMoveOfPage,
   }).totalInk;
 }

@@ -83,12 +83,12 @@ export const PAGES: PageConfig[] = [
   { chapter: 1, page: 1, plotTwist: null, size: 5, inkTarget: 30, words: 2, coins: 16, premiums: premiumsFor(5) },
   { chapter: 1, page: 2, plotTwist: null, size: 7, inkTarget: 130, words: 3, coins: 18, premiums: premiumsFor(7) },
   { chapter: 1, page: 3, plotTwist: "silent-vowels", size: 7, inkTarget: 90, words: 3, coins: 20, premiums: premiumsFor(7) },
-  { chapter: 2, page: 1, plotTwist: null, size: 9, inkTarget: 500, words: 4, coins: 22, premiums: premiumsFor(9) },
-  { chapter: 2, page: 2, plotTwist: null, size: 11, inkTarget: 1200, words: 4, coins: 24, premiums: premiumsFor(11) },
-  { chapter: 2, page: 3, plotTwist: "silent-consonants", size: 11, inkTarget: 400, words: 4, coins: 26, premiums: premiumsFor(11) },
-  { chapter: 3, page: 1, plotTwist: null, size: 13, inkTarget: 3000, words: 5, coins: 28, premiums: premiumsFor(13) },
-  { chapter: 3, page: 2, plotTwist: null, size: 15, inkTarget: 7000, words: 5, coins: 30, premiums: premiumsFor(15) },
-  { chapter: 3, page: 3, plotTwist: "fading-ink", size: 15, inkTarget: 4000, words: 5, coins: 32, premiums: premiumsFor(15) },
+  { chapter: 2, page: 1, plotTwist: null, size: 9, inkTarget: 600, words: 4, coins: 22, premiums: premiumsFor(9) },
+  { chapter: 2, page: 2, plotTwist: null, size: 11, inkTarget: 1400, words: 4, coins: 24, premiums: premiumsFor(11) },
+  { chapter: 2, page: 3, plotTwist: "silent-consonants", size: 11, inkTarget: 450, words: 4, coins: 26, premiums: premiumsFor(11) },
+  { chapter: 3, page: 1, plotTwist: null, size: 13, inkTarget: 3500, words: 5, coins: 28, premiums: premiumsFor(13) },
+  { chapter: 3, page: 2, plotTwist: null, size: 15, inkTarget: 8500, words: 5, coins: 30, premiums: premiumsFor(15) },
+  { chapter: 3, page: 3, plotTwist: "fading-ink", size: 15, inkTarget: 5000, words: 5, coins: 32, premiums: premiumsFor(15) },
 ];
 
 export const LAST_PAGE_INDEX = PAGES.length - 1;
