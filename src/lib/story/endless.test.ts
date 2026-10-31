@@ -90,6 +90,10 @@ test("Bookstore Discount costs 85 before applying, then discounts subsequent pur
   const run=buy(startPage(enterEndless(win()),9),"bookstore-discount");assert.equal(run.coins,915);
   assert.equal(priceFor(run.upgrades,85),68);assert.equal(priceFor(["bargain-hunter","bookstore-discount"],100),64);
 });
+test("Endless retains nine offers after every one-time Upgrade and Pen is owned",()=>{
+  const run = { ...enterEndless(win()), upgrades: UPGRADES.map(u=>u.id), pens: PENS.map(p=>({penId:p.id,bonus:0})) };
+  assert.equal(generateOffers(run).length,9);
+});
 
 interface Spec {word?:string; pen:string; existing?:number[]; enh?:Record<number,Enhancement>; premium?:boolean; edge?:boolean; wordsLeft?:number; discards?:number; lengths?:number[]; chapters?:number; twist?:PlotTwist; retrigger?:boolean; cross?:boolean}
 function score(s:Spec){

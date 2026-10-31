@@ -306,6 +306,14 @@ export function generateOffers(state: Pick<StoryState, "tiles" | "pens" | "upgra
   for (const pen of pickRandom(penPool.filter(p => !offers.some(o => o.kind === "pen" && o.penId === p.id)), shopOfferCount(state.upgrades) - 7)) {
     offers.push({ kind: "pen", penId: pen.id, price: pen.price, sold: false });
   }
+  // Endless can exhaust the one-time Upgrade pool; keep all purchased shelf capacity useful.
+  if (state.endless) {
+    while (offers.length < shopOfferCount(state.upgrades)) {
+      const letter = pickRandom(letters, 1)[0];
+      if (!letter) break;
+      offers.push({ kind: "letter", letter, price: 3, sold: false });
+    }
+  }
   return offers;
 }
 
