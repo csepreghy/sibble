@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppNav } from "@/components/AppNav";
 import { BrandLogo } from "@/components/BrandLogo";
+import { compactNumber } from "@/lib/story/format";
 import { loadStoryStats } from "@/lib/story/stats";
 import { loadStory } from "@/lib/story/storage";
 import { getPage } from "@/lib/story/boards";
@@ -61,7 +62,7 @@ function StoryHistory() {
                     {page.words} {page.words === 1 ? "word" : "words"} · best word {page.bestWordInk} Ink
                   </p>
                 </div>
-                <p className="font-bold">{page.ink} Ink</p>
+                <p className="font-bold">{compactNumber(page.ink)} Ink</p>
               </div>
             );
           })}
@@ -77,14 +78,14 @@ function StoryHistory() {
               className="flex items-center justify-between rounded-lg border border-border bg-card p-4 text-sm"
             >
               <div>
-                <p className="font-semibold">{story.result === "victory" ? "Story complete!" : "Story ended"}</p>
+                <p className="font-semibold">{story.endlessChapter ? `Story won · Endless Chapter ${story.endlessChapter}` : story.result === "victory" ? "Story complete!" : "Story ended"}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {whenText(story.endedAt)} · {story.pagesCompleted}{" "}
                   {story.pagesCompleted === 1 ? "page" : "pages"} completed
                   {story.bestWord ? ` · best word ${story.bestWord.word} (${story.bestWord.ink})` : ""}
                 </p>
               </div>
-              <p className="font-bold">{story.totalInk} Ink</p>
+              <p className="font-bold">{compactNumber(story.totalInk)} Ink</p>
             </div>
           ))}
         </section>

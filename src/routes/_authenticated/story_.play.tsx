@@ -30,6 +30,7 @@ import { LETTER_VALUES } from "@/lib/scrabble";
 import { getPage, TWIST_INFO, pageLabel } from "@/lib/story/boards";
 import {
   buyOffer,
+  enterEndless,
   continueToNextPage,
   discardTiles,
   newStory,
@@ -52,7 +53,7 @@ import { ItemPurchaseFlight, type ItemPurchaseFlightData } from "@/components/st
 import { CountNumber, RoundScore, ScoreBoxes, impactBox } from "@/components/story/ScoreDisplay";
 import { loadStorySound, saveStorySound, soundCoin, soundConfetti, soundCount, soundHit, soundSlam, soundWhoosh, unlockStorySound } from "@/lib/story/sound";
 import { loadStory, saveStory } from "@/lib/story/storage";
-import { loadStoryStats, recordPageCompleted, recordStoryEnded, recordStoryStarted, recordWordsPlayed, saveStoryStats } from "@/lib/story/stats";
+import { recordEndlessProgress, loadStoryStats, recordPageCompleted, recordStoryEnded, recordStoryStarted, recordWordsPlayed, saveStoryStats } from "@/lib/story/stats";
 import { useStoryLayout } from "@/hooks/useStoryLayout";
 import { useStoryTheme } from "@/hooks/useStoryTheme";
 import { getStorySpeed, nextStorySpeed, scaled, setStorySpeed } from "@/lib/story/speed";
@@ -237,6 +238,7 @@ function StoryPlay() {
 
   useEffect(() => {
     saveStory(story);
+    if (story?.endless) saveStoryStats(recordEndlessProgress(loadStoryStats(), story));
   }, [story]);
 
   useEffect(() => {
@@ -730,6 +732,7 @@ function StoryPlay() {
       base: rewards.base,
       royalties: rewards.royalties,
       goldenPayday: rewards.goldenPayday,
+      loyalty: rewards.loyalty ?? 0,
     });
   }
 
@@ -884,6 +887,25 @@ function StoryPlay() {
   }
 
 
+  function handleEnterEndless() {
+    if (!story) return;
+    const next = enterEndless(story);
+    if (next === story) return;
+    saveStoryStats(recordEndlessProgress(recordStoryEnded(loadStoryStats(), story, true), { ...next, pageIndex: 9 }));
+    saveStory(next);
+    setStory(next);
+    setPending([]);
+  }
+
+  function handleFinishStory() {
+    if (!story) return;
+    saveStoryStats(recordStoryEnded(loadStoryStats(), story, true));
+    const finished = { ...story, completionDismissed: true };
+    saveStory(finished);
+    setStory(finished);
+    navigate({ to: "/story" });
+  }
+
   function endStory() {
     if (!story) return;
     if (!window.confirm("End this Story? Your run will be over.")) return;
@@ -908,7 +930,7 @@ function StoryPlay() {
       {(compact || story.phase === "bookstore") && <header className={cn("story-hud", !compact && "!min-h-0 !max-w-none px-3 pt-3")}>
         <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
           <div className="min-w-0">
-            <p className="truncate text-xs font-bold text-muted-foreground">Chapter {config.chapter} · Page {config.page}{story.phase === "bookstore" ? " · Complete!" : ""}</p>
+            <p className="truncate text-xs font-bold text-muted-foreground">{story.endless ? "Endless · " : ""}Chapter {config.chapter} · Page {config.page}{story.phase === "bookstore" ? " · Complete!" : ""}</p>
             {twist && story.phase === "play" && <Popover><PopoverTrigger asChild><Button variant="ghost" size="sm" className="h-5 max-w-full justify-start px-0 text-xs text-accent hover:bg-transparent hover:text-accent" aria-label="Plot Twist rules"><Info className="h-3 w-3" />{twist.name}</Button></PopoverTrigger><PopoverContent><p className="font-bold">{twist.name}</p><p>{twist.description}</p></PopoverContent></Popover>}
             {story.phase === "bookstore" && <p className="text-xl font-bold">The Bookstore</p>}
           </div>
@@ -1172,7 +1194,7 @@ function StoryPlay() {
       </div>}
       {/* Dialogs */}
       {showIntro ? <PageIntroDialog state={story} onStart={() => setIntroDismissed(story.pageIndex)} /> : null}
-      {showEnd ? <StoryEndDialog state={story} won={story.phase === "victory"} onNewStory={startNewStory} /> : null}
+      {showEnd ? <StoryEndDialog state={story} won={story.phase === "victory"} onNewStory={startNewStory} onEnterEndless={handleEnterEndless} onFinishStory={handleFinishStory} /> : null}
       {pageStats ? <PageCompleteDialog stats={pageStats} onClose={visitBookstore} /> : null}
       {coinFlight && <span key={coinFlight.id} className="story-coin-flight text-gold" style={{ left: coinFlight.x, top: coinFlight.y, ["--dx" as string]: `${coinFlight.dx}px`, ["--dy" as string]: `${coinFlight.dy}px` }}>+{coinFlight.amount}</span>}
       {dialog?.kind === "run-info" ? <RunInfoDialog state={story} onClose={() => setDialog(null)} /> : null}

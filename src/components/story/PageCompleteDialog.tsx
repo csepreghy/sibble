@@ -1,3 +1,4 @@
+import { compactNumber } from "@/lib/story/format";
 import { Coins, Crown, Droplet, PenLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -14,19 +15,21 @@ export interface PageStats {
   base?: number;
   royalties?: number;
   goldenPayday?: number;
+  loyalty?: number;
 }
 
 /** Shown once when a Page's Ink target is reached, before the Bookstore. */
 export function PageCompleteDialog({ stats, onClose }: { stats: PageStats; onClose: () => void }) {
   const rows = [
-    { icon: Droplet, label: "Ink scored", value: stats.ink.toLocaleString(), color: "text-base-ink" },
+    { icon: Droplet, label: "Ink scored", value: compactNumber(stats.ink), color: "text-base-ink" },
     { icon: PenLine, label: "Words played", value: String(stats.words), color: "text-shop-pen" },
-    { icon: Crown, label: "Best word", value: `${stats.bestWordInk.toLocaleString()} Ink`, color: "text-mult-ink" },
+    { icon: Crown, label: "Best word", value: `${compactNumber(stats.bestWordInk)} Ink`, color: "text-mult-ink" },
     { icon: Coins, label: "Coins earned", value: `+${stats.coins}`, color: "text-gold" },
   ];
   const breakdown = [
     { label: "Page Reward", value: stats.base ?? stats.coins },
     { label: `Page Bonus (+${pageExcessPercent(stats.ink, stats.inkTarget).toLocaleString(undefined, { maximumFractionDigits: 2 })}%)`, value: stats.royalties ?? 0, max: (stats.royalties ?? 0) >= ROYALTY_MAX },
+    ...(stats.loyalty ? [{ label: "Loyalty Card", value: stats.loyalty }] : []),
     ...(stats.goldenPayday ? [{ label: "Coin Upgrades", value: stats.goldenPayday }] : []),
   ];
   return (

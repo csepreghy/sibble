@@ -47,7 +47,7 @@ export function CountNumber({ value, running, growToTotal = false, byDelta = fal
     return () => { cancelAnimationFrame(frame); growth?.cancel(); };
   }, [value, running, growToTotal, byDelta]);
   const exact = shown.toLocaleString(undefined, { maximumFractionDigits: 1 });
-  return <strong ref={number} className="inline-block" title={compact ? value.toLocaleString() : undefined}>{compact ? compactNumber(shown) : exact}</strong>;
+  return <strong ref={number} className="inline-block" title={compact ? value.toLocaleString() : undefined}>{compact || Math.abs(shown) >= 100000 ? compactNumber(shown) : exact}</strong>;
 }
 
 export function ScoreBoxes({ base = 0, mult = 0, running = false, baseDelta, multDelta, baseHidden, multHidden, popKey = 0, growToTotal = false, compact = false }: {
@@ -83,7 +83,7 @@ export function RoundScore({ target, current, running = false, compact = false, 
   return <div className="story-round-score tabular-nums">
     <div className="story-target-score tile-gloss">
       <span className="text-xs">{targetLabel}</span>
-      <span className="flex items-center justify-center gap-1.5 text-3xl font-bold"><strong className="font-bold" title={compact ? target.toLocaleString() : undefined}>{compact ? compactNumber(target) : target.toLocaleString()}</strong><Droplet className="h-5 w-5 shrink-0" aria-label="Ink" /></span>
+      <span className="flex items-center justify-center gap-1.5 text-3xl font-bold"><strong className="font-bold" title={compact ? target.toLocaleString() : undefined}>{compact || target >= 100000 ? compactNumber(target) : target.toLocaleString()}</strong><Droplet className="h-5 w-5 shrink-0" aria-label="Ink" /></span>
     </div>
     <span className="story-score-times" aria-hidden="true">/</span>
     <div className="story-current-score tile-gloss">

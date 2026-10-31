@@ -7,8 +7,8 @@ const KEY = "sibble:story:stats:v1";
 const HISTORY_LIMIT = 20;
 
 export interface FinishedStory {
-  runId?: string;
-  endlessChapter?: number;
+  runId?: string | undefined;
+  endlessChapter?: number | undefined;
   endedAt: string; // ISO date
   result: "victory" | "defeat";
   pagesCompleted: number;

@@ -1,3 +1,4 @@
+import { compactNumber } from "@/lib/story/format";
 import { wordLengthMult } from "@/lib/story/scoring";
 import { Coins, Home, Sparkles } from "lucide-react";
 import { useState } from "react";
@@ -52,7 +53,7 @@ export function PageIntroDialog({
           <div className="flex gap-4">
             <div className="rounded-lg bg-secondary/70 px-3 py-2 text-center">
               <p className="text-xs text-muted-foreground">Ink to beat</p>
-              <p className="text-lg font-bold text-base-ink">{config.inkTarget}</p>
+              <p className="text-lg font-bold text-base-ink">{compactNumber(config.inkTarget)}</p>
             </div>
             <div className="rounded-lg bg-secondary/70 px-3 py-2 text-center">
               <p className="text-xs text-muted-foreground">Words</p>
@@ -476,7 +477,7 @@ function StoryStats({ state }: { state: StoryState }) {
     <div className="grid grid-cols-2 gap-2 text-center text-sm">
       <div className="rounded-lg bg-secondary/70 px-3 py-2">
         <p className="text-xs text-muted-foreground">Total Story Ink</p>
-        <p className="text-lg font-bold text-base-ink">{state.totalInk.toLocaleString()}</p>
+        <p className="text-lg font-bold text-base-ink">{compactNumber(state.totalInk)}</p>
       </div>
       <div className="rounded-lg bg-secondary/70 px-3 py-2">
         <p className="text-xs text-muted-foreground">Best word</p>
@@ -500,34 +501,44 @@ export function StoryEndDialog({
   state,
   won,
   onNewStory,
+  onEnterEndless,
+  onFinishStory,
 }: {
   state: StoryState;
   won: boolean;
   onNewStory: () => void;
+  onEnterEndless: () => void;
+  onFinishStory: () => void;
 }) {
   const config = getPage(state.pageIndex);
+  const choice = won && !state.endless && !state.completionDismissed;
   return (
     <Dialog open>
-      <DialogContent className="max-w-md" onInteractOutside={(e) => e.preventDefault()}>
+      <DialogContent className="story-sheet-up max-w-md" showCloseButton={false} onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-2xl">
             {won ? (
               <>
-                <Sparkles className="h-6 w-6 text-primary" /> Story Complete!
+                <Sparkles className="h-6 w-6 text-primary" /> {choice ? "THE END." : "Story Complete!"}
               </>
             ) : (
-              <>Story Over</>
+              <>{state.endless ? "Endless Over — Story Won!" : "Story Over"}</>
             )}
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
             {won
-              ? "You survived all three Chapters and every Plot Twist. What a tale!"
-              : `You reached ${pageLabel(config)} with ${state.page.ink.toLocaleString()} of ${config.inkTarget.toLocaleString()} Ink.`}
+              ? "Your story is complete! Three Chapters. Countless words. One incredible book."
+              : `You reached ${pageLabel(config)} with ${compactNumber(state.page.ink)} of ${compactNumber(config.inkTarget)} Ink.`}
           </p>
+          {choice && <p className="text-sm text-muted-foreground">But what if there were more pages to write?</p>}
           <StoryStats state={state} />
           <div className="flex flex-col gap-2">
+            {choice ? <>
+              <Button size="lg" className="relative tile-gloss" onClick={onEnterEndless}>Enter Endless</Button>
+              <Button variant="outline" size="lg" onClick={onFinishStory}>Finish Story</Button>
+            </> : <>
             <Button size="lg" onClick={onNewStory}>
               Start a new Story
             </Button>
@@ -536,6 +547,7 @@ export function StoryEndDialog({
                 <Home className="mr-1 h-4 w-4" /> Back to Menu
               </Link>
             </Button>
+            </>}
           </div>
         </div>
       </DialogContent>

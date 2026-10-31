@@ -11,6 +11,8 @@
 
 ## Architecture rules
 
+- Endless reuses the Story engine and generated `getPage()` accessor; original PAGES/IDs remain unchanged. Unlocks and idempotent run-ID victories live in existing per-device stats, while all Endless Upgrades stay run-local. Numeric scoring/targets saturate at a finite cap to keep saves and event animations valid.
+
 - Story rack returns commit pending-placement removal immediately; the shared rack reserves the destination and animates a presentation-only tile clone from the board bounds while its existing FLIP animation makes space, respecting reduced motion.
 
 - Owned Story Pens use one shared sortable control for touch, mouse and keyboard; persist reordered instances in the existing local run so gameplay and shopping share order and bonuses.
