@@ -3,7 +3,7 @@
 import type { Enhancement, PlotTwist } from "./types";
 
 export interface PageConfig {
-  chapter: 1 | 2 | 3;
+  chapter: number;
   page: 1 | 2 | 3; // 3 is always the Chapter's Plot Twist
   plotTwist: PlotTwist;
   size: number;
@@ -112,4 +112,31 @@ export const TWIST_INFO: Record<Exclude<PlotTwist, null>, { name: string; descri
 
 export function pageLabel(config: PageConfig): string {
   return config.page === 3 ? `Chapter ${config.chapter} — Plot Twist` : `Chapter ${config.chapter} — Page ${config.page}`;
+}
+
+/** Original Pages remain immutable; Endless repeats Chapter 3 layouts and cycles existing twists. */
+const ENDLESS_TARGETS = [
+  [9000, 21000, 12000], [25000, 58000, 35000], [70000, 160000, 95000],
+  [200000, 450000, 270000], [600000, 1350000, 810000], [1800000, 4100000, 2400000],
+  [5400000, 12000000, 7300000], [16000000, 36000000, 22000000],
+];
+// Keep every score and target finite, with ample headroom for reward comparisons and animations.
+export const MAX_INK = 1e300;
+export const finiteInk = (value: number) => Number.isNaN(value) ? 0 : Math.min(MAX_INK, Math.max(0, value));
+export function getPage(pageIndex: number): PageConfig {
+  const index = Math.max(0, Math.floor(pageIndex));
+  const original = PAGES[index];
+  if (original) return original;
+  const chapter = Math.floor(index / 3) + 1;
+  const page = (index % 3 + 1) as 1 | 2 | 3;
+  const template = PAGES[6 + page - 1];
+  if (!template) throw new Error("Missing Story board template");
+  const targets = ENDLESS_TARGETS[Math.min(chapter - 4, 7)];
+  const target = targets?.[page - 1] ?? 22000000;
+  const twists: PlotTwist[] = ["silent-vowels", "silent-consonants", "fading-ink"];
+  return { ...template, chapter, page,
+    plotTwist: page === 3 ? twists[(chapter - 4) % 3] ?? "fading-ink" : null,
+    inkTarget: finiteInk(target * Math.pow(3, Math.min(Math.max(0, chapter - 11), 620))),
+    coins: Math.min(60, 32 + 4 * (chapter - 4)),
+  };
 }

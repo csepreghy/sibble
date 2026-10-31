@@ -27,7 +27,7 @@ import {
 import { loadWordList } from "@/lib/words";
 import { cn } from "@/lib/utils";
 import { LETTER_VALUES } from "@/lib/scrabble";
-import { PAGES, TWIST_INFO, pageLabel } from "@/lib/story/boards";
+import { getPage, TWIST_INFO, pageLabel } from "@/lib/story/boards";
 import {
   buyOffer,
   continueToNextPage,
@@ -246,7 +246,7 @@ function StoryPlay() {
     };
   }, []);
 
-  const config = story ? PAGES[story.pageIndex] : null;
+  const config = story ? getPage(story.pageIndex) : null;
   const tileById = useMemo(
     () => new Map((story?.tiles ?? []).map((tile) => [tile.id, tile])),
     [story?.tiles],
@@ -509,7 +509,7 @@ function StoryPlay() {
       setFlight(null);
     };
     let roundShown = story.page.ink;
-    const inkTarget = PAGES[story.pageIndex]!.inkTarget;
+    const inkTarget = getPage(story.pageIndex).inkTarget;
     let confettiFired = false;
     let confettiDone: Promise<void> | null = null;
     let popKey = 0;
@@ -686,7 +686,7 @@ function StoryPlay() {
 
   /** Page-complete presentation: letters fly out, Coins fly/count, then the Page Complete sheet. */
   async function celebratePage(next: StoryState, rewards: PageRewards, commit: () => void) {
-    const completedConfig = PAGES[next.pageIndex];
+    const completedConfig = getPage(next.pageIndex);
     if (!completedConfig) return;
     const visible = (selector: string) => [...document.querySelectorAll(selector)].find(el => el.getBoundingClientRect().width > 0);
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;

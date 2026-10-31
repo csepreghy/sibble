@@ -1,12 +1,13 @@
 // Story run lifecycle: new Stories, Page setup, placements, discards, Bookstore.
 
-import { LAST_PAGE_INDEX, PAGES } from "./boards";
+import { LAST_PAGE_INDEX, getPage, finiteInk } from "./boards";
 import { validateStoryMove } from "./placement";
 import { scorePlacement, type PlacementScore } from "./scoring";
 import type { Offer, PageState, PendingPlacement, StoryState, StoryTile } from "./types";
 import { PENS } from "./pens";
-import { GOLDEN_PAYDAY_BONUS, UPGRADES, discardsPerPage, penSlots, priceFor, rackCapacity } from "./upgrades";
+import { GOLDEN_PAYDAY_BONUS, UPGRADES, discardsPerPage, penSlots, priceFor, rackCapacity, shopOfferCount, upgradeAvailable } from "./upgrades";
 import { snapshotPage } from "./history";
+import { loadStoryStats } from "./stats";
 
 const DISTRIBUTION: Record<string, number> = {
   A: 9, B: 2, C: 2, D: 4, E: 12, F: 2, G: 3, H: 2, I: 9, J: 1, K: 1, L: 4, M: 2,
@@ -34,7 +35,7 @@ function buildTiles(): StoryTile[] {
 }
 
 export function startPage(state: Omit<StoryState, "page"> & { page?: PageState }, pageIndex: number): StoryState {
-  const config = PAGES[pageIndex]!;
+  const config = getPage(pageIndex);
   const bag = shuffle(state.tiles.map((tile) => tile.id));
   const capacity = rackCapacity(state.upgrades);
   const rack = bag.slice(0, capacity);
@@ -51,6 +52,8 @@ export function startPage(state: Omit<StoryState, "page"> & { page?: PageState }
     bestWordInk: 0,
     playedWords: [],
     usedPremiums: [],
+    primaryWordLengths: [],
+    discardsUsed: 0,
   };
   return { ...state, pageIndex, page, phase: "play", offers: null };
 }
@@ -58,6 +61,8 @@ export function startPage(state: Omit<StoryState, "page"> & { page?: PageState }
 export function newStory(): StoryState {
   const base = {
     version: 1 as const,
+    runId: crypto.randomUUID(),
+    endlessPensUnlocked: loadStoryStats().endlessPensUnlocked,
     pageIndex: 0,
     coins: 0,
     tiles: buildTiles(),
@@ -94,20 +99,22 @@ export interface PageRewards {
   base: number;
   royalties: number;
   goldenPayday: number;
+  loyalty?: number;
   total: number;
 }
 
 export function pageRewards(state: StoryState): PageRewards {
-  const config = PAGES[state.pageIndex]!;
+  const config = getPage(state.pageIndex);
   const base = config.coins;
   const royalties = royaltyCoins(state.page.ink, config.inkTarget);
   const goldenPayday = state.upgrades.includes("golden-payday") ? GOLDEN_PAYDAY_BONUS : 0;
-  return { base, royalties, goldenPayday, total: base + royalties + goldenPayday };
+  const loyalty = state.endless && state.upgrades.includes("loyalty-card") ? 7 : 0;
+  return { base, royalties, goldenPayday, loyalty, total: base + royalties + goldenPayday + loyalty };
 }
 
 /** True once the Page's Ink target is met during play: the Page can no longer be lost. */
 export function pageSecured(state: StoryState): boolean {
-  return state.phase === "play" && state.page.ink >= PAGES[state.pageIndex]!.inkTarget;
+  return state.phase === "play" && state.page.ink >= getPage(state.pageIndex).inkTarget;
 }
 
 export interface FinishResult {
@@ -120,7 +127,7 @@ export interface FinishResult {
 export function finishPage(state: StoryState): FinishResult | { error: string } {
   if (!pageSecured(state)) return { error: "This Page can't be finished yet." };
   const rewards = pageRewards(state);
-  const storyWon = state.pageIndex === LAST_PAGE_INDEX;
+  const storyWon = state.pageIndex === LAST_PAGE_INDEX && !state.endless;
   const next: StoryState = {
     ...state,
     coins: state.coins + rewards.total,
@@ -150,7 +157,7 @@ export function playPlacement(
   placements: PendingPlacement[],
   isDictionaryWord: (word: string) => boolean,
 ): PlayResult | { error: string } {
-  const config = PAGES[state.pageIndex]!;
+  const config = getPage(state.pageIndex);
   const validated = validateStoryMove(state.page.board, config.size, placements, isDictionaryWord);
   if ("error" in validated) return validated;
 
@@ -168,6 +175,10 @@ export function playPlacement(
     pens: state.pens,
     longestThisPage: state.page.longestWord,
     firstMoveOfPage: (state.page.wordsPlayed ?? 0) === 0,
+    wordsLeft: state.page.wordsLeft,
+    discardsUsed: state.page.discardsUsed ?? (discardsPerPage(state.upgrades) - state.page.discardsLeft),
+    primaryWordLengths: state.page.primaryWordLengths ?? [],
+    chaptersCompleted: Math.floor(state.pageIndex / 3),
   });
 
   // Commit tiles to the board.
@@ -192,7 +203,7 @@ export function playPlacement(
     score.penGains[pen.penId] ? { ...pen, bonus: pen.bonus + score.penGains[pen.penId]! } : pen,
   );
 
-  const ink = state.page.ink + score.totalInk;
+  const ink = finiteInk(state.page.ink + score.totalInk);
   const wordsLeft = state.page.wordsLeft - 1;
   const bestWord =
     score.words.reduce<{ word: string; ink: number } | null>(
@@ -207,7 +218,7 @@ export function playPlacement(
   const played: StoryState = {
     ...state,
     pens,
-    totalInk: state.totalInk + score.totalInk,
+    totalInk: finiteInk(state.totalInk + score.totalInk),
     bestWord,
     page: {
       ...state.page,
@@ -221,6 +232,7 @@ export function playPlacement(
       bestWordInk: Math.max(state.page.bestWordInk ?? 0, ...score.words.map((word) => word.ink)),
       playedWords: [...(state.page.playedWords ?? []), ...score.words.map(word => ({ ...word, move: (state.page.wordsPlayed ?? 0) + 1 }))],
       usedPremiums,
+      primaryWordLengths: [...new Set([...(state.page.primaryWordLengths ?? []), validated.words[0]?.word.length ?? 0])],
     },
     phase: defeated ? "defeat" : "play",
     offers: null,
@@ -245,7 +257,7 @@ export function discardTiles(state: StoryState, tileIds: string[]): StoryState |
   while (rack.length < capacity && bag.length > 0) rack.push(bag.pop()!);
   return {
     ...state,
-    page: { ...state.page, rack, bag, discardsLeft: state.page.discardsLeft - 1 },
+    page: { ...state.page, rack, bag, discardsLeft: state.page.discardsLeft - 1, discardsUsed: (state.page.discardsUsed ?? 0) + 1 },
   };
 }
 
@@ -256,7 +268,7 @@ const ENHANCEMENT_PRICES = { DL: 6, TL: 9, DW: 12, TW: 16 } as const;
 
 /** Longest word-length upgrade offered, based on the next Page's board. */
 export function maxOfferLength(pageIndex: number): number {
-  const size = PAGES[Math.min(pageIndex + 1, LAST_PAGE_INDEX)]!.size;
+  const size = getPage(pageIndex + 1).size;
   return size <= 9 ? Math.min(8, size) : size;
 }
 
@@ -265,7 +277,7 @@ function pickRandom<T>(items: T[], count: number): T[] {
 }
 
 /** Seven offers: 2 letter upgrades, 1 enhancement, 1 word-length, 2 Pens, 1 Upgrade. */
-export function generateOffers(state: Pick<StoryState, "tiles" | "pens" | "upgrades" | "pageIndex">): Offer[] {
+export function generateOffers(state: Pick<StoryState, "tiles" | "pens" | "upgrades" | "pageIndex" | "endless" | "endlessPensUnlocked">): Offer[] {
   const offers: Offer[] = [];
 
   // Letter base upgrades: favour letters actually in the tile collection.
@@ -284,13 +296,16 @@ export function generateOffers(state: Pick<StoryState, "tiles" | "pens" | "upgra
   offers.push({ kind: "word-length", length, price: WORD_LENGTH_PRICE, sold: false });
 
   const ownedPens = new Set(state.pens.map((pen) => pen.penId));
-  const penPool = PENS.filter((pen) => !ownedPens.has(pen.id));
-  for (const pen of pickRandom(penPool, 2)) offers.push({ kind: "pen", penId: pen.id, price: pen.price, sold: false });
+  const penPool = PENS.filter((pen) => !ownedPens.has(pen.id) && (!pen.endless || state.endlessPensUnlocked));
+  for (const pen of pickRandom(state.endless && state.pageIndex === 8 ? penPool.filter(p => p.endless) : penPool, 2)) offers.push({ kind: "pen", penId: pen.id, price: pen.price, sold: false });
 
-  const upgradePool = UPGRADES.filter((upgrade) => !state.upgrades.includes(upgrade.id));
-  const upgrade = pickRandom(upgradePool, 1)[0];
+  const upgradePool = UPGRADES.filter((upgrade) => upgradeAvailable(upgrade.id, state.upgrades, !!state.endless, getPage(state.pageIndex + 1).chapter));
+  const upgrade = pickRandom(state.endless && state.pageIndex === 8 ? upgradePool.filter(u => u.chapter) : upgradePool, 1)[0];
   if (upgrade) offers.push({ kind: "upgrade", upgradeId: upgrade.id, price: upgrade.price, sold: false });
 
+  for (const pen of pickRandom(penPool.filter(p => !offers.some(o => o.kind === "pen" && o.penId === p.id)), shopOfferCount(state.upgrades) - 7)) {
+    offers.push({ kind: "pen", penId: pen.id, price: pen.price, sold: false });
+  }
   return offers;
 }
 
@@ -341,6 +356,7 @@ export function buyOffer(state: StoryState, offerIndex: number, targetLetter?: s
       return { ...paid, pens: [...state.pens, { penId: offer.penId, bonus: 0 }] };
     }
     case "upgrade":
+      if (!upgradeAvailable(offer.upgradeId, state.upgrades, !!state.endless, getPage(state.pageIndex + 1).chapter)) return { error: "That Upgrade is not available yet." };
       return { ...paid, upgrades: [...state.upgrades, offer.upgradeId] };
   }
 }
@@ -358,4 +374,11 @@ export function sellPen(state: StoryState, penId: string): StoryState {
 /** Leaves the Bookstore and begins the next Page. */
 export function continueToNextPage(state: StoryState): StoryState {
   return startPage(state, state.pageIndex + 1);
+}
+
+/** Enter through the existing between-Page Bookstore; the completed board and whole build stay intact. */
+export function enterEndless(state: StoryState): StoryState {
+  if (state.phase !== "victory" || state.pageIndex !== LAST_PAGE_INDEX || state.completionDismissed) return state;
+  const next = { ...state, endless: true, endlessPensUnlocked: true, phase: "bookstore" as const };
+  return { ...next, offers: generateOffers(next) };
 }

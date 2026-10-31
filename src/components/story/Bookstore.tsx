@@ -6,7 +6,7 @@ import { LETTER_VALUES } from "@/lib/scrabble";
 import type { Offer, StoryState } from "@/lib/story/types";
 import { penDef } from "@/lib/story/pens";
 import { priceFor, upgradeDef } from "@/lib/story/upgrades";
-import { PAGES, TWIST_INFO, pageLabel } from "@/lib/story/boards";
+import { getPage, TWIST_INFO, pageLabel } from "@/lib/story/boards";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
@@ -300,9 +300,9 @@ function OfferDetailBody({ offer, state, dialog }: { offer: Offer; state: StoryS
 
 /** Left-sidebar Page Complete summary shown while shopping. */
 export function BookstoreSummary({ state, onContinue, onOpenRunInfo }: { state: StoryState; onContinue: () => void; onOpenRunInfo: () => void }) {
-  const done = PAGES[state.pageIndex];
+  const done = getPage(state.pageIndex);
   if (!done) return null;
-  const next = PAGES[state.pageIndex + 1];
+  const next = getPage(state.pageIndex + 1);
   return (
     <div className="flex flex-1 flex-col gap-3">
       <div>

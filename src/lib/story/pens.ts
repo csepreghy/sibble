@@ -22,6 +22,7 @@ export interface PenDef {
   description: string;
   /** true for pens whose effect grows during the Story */
   scaling?: boolean;
+  endless?: boolean;
 }
 
 export const PENS: PenDef[] = [
@@ -109,6 +110,16 @@ export const PENS: PenDef[] = [
   { id: "rare-talent", name: "Rare Talent", icon: "Gem", price: 7, description: "J, Q, X and Z give ×3 Base Ink" },
   { id: "first-edition", name: "First Edition", icon: "Award", price: 10, description: "×3 Mult if the Page's first word has 5+ letters" },
   { id: "double-trouble", name: "Double Trouble", icon: "Copy", price: 10, description: "×2 Mult for 4+ letter words with a repeated letter" },
+  { id: "blue-pencil", name: "Blue Pencil", icon: "PenLine", price: 12, endless: true, description: "+4 Mult per enhanced letter, including reused letters" },
+  { id: "critic", name: "The Critic", icon: "Newspaper", price: 16, endless: true, description: "×3 Mult for primary words of 7+ letters" },
+  { id: "margin-notes", name: "Margin Notes", icon: "BookText", price: 12, endless: true, description: "×2 Mult when the primary word touches the board edge" },
+  { id: "illuminator", name: "The Illuminator", icon: "Droplets", price: 12, endless: true, description: "+10 Base Ink per new letter on a premium square" },
+  { id: "final-word", name: "The Final Word", icon: "Feather", price: 14, endless: true, description: "×3 Mult on the last available word play of each Page" },
+  { id: "editor", name: "The Editor", icon: "Type", price: 14, endless: true, description: "×2 Mult while no discards have been used this Page" },
+  { id: "epilogue", name: "The Epilogue", icon: "ScrollText", price: 16, endless: true, description: "×4 Mult on Plot Twist Pages" },
+  { id: "red-letter", name: "Red Letter", icon: "Gem", price: 14, endless: true, description: "×3 Mult for words containing J, Q, X or Z" },
+  { id: "anthologist", name: "The Anthologist", icon: "Library", price: 12, endless: true, description: "+4 Mult per distinct primary-word length previously played this Page" },
+  { id: "chronicler", name: "The Chronicler", icon: "BookOpen", price: 16, endless: true, description: "+8 Mult per Chapter completed this run" },
 ];
 
 export function penDef(id: string): PenDef {

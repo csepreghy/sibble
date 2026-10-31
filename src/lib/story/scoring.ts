@@ -2,6 +2,7 @@
 // Returns both the numeric result and a step-by-step event list the UI uses
 // for the scoring animation, so what the player sees always matches the maths.
 
+import { finiteInk } from "./boards";
 import { LETTER_VALUES } from "@/lib/scrabble";
 import type { StoryWord } from "./placement";
 import type { BoardTile, PageState, PendingPlacement, PenInstance, PlotTwist, StoryTile } from "./types";
@@ -72,6 +73,10 @@ export function scorePlacement(args: {
   longestThisPage: number;
   /** true when no word has been scored on this Page yet (First Edition) */
   firstMoveOfPage?: boolean;
+  wordsLeft?: number;
+  discardsUsed?: number;
+  primaryWordLengths?: number[];
+  chaptersCompleted?: number;
 }): PlacementScore {
   const {
     words,
@@ -243,6 +248,10 @@ export function scorePlacement(args: {
           events.push({ type: "pen-base", penId: "rare-talent", text: `+${extra} Base`, runningBase: base });
         }
       }
+      if (hasPen("illuminator")) {
+        const extra = 10 * letters.filter(l => l.isNew && !!premiums[l.index]).length;
+        if (extra) { base += extra; events.push({ type: "pen-base", penId: "illuminator", text: `+${extra} Base`, runningBase: base }); }
+      }
       if (hasPen("fresh-ink") && length >= 4 && newCount > 0) {
         base += 4 * newCount;
         events.push({ type: "pen-base", penId: "fresh-ink", text: `+${4 * newCount} Base`, runningBase: base });
@@ -259,6 +268,13 @@ export function scorePlacement(args: {
     events.push({ type: "mult-init", value: mult });
 
     for (let run = 0; run < penRuns; run++) {
+      const add = (penId: string, value: number) => {
+        if (!hasPen(penId) || !value) return;
+        mult += value; events.push({ type: "pen-mult", penId, text: `+${value} Mult`, runningMult: mult });
+      };
+      add("blue-pencil", 4 * letters.filter(l => l.enhancement).length);
+      add("anthologist", 4 * new Set(args.primaryWordLengths ?? []).size);
+      add("chronicler", 8 * (args.chaptersCompleted ?? 0));
       if (hasPen("catnip") && length === 3) {
         mult += 10;
         events.push({ type: "pen-mult", penId: "catnip", text: "+10 Mult", runningMult: mult });
@@ -335,6 +351,13 @@ export function scorePlacement(args: {
         mult *= factor;
         events.push({ type: "pen-mult", penId, text: `×${factor} Mult`, runningMult: mult });
       };
+      if (hasPen("critic") && wordIndex === 0 && length >= 7) times("critic", 3);
+      const edge = storyWord.indices.some(i => i < args.size || i >= args.size * (args.size - 1) || i % args.size === 0 || i % args.size === args.size - 1);
+      if (hasPen("margin-notes") && wordIndex === 0 && edge) times("margin-notes", 2);
+      if (hasPen("final-word") && args.wordsLeft === 1) times("final-word", 3);
+      if (hasPen("editor") && (args.discardsUsed ?? 0) === 0) times("editor", 2);
+      if (hasPen("epilogue") && plotTwist) times("epilogue", 4);
+      if (hasPen("red-letter") && letters.some(l => RARE_LETTERS.has(l.letter))) times("red-letter", 3);
       if (hasPen("columnist") && length === 4) times("columnist", 3);
       if (hasPen("novelist") && length === 5) times("novelist", 4);
       if (hasPen("lexicographer") && length >= 4 && !hasRepeat) times("lexicographer", 2);
@@ -347,10 +370,12 @@ export function scorePlacement(args: {
       events.push({ type: "pen-mult", penId: "linguist", text: "Pens triggered again!", runningMult: mult });
     }
 
-    const ink = Math.floor(base * mult);
+    base = finiteInk(base);
+    mult = finiteInk(mult);
+    const ink = finiteInk(Math.floor(base * mult));
     results.push({ word: storyWord.word, base, mult, ink });
     events.push({ type: "result", word: storyWord.word, base, mult, ink });
-    totalInk += ink;
+    totalInk = finiteInk(totalInk + ink);
 
     // --- Post-scoring gains --------------------------------------------
     if (hasPen("growing-vocabulary") && length === 5) {
@@ -398,5 +423,6 @@ export function previewPlacement(
     pens,
     longestThisPage: page.longestWord,
     firstMoveOfPage,
+    wordsLeft: page.wordsLeft, discardsUsed: page.discardsUsed ?? 0, primaryWordLengths: page.primaryWordLengths ?? [],
   }).totalInk;
 }

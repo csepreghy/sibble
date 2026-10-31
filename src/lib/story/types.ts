@@ -50,6 +50,8 @@ export interface PageState {
   bestWordInk: number;
   /** board indices whose premium square was already activated */
   usedPremiums: number[];
+  primaryWordLengths?: number[];
+  discardsUsed?: number;
 }
 
 export type Offer =
@@ -67,6 +69,8 @@ export interface CompletedPage {
   tiles: StoryTile[];
   letterUpgrades: Record<string, number>;
   usedPremiums: number[];
+  primaryWordLengths?: number[];
+  discardsUsed?: number;
   playedWords: NonNullable<PageState["playedWords"]>;
   ink: number;
   words: number;
@@ -76,7 +80,11 @@ export interface CompletedPage {
 
 export interface StoryState {
   version: 1;
-  pageIndex: number; // 0..8 into PAGES
+  runId?: string;
+  endless?: boolean;
+  endlessPensUnlocked?: boolean;
+  completionDismissed?: boolean;
+  pageIndex: number; // generated progression after the original nine Pages
   coins: number;
   tiles: StoryTile[]; // every physical tile owned this Story
   letterUpgrades: Record<string, number>;

@@ -4,7 +4,7 @@ import { AppNav } from "@/components/AppNav";
 import { BrandLogo } from "@/components/BrandLogo";
 import { loadStoryStats } from "@/lib/story/stats";
 import { loadStory } from "@/lib/story/storage";
-import { PAGES } from "@/lib/story/boards";
+import { getPage } from "@/lib/story/boards";
 
 export const Route = createFileRoute("/_authenticated/story_/history")({
   head: () => ({
@@ -47,7 +47,7 @@ function StoryHistory() {
         <section className="mt-10 space-y-3">
           <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Current Story</h2>
           {completedPages.map((page) => {
-            const config = PAGES[page.pageIndex];
+            const config = getPage(page.pageIndex);
             return (
               <div
                 key={page.pageIndex}

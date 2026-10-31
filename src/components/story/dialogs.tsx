@@ -3,7 +3,7 @@ import { Coins, Home, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { LETTER_VALUES } from "@/lib/scrabble";
-import { PAGES, TWIST_INFO, pageLabel } from "@/lib/story/boards";
+import { getPage, TWIST_INFO, pageLabel } from "@/lib/story/boards";
 import { penDef } from "@/lib/story/pens";
 import { upgradeDef } from "@/lib/story/upgrades";
 import type { PenInstance, StoryState, StoryTile } from "@/lib/story/types";
@@ -33,7 +33,7 @@ export function PageIntroDialog({
   state: StoryState;
   onStart: () => void;
 }) {
-  const config = PAGES[state.pageIndex]!;
+  const config = getPage(state.pageIndex);
   const twist = config.plotTwist ? TWIST_INFO[config.plotTwist] : null;
   const tips = state.pageIndex === 0 ? FIRST_PAGE_TIPS : [];
   return (
@@ -123,7 +123,7 @@ export function RunInfoDialog({ state, onClose }: { state: StoryState; onClose: 
             <>
               {!reviewing ? (
                 <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="rounded-lg bg-secondary/70 px-2 py-2"><p className="text-xs text-muted-foreground">Page</p><p className="text-lg font-bold">{state.pageIndex + 1}/{PAGES.length}</p></div>
+                  <div className="rounded-lg bg-secondary/70 px-2 py-2"><p className="text-xs text-muted-foreground">Page</p><p className="text-lg font-bold">{state.pageIndex + 1}/{state.endless ? "∞" : 9}</p></div>
                   <div className="rounded-lg bg-secondary/70 px-2 py-2"><p className="text-xs text-muted-foreground">Coins</p><p className="text-lg font-bold text-gold">{state.coins}</p></div>
                   <div className="rounded-lg bg-secondary/70 px-2 py-2"><p className="text-xs text-muted-foreground">Pens</p><p className="text-lg font-bold">{state.pens.length}</p></div>
                 </div>
@@ -490,7 +490,7 @@ function StoryStats({ state }: { state: StoryState }) {
       </div>
       <div className="rounded-lg bg-secondary/70 px-3 py-2">
         <p className="text-xs text-muted-foreground">Pages completed</p>
-        <p className="text-lg font-bold">{state.pagesCompleted} / 9</p>
+        <p className="text-lg font-bold">{state.pagesCompleted}{state.endless ? "" : " / 9"}</p>
       </div>
     </div>
   );
@@ -505,7 +505,7 @@ export function StoryEndDialog({
   won: boolean;
   onNewStory: () => void;
 }) {
-  const config = PAGES[state.pageIndex]!;
+  const config = getPage(state.pageIndex);
   return (
     <Dialog open>
       <DialogContent className="max-w-md" onInteractOutside={(e) => e.preventDefault()}>

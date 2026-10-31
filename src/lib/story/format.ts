@@ -1,6 +1,8 @@
 /** Compact score formatting for tight HUD boxes: below 100K shows grouped digits, then K/M/B/T with up to 3 significant figures. */
 export function compactNumber(value: number): string {
+  if (!Number.isFinite(value)) return "—";
   const abs = Math.abs(value);
+  if (abs >= 1e15) return value.toExponential(2).replace("e+", "e");
   if (abs < 100_000) return value.toLocaleString("en-US", { maximumFractionDigits: 1 });
   const units: [number, string][] = [[1e12, "T"], [1e9, "B"], [1e6, "M"], [1e3, "K"]];
   for (const [size, suffix] of units) {
