@@ -1,11 +1,14 @@
 // Per-device Story statistics, persisted across runs in localStorage.
 
+import { finiteInk, getPage } from "./boards";
 import type { StoryState } from "./types";
 
 const KEY = "sibble:story:stats:v1";
 const HISTORY_LIMIT = 20;
 
 export interface FinishedStory {
+  runId?: string | undefined;
+  endlessChapter?: number | undefined;
   endedAt: string; // ISO date
   result: "victory" | "defeat";
   pagesCompleted: number;
@@ -15,6 +18,10 @@ export interface FinishedStory {
 
 export interface StoryStats {
   version: 1;
+  endlessPensUnlocked: boolean;
+  highestEndlessChapter: number;
+  highestEndlessPageInk: number;
+  victoryRunIds: string[];
   storiesStarted: number;
   storiesWon: number;
   storiesLost: number;
@@ -31,6 +38,7 @@ export interface StoryStats {
 export function emptyStats(): StoryStats {
   return {
     version: 1,
+    endlessPensUnlocked: false, highestEndlessChapter: 0, highestEndlessPageInk: 0, victoryRunIds: [],
     storiesStarted: 0,
     storiesWon: 0,
     storiesLost: 0,
@@ -77,7 +85,7 @@ export function recordWordsPlayed(
   const next: StoryStats = { ...stats, letterCounts: { ...stats.letterCounts } };
   for (const { word, ink } of words) {
     next.wordsPlayed += 1;
-    next.totalInk += ink;
+    next.totalInk = finiteInk(next.totalInk + ink);
     for (const ch of word.toUpperCase()) {
       if (ch >= "A" && ch <= "Z") {
         next.letterCounts[ch] = (next.letterCounts[ch] ?? 0) + 1;
@@ -99,7 +107,14 @@ export function recordPageCompleted(stats: StoryStats, pageIndex: number, ink: n
 }
 
 export function recordStoryEnded(stats: StoryStats, state: StoryState, won: boolean): StoryStats {
+  won = won || !!state.endless;
+  const id = state.runId ?? (state.pageIndex === 8 || state.endless ? "legacy-completed-story" : undefined);
+  if (won && id && stats.victoryRunIds.includes(id)) {
+    return { ...recordEndlessProgress(stats, state), finished: stats.finished.map(entry => entry.runId === id ? { ...entry, pagesCompleted: state.pagesCompleted, totalInk: state.totalInk, bestWord: state.bestWord, endlessChapter: state.endless ? getPage(state.pageIndex).chapter : undefined } : entry) };
+  }
   const entry: FinishedStory = {
+    runId: id,
+    endlessChapter: state.endless ? getPage(state.pageIndex).chapter : undefined,
     endedAt: new Date().toISOString(),
     result: won ? "victory" : "defeat",
     pagesCompleted: state.pagesCompleted,
@@ -108,6 +123,7 @@ export function recordStoryEnded(stats: StoryStats, state: StoryState, won: bool
   };
   return {
     ...stats,
+    victoryRunIds: won && id ? [...stats.victoryRunIds, id] : stats.victoryRunIds,
     storiesWon: stats.storiesWon + (won ? 1 : 0),
     storiesLost: stats.storiesLost + (won ? 0 : 1),
     finished: [entry, ...stats.finished].slice(0, HISTORY_LIMIT),
@@ -120,4 +136,12 @@ export function topLetters(stats: StoryStats, count: number): { letter: string; 
     .map(([letter, used]) => ({ letter, count: used }))
     .sort((a, b) => b.count - a.count || a.letter.localeCompare(b.letter))
     .slice(0, count);
+}
+
+export function recordEndlessProgress(stats: StoryStats, state: StoryState): StoryStats {
+  if (!state.endless) return stats;
+  return { ...stats, endlessPensUnlocked: true,
+    highestEndlessChapter: Math.max(stats.highestEndlessChapter, getPage(state.pageIndex).chapter),
+    highestEndlessPageInk: Math.max(stats.highestEndlessPageInk, state.page.ink),
+  };
 }

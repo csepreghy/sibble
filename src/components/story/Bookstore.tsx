@@ -1,3 +1,4 @@
+import { compactNumber } from "@/lib/story/format";
 import { soundPop } from "@/lib/story/sound";
 import { wordLengthMult, wordLengthStep } from "@/lib/story/scoring";
 import { ArrowRight, CheckCircle2, Coins, Menu, Sparkles, Star } from "lucide-react";
@@ -6,7 +7,7 @@ import { LETTER_VALUES } from "@/lib/scrabble";
 import type { Offer, StoryState } from "@/lib/story/types";
 import { penDef } from "@/lib/story/pens";
 import { priceFor, upgradeDef } from "@/lib/story/upgrades";
-import { PAGES, TWIST_INFO, pageLabel } from "@/lib/story/boards";
+import { getPage, TWIST_INFO, pageLabel } from "@/lib/story/boards";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
@@ -300,9 +301,9 @@ function OfferDetailBody({ offer, state, dialog }: { offer: Offer; state: StoryS
 
 /** Left-sidebar Page Complete summary shown while shopping. */
 export function BookstoreSummary({ state, onContinue, onOpenRunInfo }: { state: StoryState; onContinue: () => void; onOpenRunInfo: () => void }) {
-  const done = PAGES[state.pageIndex];
+  const done = getPage(state.pageIndex);
   if (!done) return null;
-  const next = PAGES[state.pageIndex + 1];
+  const next = getPage(state.pageIndex + 1);
   return (
     <div className="flex flex-1 flex-col gap-3">
       <div>
@@ -314,11 +315,11 @@ export function BookstoreSummary({ state, onContinue, onOpenRunInfo }: { state: 
       <div className="rounded-lg bg-secondary/70 p-3 text-center">
         <p className="text-xs text-muted-foreground">Ink earned</p>
         <p className="text-xl font-bold">
-          {state.page.ink.toLocaleString()} <span className="text-sm text-muted-foreground">/ {done.inkTarget.toLocaleString()}</span>
+          {compactNumber(state.page.ink)} <span className="text-sm text-muted-foreground">/ {compactNumber(done.inkTarget)}</span>
         </p>
         <p className="mt-2 text-xs text-muted-foreground">Reward</p>
         <p className="flex items-center justify-center gap-1 text-lg font-bold text-gold">
-          +{done.coins + (state.upgrades.includes("golden-payday") ? 3 : 0)} <Coins className="h-4 w-4" />
+          +{state.completedPages?.find(page => page.pageIndex === state.pageIndex)?.coins ?? done.coins} <Coins className="h-4 w-4" />
         </p>
       </div>
       <ScoreBoxes />
@@ -332,7 +333,7 @@ export function BookstoreSummary({ state, onContinue, onOpenRunInfo }: { state: 
             </p>
           ) : null}
           <p className="mt-1 text-xs text-muted-foreground">
-            {next.size}×{next.size} board · {next.inkTarget.toLocaleString()} Ink required
+            {next.size}×{next.size} board · {compactNumber(next.inkTarget)} Ink required
           </p>
         </div>
       ) : null}

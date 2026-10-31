@@ -2,6 +2,7 @@
 // Returns both the numeric result and a step-by-step event list the UI uses
 // for the scoring animation, so what the player sees always matches the maths.
 
+import { finiteInk } from "./boards";
 import { LETTER_VALUES } from "@/lib/scrabble";
 import type { StoryWord } from "./placement";
 import type { BoardTile, PageState, PendingPlacement, PenInstance, PlotTwist, StoryTile } from "./types";
@@ -72,6 +73,10 @@ export function scorePlacement(args: {
   longestThisPage: number;
   /** true when no word has been scored on this Page yet (First Edition) */
   firstMoveOfPage?: boolean;
+  wordsLeft?: number;
+  discardsUsed?: number;
+  primaryWordLengths?: number[];
+  chaptersCompleted?: number;
 }): PlacementScore {
   const {
     words,
@@ -148,7 +153,7 @@ export function scorePlacement(args: {
         ? 0
         : (LETTER_VALUES[letter.letter] ?? 0) + (letterUpgrades[letter.letter] ?? 0);
       if (silenced) letterBase = 0;
-      base += letterBase;
+      base = finiteInk(base + (letterBase));
       events.push({
         type: "letter",
         index: letter.index,
@@ -174,7 +179,7 @@ export function scorePlacement(args: {
         : (LETTER_VALUES[letter.letter] ?? 0) + (letterUpgrades[letter.letter] ?? 0);
       let current = silenced ? 0 : raw;
       for (const { label, factor } of factors) {
-        base += current * (factor - 1);
+        base = finiteInk(base + (current * (factor - 1)));
         current *= factor;
         events.push({ type: "letter-mult", index: letter.index, label, factor, runningBase: base });
       }
@@ -183,7 +188,7 @@ export function scorePlacement(args: {
     // Pens that modify Base Ink (retriggered by The Linguist).
     for (let run = 0; run < penRuns; run++) {
       if (hasPen("minimalist") && length === 3) {
-        base += 5 * length;
+        base = finiteInk(base + (5 * length));
         events.push({ type: "pen-base", penId: "minimalist", text: `+${5 * length} Base`, runningBase: base });
       }
       if (hasPen("vowel-power")) {
@@ -200,7 +205,7 @@ export function scorePlacement(args: {
           extra += raw * factor;
         }
         if (extra > 0) {
-          base += extra;
+          base = finiteInk(base + (extra));
           events.push({ type: "pen-base", penId: "vowel-power", text: `+${extra} Base`, runningBase: base });
         }
       }
@@ -221,7 +226,7 @@ export function scorePlacement(args: {
           extra += silenced ? 0 : raw * factor;
         }
         if (extra > 0) {
-          base += extra;
+          base = finiteInk(base + (extra));
           events.push({ type: "pen-base", penId: "echo-chamber", text: `+${extra} Base`, runningBase: base });
         }
       }
@@ -239,18 +244,22 @@ export function scorePlacement(args: {
           extra += raw * factor * 2;
         }
         if (extra > 0) {
-          base += extra;
+          base = finiteInk(base + (extra));
           events.push({ type: "pen-base", penId: "rare-talent", text: `+${extra} Base`, runningBase: base });
         }
       }
+      if (hasPen("illuminator")) {
+        const extra = 10 * letters.filter(l => l.isNew && !!premiums[l.index]).length;
+        if (extra) { base = finiteInk(base + (extra)); events.push({ type: "pen-base", penId: "illuminator", text: `+${extra} Base`, runningBase: base }); }
+      }
       if (hasPen("fresh-ink") && length >= 4 && newCount > 0) {
-        base += 4 * newCount;
+        base = finiteInk(base + (4 * newCount));
         events.push({ type: "pen-base", penId: "fresh-ink", text: `+${4 * newCount} Base`, runningBase: base });
       }
     }
 
     if (plotTwist === "fading-ink") {
-      base *= 0.5;
+      base = finiteInk(base * (0.5));
       events.push({ type: "twist", text: "Fading Ink: Base halved", runningBase: base });
     }
 
@@ -259,17 +268,24 @@ export function scorePlacement(args: {
     events.push({ type: "mult-init", value: mult });
 
     for (let run = 0; run < penRuns; run++) {
+      const add = (penId: string, value: number) => {
+        if (!hasPen(penId) || !value) return;
+        mult = finiteInk(mult + (value)); events.push({ type: "pen-mult", penId, text: `+${value} Mult`, runningMult: mult });
+      };
+      add("blue-pencil", 4 * letters.filter(l => l.enhancement).length);
+      add("anthologist", 4 * new Set(args.primaryWordLengths ?? []).size);
+      add("chronicler", 8 * (args.chaptersCompleted ?? 0));
       if (hasPen("catnip") && length === 3) {
-        mult += 10;
+        mult = finiteInk(mult + (10));
         events.push({ type: "pen-mult", penId: "catnip", text: "+10 Mult", runningMult: mult });
       }
       if (hasPen("crossword") && words.length > 1) {
         const add = 2 * (words.length - 1);
-        mult += add;
+        mult = finiteInk(mult + (add));
         events.push({ type: "pen-mult", penId: "crossword", text: `+${add} Mult`, runningMult: mult });
       }
       if (hasPen("growing-vocabulary") && penBonus("growing-vocabulary") > 0) {
-        mult += penBonus("growing-vocabulary");
+        mult = finiteInk(mult + (penBonus("growing-vocabulary")));
         events.push({
           type: "pen-mult",
           penId: "growing-vocabulary",
@@ -278,7 +294,7 @@ export function scorePlacement(args: {
         });
       }
       if (hasPen("vowel-collector") && penBonus("vowel-collector") > 0) {
-        mult += penBonus("vowel-collector");
+        mult = finiteInk(mult + (penBonus("vowel-collector")));
         events.push({
           type: "pen-mult",
           penId: "vowel-collector",
@@ -287,11 +303,11 @@ export function scorePlacement(args: {
         });
       }
       if (hasPen("typesetter") && length >= 4 && newCount > 0) {
-        mult += 5 * newCount;
+        mult = finiteInk(mult + (5 * newCount));
         events.push({ type: "pen-mult", penId: "typesetter", text: `+${5 * newCount} Mult`, runningMult: mult });
       }
       if (hasPen("longform") && length >= 5 && penBonus("longform") > 0) {
-        mult += penBonus("longform");
+        mult = finiteInk(mult + (penBonus("longform")));
         events.push({ type: "pen-mult", penId: "longform", text: `+${penBonus("longform")} Mult`, runningMult: mult });
       }
     }
@@ -304,7 +320,7 @@ export function scorePlacement(args: {
       if (letter.boardPremium === "DW") factors.push({ label: "DW square", factor: 2 });
       if (letter.boardPremium === "TW") factors.push({ label: "TW square", factor: 3 });
       for (const { label, factor } of factors) {
-        mult *= factor;
+        mult = finiteInk(mult * (factor));
         events.push({ type: "word-mult", index: letter.index, label, factor, runningMult: mult });
       }
     }
@@ -316,7 +332,7 @@ export function scorePlacement(args: {
           if (letter.isNew) continue;
           const factor = letter.enhancement === "DW" ? 2 : letter.enhancement === "TW" ? 3 : 0;
           if (!factor) continue;
-          mult *= factor;
+          mult = finiteInk(mult * (factor));
           events.push({ type: "pen-mult", penId: "echo-chamber", text: `×${factor} Mult`, runningMult: mult });
         }
       }
@@ -324,17 +340,24 @@ export function scorePlacement(args: {
 
     for (let run = 0; run < penRuns; run++) {
       if (hasPen("short-circuit") && length <= 4) {
-        mult *= 2;
+        mult = finiteInk(mult * (2));
         events.push({ type: "pen-mult", penId: "short-circuit", text: "×2 Mult", runningMult: mult });
       }
       if (hasPen("architect") && words.length >= 3) {
-        mult *= 3;
+        mult = finiteInk(mult * (3));
         events.push({ type: "pen-mult", penId: "architect", text: "×3 Mult", runningMult: mult });
       }
       const times = (penId: string, factor: number) => {
-        mult *= factor;
+        mult = finiteInk(mult * (factor));
         events.push({ type: "pen-mult", penId, text: `×${factor} Mult`, runningMult: mult });
       };
+      if (hasPen("critic") && wordIndex === 0 && length >= 7) times("critic", 3);
+      const edge = storyWord.indices.some(i => i < args.size || i >= args.size * (args.size - 1) || i % args.size === 0 || i % args.size === args.size - 1);
+      if (hasPen("margin-notes") && wordIndex === 0 && edge) times("margin-notes", 2);
+      if (hasPen("final-word") && args.wordsLeft === 1) times("final-word", 3);
+      if (hasPen("editor") && (args.discardsUsed ?? 0) === 0) times("editor", 2);
+      if (hasPen("epilogue") && plotTwist) times("epilogue", 4);
+      if (hasPen("red-letter") && letters.some(l => RARE_LETTERS.has(l.letter))) times("red-letter", 3);
       if (hasPen("columnist") && length === 4) times("columnist", 3);
       if (hasPen("novelist") && length === 5) times("novelist", 4);
       if (hasPen("lexicographer") && length >= 4 && !hasRepeat) times("lexicographer", 2);
@@ -347,10 +370,12 @@ export function scorePlacement(args: {
       events.push({ type: "pen-mult", penId: "linguist", text: "Pens triggered again!", runningMult: mult });
     }
 
-    const ink = Math.floor(base * mult);
+    base = finiteInk(base);
+    mult = finiteInk(mult);
+    const ink = finiteInk(Math.floor(base * mult));
     results.push({ word: storyWord.word, base, mult, ink });
     events.push({ type: "result", word: storyWord.word, base, mult, ink });
-    totalInk += ink;
+    totalInk = finiteInk(totalInk + ink);
 
     // --- Post-scoring gains --------------------------------------------
     if (hasPen("growing-vocabulary") && length === 5) {
@@ -398,5 +423,6 @@ export function previewPlacement(
     pens,
     longestThisPage: page.longestWord,
     firstMoveOfPage,
+    wordsLeft: page.wordsLeft, discardsUsed: page.discardsUsed ?? 0, primaryWordLengths: page.primaryWordLengths ?? [],
   }).totalInk;
 }

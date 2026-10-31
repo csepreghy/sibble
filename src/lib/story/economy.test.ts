@@ -6,7 +6,7 @@ import { PENS, penDef } from "./pens";
 import { upgradeDef, GOLDEN_PAYDAY_BONUS } from "./upgrades";
 
 test("20 Pens with the new prices", () => {
-  assert.equal(PENS.length, 20);
+  assert.equal(PENS.filter(p => !p.endless).length, 20);
   const prices: Record<string, number> = {
     minimalist: 9, "vowel-power": 9, crossword: 7, "growing-vocabulary": 8, catnip: 10, "echo-chamber": 16,
     architect: 12, "vowel-collector": 11, "short-circuit": 12, linguist: 16, columnist: 12, novelist: 13,

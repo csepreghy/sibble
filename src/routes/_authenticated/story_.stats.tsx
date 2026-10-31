@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { Droplet, Medal } from "lucide-react";
 import { AppNav } from "@/components/AppNav";
 import { BrandLogo } from "@/components/BrandLogo";
+import { compactNumber } from "@/lib/story/format";
 import { loadStoryStats, topLetters } from "@/lib/story/stats";
 
 export const Route = createFileRoute("/_authenticated/story_/stats")({
@@ -60,10 +61,12 @@ function StoryStats() {
       ) : (
         <>
           <section className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <Stat label="Highest Endless Chapter" value={stats.highestEndlessChapter || "—"} />
+            <Stat label="Highest Endless Page Ink" value={stats.highestEndlessPageInk ? compactNumber(stats.highestEndlessPageInk) : "—"} ink />
             <Stat label="Stories started" value={stats.storiesStarted} />
             <Stat label="Stories won" value={stats.storiesWon} />
             <Stat label="Pages completed" value={stats.pagesCompleted} />
-            <Stat label="Total Ink" value={stats.totalInk.toLocaleString()} ink />
+            <Stat label="Total Ink" value={compactNumber(stats.totalInk)} ink />
             <Stat label="Words played" value={stats.wordsPlayed} />
             <Stat
               label="Longest word"
@@ -71,12 +74,12 @@ function StoryStats() {
             />
             <Stat
               label="Best single word"
-              value={stats.bestWord ? `${stats.bestWord.word} · ${stats.bestWord.ink.toLocaleString()}` : "—"}
+              value={stats.bestWord ? `${stats.bestWord.word} · ${compactNumber(stats.bestWord.ink)}` : "—"}
               ink
             />
             <Stat
               label="Highest page score"
-              value={stats.bestPage ? stats.bestPage.ink.toLocaleString() : "—"}
+              value={stats.bestPage ? compactNumber(stats.bestPage.ink) : "—"}
               ink
             />
           </section>
