@@ -57,7 +57,7 @@ test("all requested Chapter 4–11 targets and deterministic ×3 growth", () => 
   assert.deepEqual(PAGES.map(p=>p.inkTarget),[30,130,90,600,1400,450,3500,8500,5000]);
 });
 test("Endless Coins follow 32, 36 through 60 plus Page Bonus and Loyalty Card", () => {
-  for (const [index, base] of [[9,32],[12,36],[30,60],[99,60]]) {
+  for (const [index, base] of [[9,32],[12,36],[30,60],[99,60]] as const) {
     const run = startPage({...newStory(), endless:true, upgrades:["loyalty-card"]},index);
     run.page.ink = getPage(index).inkTarget*1.5;
     assert.deepEqual(pageRewards(run),{base,royalties:5,goldenPayday:0,loyalty:7,total:base+12});
