@@ -43,6 +43,7 @@ import {
   sellPen,
   type PageRewards,
 } from "@/lib/story/engine";
+import { compactNumber } from "@/lib/story/format";
 import { inspectPlacement } from "@/lib/story/preview";
 import { reorderPens } from "@/lib/story/pens";
 import { animationEvents, countCrossingTime, getStoryAnimationMode, setStoryAnimationMode, STORY_CONFETTI_MS, totalCountDuration, type StoryAnimationMode } from "@/lib/story/animation";
@@ -616,7 +617,7 @@ function StoryPlay() {
       if (cancelAnim.current) return;
       if (event.type === "result") {
         // Mult -> Base: the blue box counts up to the word's Ink with the accelerating count.
-        await flyBox('[data-score-box="mult"]', '[data-score-box="base"]', "mult", `×${event.mult.toLocaleString(undefined, { maximumFractionDigits: 1 })}`);
+        await flyBox('[data-score-box="mult"]', '[data-score-box="base"]', "mult", `×${compactNumber(event.mult)}`);
         if (cancelAnim.current) return;
         soundSlam();
         current = { ...current, multHidden: true, base: event.ink, baseDelta: `×${event.mult}`, activePenId: null, growToTotal: true };
@@ -624,7 +625,7 @@ function StoryPlay() {
         soundCount(scaled(totalCountDuration(event.ink)));
         await wait(totalCountDuration(event.ink) + 100);
         // Base -> Round score: purple box counts up.
-        await flyBox('[data-score-box="base"]', ".story-current-score", "base", event.ink.toLocaleString());
+        await flyBox('[data-score-box="base"]', ".story-current-score", "base", compactNumber(event.ink));
         if (cancelAnim.current) return;
         soundSlam();
         const roundFrom = roundShown;
@@ -1275,12 +1276,12 @@ function StoryPlay() {
 function RoyaltyText({ coins, next, compact }: { coins: number; next: number | null; compact?: boolean }) {
   const max = coins >= ROYALTY_MAX;
   return (
-    <span className="flex min-w-0 flex-col leading-tight" title={next ? `Next Page Bonus at ${next.toLocaleString()} Ink` : "Maximum Page Bonus earned"}>
+    <span className="flex min-w-0 flex-col leading-tight" title={next ? `Next Page Bonus at ${compactNumber(next)} Ink` : "Maximum Page Bonus earned"}>
       <span className="flex items-center gap-1 font-black tabular-nums text-gold">
         {compact && <span className="text-[0.65rem] font-bold uppercase tracking-wide text-muted-foreground">Page Bonus</span>}
         <Coins className="h-4 w-4 shrink-0" />+{coins}{max ? " MAX" : ""}
       </span>
-      {next && <span className="text-[0.65rem] font-semibold text-muted-foreground tabular-nums">Next: {next.toLocaleString()} Ink</span>}
+      {next && <span className="text-[0.65rem] font-semibold text-muted-foreground tabular-nums">Next: {compactNumber(next)} Ink</span>}
     </span>
   );
 }

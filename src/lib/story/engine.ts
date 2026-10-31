@@ -355,9 +355,15 @@ export function buyOffer(state: StoryState, offerIndex: number, targetLetter?: s
       if (state.pens.length >= penSlots(state.upgrades)) return { error: "All Pen slots are full — sell a Pen first." };
       return { ...paid, pens: [...state.pens, { penId: offer.penId, bonus: 0 }] };
     }
-    case "upgrade":
+    case "upgrade": {
       if (!upgradeAvailable(offer.upgradeId, state.upgrades, !!state.endless, getPage(state.pageIndex + 1).chapter)) return { error: "That Upgrade is not available yet." };
-      return { ...paid, upgrades: [...state.upgrades, offer.upgradeId] };
+      const upgraded = { ...paid, upgrades: [...state.upgrades, offer.upgradeId] };
+      if (["endless-extra-shelf", "expanded-bookstore"].includes(offer.upgradeId)) {
+        const extra = generateOffers(upgraded).find(o => o.kind === "letter");
+        if (extra) upgraded.offers = [...markSold, extra];
+      }
+      return upgraded;
+    }
   }
 }
 

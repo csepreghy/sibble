@@ -4,7 +4,7 @@ export type StoryAnimationMode = "normal" | "reduced";
 export const STORY_CONFETTI_MS = 800;
 /** Each tenfold increase doubles counting time; small totals finish promptly. */
 export function totalCountDuration(value: number): number {
-  return 600 * (Math.max(1, Math.abs(value)) / 10) ** Math.log10(2);
+  return Math.min(4800, 600 * (Math.max(1, Math.abs(value)) / 10) ** Math.log10(2));
 }
 
 /** Starts moving immediately, then progressively increases digits per second. */

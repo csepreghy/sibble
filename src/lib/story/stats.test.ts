@@ -67,6 +67,6 @@ test("records started and finished Stories, capping history at 20", () => {
   assert.equal(stats.finished.length, 2);
   assert.equal(stats.finished[0]!.result, "defeat");
   assert.equal(stats.finished[1]!.result, "victory");
-  for (let i = 0; i < 25; i++) stats = recordStoryEnded(stats, run, true);
+  for (let i = 0; i < 25; i++) stats = recordStoryEnded(stats, { ...run, runId: `run-${i}` }, true);
   assert.equal(stats.finished.length, 20);
 });
