@@ -2,6 +2,11 @@
 
 Source spec: uploaded `Sibble_-_Singleplayer_Story_Mode_pasted.md`. Multiplayer stays untouched.
 
+## Endless continuation
+- [ ] Chapter 3 choice and same-run continuation; exactly-once victory and permanent unlock.
+- [ ] Generated targets, ten Pens, six run-only Upgrades and Endless economy.
+- [ ] Existing statistics/history and compact numbers; regression and signed-in UI checks.
+
 ## New Story from a finished run
 - [x] "Start a new Story" on the Story Over sheet begins a fresh run with no confirmation prompt.
 - [x] Mid-run "New Story" still asks before replacing an in-progress run; verified on desktop and phone.
