@@ -166,7 +166,7 @@ function MatchPage() {
   const showPageResult = pub.lastPage && pub.phase === "bookstore" && seenPage !== pub.lastPage.pageIndex;
   const turnBanner = pub.phase === "play"
     ? myTurn ? <span className="flex items-center gap-2 text-gold"><Sparkles className="h-5 w-5" />YOUR TURN</span>
-      : <span className="flex items-center gap-2 text-muted-foreground"><Hourglass className="h-5 w-5 animate-pulse" />{theirs?.name ?? "Opponent"}'S TURN</span>
+      : <span className="flex items-center gap-2 text-muted-foreground"><Hourglass className="h-5 w-5 animate-pulse" />{(theirs?.name ?? "Opponent").toUpperCase()}'S TURN</span>
     : pub.phase === "bookstore" ? (mine.ready ? <span className="flex items-center gap-2 text-muted-foreground"><Hourglass className="h-5 w-5 animate-pulse" />Waiting for {theirs?.name} to finish shopping</span> : <span>Bookstore — buy, then Ready</span>)
     : finished ? <span>Story over</span> : null;
 
