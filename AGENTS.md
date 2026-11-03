@@ -1,3 +1,5 @@
+- Multiplayer Story is server-authoritative: full state (incl. private racks) lives in `story_matches` (service-role only) and changes only through `src/lib/story/match.functions.ts` calling pure transitions in `src/lib/story/multiplayer.ts` with version-checked writes; clients read the sanitized `story_match_feed` mirror (participants-only RLS, realtime). This keeps racks private and moves/purchases unforgeable and non-duplicable.
+
 <!-- LOVABLE:BEGIN -->
 > [!IMPORTANT]
 > This project is connected to [Lovable](https://lovable.dev). Avoid rewriting

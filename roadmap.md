@@ -2,6 +2,14 @@
 
 Source spec: uploaded `Sibble_-_Singleplayer_Story_Mode_pasted.md`. Multiplayer stays untouched.
 
+## Multiplayer Story
+- [x] Solo/Multiplayer entry and Continue Playing list with turn status, resume and abandon.
+- [x] Invite link lobby, join rules, realtime join/turn updates.
+- [x] Server-validated shared board, turns, private racks, scoring, tie-breakers, Page wins, first to five.
+- [x] Identical shared Bookstore offers, independent purchases, Ready gating; multiplayer rewards.
+- [x] Champion/defeat modal with rematch; Multiplayer statistics.
+- [ ] Follow-up: two-real-account live test; scoring animations and drag-and-drop on the multiplayer board.
+
 ## Endless continuation
 - [x] Chapter 3 choice and same-run continuation; exactly-once victory and permanent unlock.
 - [x] Generated targets, ten Pens, six run-only Upgrades and Endless economy.
