@@ -146,6 +146,8 @@ export interface MpDriver {
   reorder(ids: string[]): Promise<boolean>;
   ready(): Promise<boolean>;
   pass(): void;
+  /** Called when a local move's presentation has finished (gates result dialogs). */
+  settled?(): void;
 }
 
 export function StoryPlayScreen({ mp }: { mp?: MpDriver } = {}) {
@@ -713,6 +715,7 @@ export function StoryPlayScreen({ mp }: { mp?: MpDriver } = {}) {
 
     const commit = () => {
       animatingRef.current = false;
+      mpRef.current?.settled?.();
       setStory(mp ? mpRef.current!.state : result.state);
       setPending([]);
       setAnim(IDLE_ANIM);
