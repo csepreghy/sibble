@@ -169,8 +169,10 @@ test("win streak follows finish time, not later edits such as a rematch link", (
 });
 test("enhancement purchases stay hidden from the public view until both are Ready", () => {
   let m = started();
-  m = ok(centreMove(m, m.turn)); m = ok(centreMove(m, m.turn));
-  if (m.phase !== "bookstore") return; // page not over in this seed
+  m = ok(centreMove(m, m.turn));
+  for (let i = 0; i < 20 && m.phase === "play"; i++) m = ok(passTurn(m, m.turn));
+  expect(m.phase).toBe("bookstore");
+  expect(publicView(m).boardTiles.length).toBeGreaterThan(0);
   const before = JSON.stringify(publicView(m).boardTiles);
   const p = m.players[0]!;
   const tiles = p.state.tiles.map((t) => ({ ...t, enhancement: "x2" as never }));
