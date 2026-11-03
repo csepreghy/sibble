@@ -41,7 +41,8 @@ export interface MatchState {
   offers: Offer[] | null;
   players: [MatchPlayer, MatchPlayer | null];
   lastPage?: PageResult;
-  lastMove?: { seat: Seat; words: string[]; ink: number; pass?: boolean };
+  /** Public move record; `id` increases per move so clients animate each move once. Events are the visible scoring steps. */
+  lastMove?: { id?: number; seat: Seat; words: string[]; ink: number; pass?: boolean; events?: import("./scoring").PlacementScore["events"] };
   winner?: Seat;
   abandonedBy?: Seat;
   rematchId?: string;
@@ -202,7 +203,7 @@ export function passTurn(m: MatchState, seat: Seat): Result {
   if (problem) return { error: problem };
   const me = m.players[seat]!;
   const state = { ...me.state, page: { ...me.state.page, wordsLeft: me.state.page.wordsLeft - 1 } };
-  return { match: advance({ ...withPlayer(m, seat, { ...me, state }), lastMove: { seat, words: [], ink: 0, pass: true } }, seat) };
+  return { match: advance({ ...withPlayer(m, seat, { ...me, state }), lastMove: { id: (m.lastMove?.id ?? 0) + 1, seat, words: [], ink: 0, pass: true } }, seat) };
 }
 
 export function discard(m: MatchState, seat: Seat, tileIds: string[]): Result {
