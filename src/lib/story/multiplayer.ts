@@ -45,6 +45,8 @@ export interface MatchState {
   winner?: Seat;
   abandonedBy?: Seat;
   rematchId?: string;
+  /** Public board-tile metadata frozen while shopping so enhancement purchases stay hidden until both are Ready. */
+  frozenTiles?: StoryTile[];
 }
 
 type Result = { match: MatchState } | { error: string };
@@ -164,7 +166,7 @@ function resolvePage(m: MatchState): MatchState {
     state: { ...p.state, coins: p.state.coins + coins[i]!, pagesCompleted: p.state.pagesCompleted + 1,
       phase: finished ? (i === winner ? "victory" : "defeat") : "bookstore", offers: offers && offers.map((o) => ({ ...o })) } as StoryState,
   })) as MatchState["players"];
-  return { ...m, players, phase: finished ? "finished" : "bookstore", offers,
+  return { ...m, players, phase: finished ? "finished" : "bookstore", offers, frozenTiles: publicTiles(m),
     lastPage: { pageIndex: m.pageIndex, ink, winner, coins }, ...(finished ? { winner } : {}) };
 }
 
@@ -276,10 +278,14 @@ export function statusOf(m: MatchState): "waiting" | "active" | "finished" | "ca
   return m.phase === "lobby" ? "waiting" : m.phase === "finished" ? "finished" : m.phase === "cancelled" ? "cancelled" : "active";
 }
 
+function publicTiles(m: MatchState): StoryTile[] {
+  const onBoard = new Set(m.board.filter(Boolean).map((b) => b!.tileId));
+  return m.players.flatMap((p) => p?.state.tiles.filter((t) => onBoard.has(t.id)) ?? []);
+}
+
 /** Shared, non-secret view: no racks, bags, purchases or Pens. */
 export function publicView(m: MatchState) {
-  const onBoard = new Set(m.board.filter(Boolean).map((b) => b!.tileId));
-  const boardTiles = m.players.flatMap((p) => p?.state.tiles.filter((t) => onBoard.has(t.id)) ?? []);
+  const boardTiles = m.phase === "bookstore" && m.frozenTiles ? m.frozenTiles : publicTiles(m);
   return {
     phase: m.phase, pageIndex: m.pageIndex, board: m.board, usedPremiums: m.usedPremiums, boardTiles,
     turn: m.turn, tiebreaks: m.tiebreaks, lastPage: m.lastPage ?? null, lastMove: m.lastMove ?? null,

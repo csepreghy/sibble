@@ -16,12 +16,21 @@ export interface FeedRow { match_id: string; player1: string; player2: string | 
 export function useMatchFeed(statuses: string[]) {
   const [rows, setRows] = useState<FeedRow[] | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [tick, setTick] = useState(0);
   useEffect(() => {
     let alive = true;
     const load = async () => {
       const { data: auth } = await supabase.auth.getUser();
-      const { data } = await supabase.from("story_match_feed").select("*").in("status", statuses).order("updated_at", { ascending: false }).limit(100);
-      if (alive) { setUserId(auth.user?.id ?? null); setRows((data ?? []) as unknown as FeedRow[]); }
+      // Page through every row so long histories never truncate statistics.
+      const all: FeedRow[] = [];
+      for (let from = 0; ; from += 500) {
+        const { data, error } = await supabase.from("story_match_feed").select("*").in("status", statuses).order("updated_at", { ascending: false }).range(from, from + 499);
+        if (error) { if (alive) setFailed(true); return; }
+        all.push(...((data ?? []) as unknown as FeedRow[]));
+        if (!data || data.length < 500) break;
+      }
+      if (alive) { setFailed(false); setUserId(auth.user?.id ?? null); setRows(all); }
     };
     void load();
     const channel = supabase.channel(`story-feed-${Math.random().toString(36).slice(2)}`)
@@ -32,8 +41,8 @@ export function useMatchFeed(statuses: string[]) {
     window.addEventListener("online", onOnline); document.addEventListener("visibilitychange", onVisible);
     return () => { alive = false; void supabase.removeChannel(channel); window.removeEventListener("online", onOnline); document.removeEventListener("visibilitychange", onVisible); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statuses.join(",")]);
-  return { rows, userId };
+  }, [statuses.join(","), tick]);
+  return { rows, userId, failed, retry: () => setTick((t) => t + 1) };
 }
 
 export function StoryContinue() {
@@ -43,7 +52,7 @@ export function StoryContinue() {
   const [busy, setBusy] = useState(false);
   const [solo, setSolo] = useState<ReturnType<typeof loadStory>>(null);
   useEffect(() => setSolo(loadStory()), []);
-  const { rows, userId } = useMatchFeed(["waiting", "active"]);
+  const { rows, userId, failed, retry } = useMatchFeed(["waiting", "active"]);
   const soloActive = solo && (solo.phase === "play" || solo.phase === "bookstore");
 
   async function create() {
@@ -65,6 +74,7 @@ export function StoryContinue() {
       <Button size="lg" asChild><Link to="/story/play"><BookOpen className="h-5 w-5" />{soloActive ? "Continue Solo" : "New Solo Story"}</Link></Button>
       <Button size="lg" variant="secondary" disabled={busy} onClick={create}><Users className="h-5 w-5" />Multiplayer</Button>
     </div>
+    {failed && <div role="alert" className="flex items-center justify-between rounded-lg border border-border p-3 text-sm">Couldn't load your matches.<Button size="sm" variant="secondary" onClick={retry}>Retry</Button></div>}
     {(soloActive || (rows && rows.length > 0)) && <section aria-label="Continue Playing" className="space-y-2">
       <h2 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Continue Playing</h2>
       {soloActive && <Card title="Solo Story" sub={pageLabel(solo.pageIndex)} action={<Button size="sm" asChild><Link to="/story/play">Continue</Link></Button>} />}

@@ -192,7 +192,7 @@ function MatchPage() {
       {!finished && <Button variant="ghost" size="sm" disabled={busy} onClick={() => { if (window.confirm("Abandon this match? It counts as a loss.")) void act({ type: "abandon" }); }}>Abandon</Button>}
     </header>
     <section aria-label="Scores" className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-xl border bg-card p-2">
-      <PlayerPanel name="You" ink={mine.ink} words={mine.wordsLeft} active={pub.phase === "play" && pub.turn === seat} />
+      <PlayerPanel name={`${mine.name} (you)`} ink={mine.ink} words={mine.wordsLeft} active={pub.phase === "play" && pub.turn === seat} />
       <div className="text-center"><div className="text-[10px] uppercase text-muted-foreground">Pages</div><div className="font-display text-2xl font-black tabular-nums">{mine.wins}–{theirs?.wins ?? 0}</div></div>
       <PlayerPanel name={theirs?.name ?? "Opponent"} ink={theirs?.ink ?? 0} words={theirs?.wordsLeft ?? 0} active={pub.phase === "play" && pub.turn !== seat} right />
     </section>
