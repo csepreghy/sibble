@@ -8,7 +8,7 @@ Source spec: uploaded `Sibble_-_Singleplayer_Story_Mode_pasted.md`. Multiplayer 
 - [x] Server-validated shared board, turns, private racks, scoring, tie-breakers, Page wins, first to five.
 - [x] Identical shared Bookstore offers, independent purchases, Ready gating; multiplayer rewards.
 - [x] Champion/defeat modal with rematch; Multiplayer statistics.
-- [ ] Follow-up: two-real-account live test; scoring animations and drag-and-drop on the multiplayer board.
+- [ ] Follow-up: two-real-account live test (needs a second test account); rematch navigation live check; Pen explanation on tap, Plot Twist rules, score celebrations; drag-and-drop on the multiplayer board.
 
 ## Endless continuation
 - [x] Chapter 3 choice and same-run continuation; exactly-once victory and permanent unlock.
