@@ -92,7 +92,7 @@ function MatchPage() {
       if ("error" in r && r.error) toast.error(r.error);
       if ("stale" in r) toast.message("The match was updated.");
       apply(r.snapshot);
-      return r;
+
     } catch (e) { toast.error(e instanceof Error ? e.message : "Something went wrong."); void refresh(); }
     finally { setBusy(false); }
   }
