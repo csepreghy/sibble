@@ -1,3 +1,4 @@
+import { acceptSnapshot, CelebrationLedger, pageCompletionKey, stillCurrent } from "@/lib/story/mpPresentation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -57,19 +58,27 @@ function MatchPage() {
   const [discardSel, setDiscardSel] = useState<string[]>([]);
   const [rackOrder, setRackOrder] = useState<string[] | null>(null);
   const [letterFor, setLetterFor] = useState<{ kind: "blank"; index: number; tileId: string } | { kind: "enh"; offerIndex: number } | null>(null);
+  const [hold, setHold] = useState(false);
   const [seenPage, setSeenPage] = useState<number | null>(null);
   const [inspect, setInspect] = useState<PenInstance | null>(null);
   const versionRef = useRef(-1);
   const idRef = useRef(matchId);
   // A new match ID (rematch/navigation) starts from a clean slate; answers for the old ID are ignored.
-  if (idRef.current !== matchId) { idRef.current = matchId; versionRef.current = -1; }
+  const ledger = useRef(new CelebrationLedger());
+  const chain = useRef<Promise<unknown>>(Promise.resolve());
+  const seenMove = useRef<number | null>(null);
+  if (idRef.current !== matchId) {
+    idRef.current = matchId; versionRef.current = -1; ledger.current.reset();
+    chain.current = Promise.resolve(); seenMove.current = null;
+  }
   useEffect(() => {
     setSnap(null); setInvite(null); setLoadError(null); setPending([]); setSelected(null);
-    setDiscardSel([]); setDiscardMode(false); setRackOrder(null); setLetterFor(null); setSeenPage(null);
+    setDiscardSel([]); setDiscardMode(false); setRackOrder(null); setLetterFor(null); setSeenPage(null); setHold(false); setBusy(false);
   }, [matchId]);
 
   const apply = useCallback((s: MatchSnapshot) => {
-    if (s.id !== idRef.current || s.version < versionRef.current) return;
+    if (!acceptSnapshot(idRef.current, versionRef.current, s)) return;
+    ledger.current.observe(s);
     if (s.version !== versionRef.current) { setPending([]); setSelected(null); setDiscardSel([]); setDiscardMode(false); setRackOrder(null); }
     versionRef.current = s.version;
     setSnap(s);
@@ -113,18 +122,17 @@ function MatchPage() {
     finally { setBusy(false); }
   }
 
-  const [hold, setHold] = useState(false);
-  const seenMove = useRef<number | null>(null);
   const snapRef = useRef(snap);
   snapRef.current = snap;
-  const chain = useRef<Promise<unknown>>(Promise.resolve());
   // Serialized intents: each one uses the newest version, so quick purchases never collide as stale.
   function send(action: MatchAction): Promise<MatchSnapshot | null> {
+    const origin = matchId;
     const run = async () => {
       const cur = snapRef.current;
-      if (!cur || cur.id !== idRef.current) return null;
+      if (!cur || !stillCurrent(origin, idRef.current) || cur.id !== origin) return null;
       try {
         const r = await actFn({ data: { id: cur.id, version: cur.version, action } });
+        if (!stillCurrent(origin, idRef.current)) return null;
         apply(r.snapshot);
         snapRef.current = r.snapshot;
         if ("error" in r && r.error) { toast.error(r.error); return null; }
@@ -132,7 +140,8 @@ function MatchPage() {
         return r.snapshot;
       } catch (e) { toast.error(e instanceof Error ? e.message : "Something went wrong."); void refresh(); return null; }
     };
-    const p = chain.current.then(run, run);
+    const queue = chain.current;
+    const p = queue.then(run, run);
     chain.current = p;
     return p;
   }
@@ -186,10 +195,12 @@ function MatchPage() {
   const header = <div className="story-mp-bar flex items-center gap-2 px-3 pt-2 text-xs font-bold" role="status">
     <Button variant="ghost" size="icon" className="h-7 w-7" asChild aria-label="Back to menu"><Link to="/story"><ArrowLeft className="h-4 w-4" /></Link></Button>
     <span className="truncate">{mine.name} <span className="font-display text-base tabular-nums">{mine.wins}–{theirs?.wins ?? 0}</span> {theirs?.name}</span>
+    <span className="text-muted-foreground tabular-nums" title="Word plays left">{mine.wordsLeft}w · {theirs?.wordsLeft ?? 0}w</span>
     {pub.tiebreaks ? <span className="text-accent">Tie-breaker</span> : null}
     <span className="ml-auto">{status}</span>
     {!finished && <Button variant="ghost" size="sm" className="h-7 px-2" disabled={busy} onClick={() => { if (window.confirm("Abandon this match? It counts as a loss.")) void send({ type: "abandon" }); }}>Abandon</Button>}
   </div>;
+  const remoteKey = ledger.current.pending(snap);
   const driver: MpDriver = {
     state: view!, canAct: myTurn, isReady: mine.ready, opponentName: theirs?.name ?? "Opponent", opponentInk: theirs?.ink ?? 0, header,
     play: async (placements) => {
@@ -198,8 +209,12 @@ function MatchPage() {
       const next = await send({ type: "play", placements });
       if (!next) { setHold(false); return { error: "That word wasn't accepted." }; }
       const lm = next.public.lastMove;
+      if (lm?.id != null && seenMove.current != null && lm.id <= seenMove.current) { setHold(false); return { error: "That move was already shown." }; }
       seenMove.current = lm?.id ?? seenMove.current;
       const done = next.public.phase !== "play" || next.public.pageIndex !== beforePage;
+      // This client presents the completion itself; don't present it again as a remote Page.
+      const k = pageCompletionKey(next);
+      if (done && k) ledger.current.claim(k);
       return { events: lm?.events ?? [], ink: lm?.ink ?? 0, pageCompleted: done, coins: done ? next.public.lastPage?.coins[seat] ?? 0 : 0 };
     },
     discard: async (ids) => !!(await send({ type: "discard", tileIds: ids })),
@@ -209,11 +224,15 @@ function MatchPage() {
     ready: async () => !!(await send({ type: "ready" })),
     pass: () => { if (window.confirm("Pass and give up this word play?")) void send({ type: "pass" }); },
     settled: () => setHold(false),
+    remotePage: remoteKey ? { key: remoteKey, coins: pub.lastPage?.coins[seat] ?? 0 } : undefined,
+    claimRemote: (key) => { if (!ledger.current.claim(key)) return false; setHold(true); return true; },
+    opponentWordsLeft: theirs?.wordsLeft ?? 0,
+    shopCoins: pub.lastPage?.coins[seat] ?? 0,
   };
 
   return <>
     <StoryPlayScreen key={snap.id} mp={driver} />
-    <Dialog open={!!showPageResult && !hold} onOpenChange={(o) => !o && setSeenPage(pub.lastPage?.pageIndex ?? null)}>
+    <Dialog open={!!showPageResult && !hold && !remoteKey} onOpenChange={(o) => !o && setSeenPage(pub.lastPage?.pageIndex ?? null)}>
       {pub.lastPage && <DialogContent>
         <DialogHeader><DialogTitle className="font-display text-2xl">PAGE COMPLETE</DialogTitle>
           <DialogDescription>{pub.lastPage.winner === seat ? "You win this Page!" : `${theirs?.name} wins this Page.`}</DialogDescription></DialogHeader>
@@ -223,7 +242,7 @@ function MatchPage() {
       </DialogContent>}
     </Dialog>
 
-    <Dialog open={finished && !hold}>
+    <Dialog open={finished && !hold && !remoteKey}>
       <DialogContent className="text-center">
         <DialogHeader><DialogTitle className="flex items-center justify-center gap-2 font-display text-3xl">{pub.winner === seat ? <><Crown className="h-7 w-7 text-gold" />STORY CHAMPION!</> : "The Story ends"}</DialogTitle>
           <DialogDescription>{pub.abandonedBy != null ? (pub.abandonedBy === seat ? "You abandoned this match." : `${theirs?.name} abandoned the match.`)

@@ -300,7 +300,7 @@ function OfferDetailBody({ offer, state, dialog }: { offer: Offer; state: StoryS
 }
 
 /** Left-sidebar Page Complete summary shown while shopping. */
-export function BookstoreSummary({ state, onContinue, onOpenRunInfo }: { state: StoryState; onContinue: () => void; onOpenRunInfo: () => void }) {
+export function BookstoreSummary({ state, onContinue, onOpenRunInfo, mp }: { state: StoryState; onContinue: () => void; onOpenRunInfo: () => void; mp?: { coins: number; isReady: boolean } }) {
   const done = getPage(state.pageIndex);
   if (!done) return null;
   const next = getPage(state.pageIndex + 1);
@@ -315,11 +315,11 @@ export function BookstoreSummary({ state, onContinue, onOpenRunInfo }: { state: 
       <div className="rounded-lg bg-secondary/70 p-3 text-center">
         <p className="text-xs text-muted-foreground">Ink earned</p>
         <p className="text-xl font-bold">
-          {compactNumber(state.page.ink)} <span className="text-sm text-muted-foreground">/ {compactNumber(done.inkTarget)}</span>
+          {compactNumber(state.page.ink)} {mp ? null : <span className="text-sm text-muted-foreground">/ {compactNumber(done.inkTarget)}</span>}
         </p>
         <p className="mt-2 text-xs text-muted-foreground">Reward</p>
         <p className="flex items-center justify-center gap-1 text-lg font-bold text-gold">
-          +{state.completedPages?.find(page => page.pageIndex === state.pageIndex)?.coins ?? done.coins} <Coins className="h-4 w-4" />
+          +{mp ? mp.coins : state.completedPages?.find(page => page.pageIndex === state.pageIndex)?.coins ?? done.coins} <Coins className="h-4 w-4" />
         </p>
       </div>
       <ScoreBoxes />
@@ -333,7 +333,7 @@ export function BookstoreSummary({ state, onContinue, onOpenRunInfo }: { state: 
             </p>
           ) : null}
           <p className="mt-1 text-xs text-muted-foreground">
-            {next.size}×{next.size} board · {compactNumber(next.inkTarget)} Ink required
+            {next.size}×{next.size} board{mp ? "" : ` · ${compactNumber(next.inkTarget)} Ink required`}
           </p>
         </div>
       ) : null}
@@ -342,8 +342,8 @@ export function BookstoreSummary({ state, onContinue, onOpenRunInfo }: { state: 
           <Coins className="h-7 w-7" /> {state.coins}
         </span>
         <Button variant="outline" size="lg" className="w-full" onClick={onOpenRunInfo}>Run Info &amp; Stats</Button>
-        <Button size="lg" className="relative tile-gloss w-full" onClick={onContinue}>
-          Continue Story <ArrowRight className="ml-1 h-4 w-4" />
+        <Button size="lg" className="relative tile-gloss w-full" disabled={mp?.isReady} onClick={onContinue}>
+          {mp ? (mp.isReady ? "Waiting…" : "Ready") : "Continue Story"} <ArrowRight className="ml-1 h-4 w-4" />
         </Button>
       </div>
     </div>
