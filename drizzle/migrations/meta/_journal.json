@@ -15,6 +15,13 @@
       "when": 1793706917701,
       "tag": "0001_story_matches",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793707835564,
+      "tag": "0002_story_match_feed_sync",
+      "breakpoints": true
     }
   ]
 }

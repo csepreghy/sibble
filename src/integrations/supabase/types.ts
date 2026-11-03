@@ -171,6 +171,7 @@ export type Database = {
       }
       story_match_feed: {
         Row: {
+          finished_at: string | null
           match_id: string
           player1: string
           player2: string | null
@@ -180,6 +181,7 @@ export type Database = {
           version: number
         }
         Insert: {
+          finished_at?: string | null
           match_id: string
           player1: string
           player2?: string | null
@@ -189,6 +191,7 @@ export type Database = {
           version?: number
         }
         Update: {
+          finished_at?: string | null
           match_id?: string
           player1?: string
           player2?: string | null
@@ -210,9 +213,11 @@ export type Database = {
       story_matches: {
         Row: {
           created_at: string
+          finished_at: string | null
           id: string
           player1: string
           player2: string | null
+          public_view: Json
           state: Json
           status: string
           updated_at: string
@@ -220,9 +225,11 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          finished_at?: string | null
           id?: string
           player1: string
           player2?: string | null
+          public_view?: Json
           state?: Json
           status?: string
           updated_at?: string
@@ -230,9 +237,11 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          finished_at?: string | null
           id?: string
           player1?: string
           player2?: string | null
+          public_view?: Json
           state?: Json
           status?: string
           updated_at?: string
