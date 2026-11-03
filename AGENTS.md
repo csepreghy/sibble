@@ -1,3 +1,6 @@
+- Subdirectories have their own `AGENTS.md`; read them before changing files there (Story rules: `src/lib/story/AGENTS.md`).
+- Multiplayer Story is server-authoritative: full state (incl. private racks) lives in `story_matches` (service-role only) and changes only through `src/lib/story/match.functions.ts` calling pure transitions in `src/lib/story/multiplayer.ts` with version-checked writes; clients read the sanitized `story_match_feed` mirror (participants-only RLS, realtime). This keeps racks private and moves/purchases unforgeable and non-duplicable.
+
 <!-- LOVABLE:BEGIN -->
 > [!IMPORTANT]
 > This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
@@ -11,30 +14,11 @@
 
 ## Architecture rules
 
-- Endless reuses the Story engine and generated `getPage()` accessor; original PAGES/IDs remain unchanged. Unlocks and idempotent run-ID victories live in existing per-device stats, while all Endless Upgrades stay run-local. Numeric scoring/targets saturate at a finite cap to keep saves and event animations valid.
 
-- Story rack returns commit pending-placement removal immediately; the shared rack reserves the destination and animates a presentation-only tile clone from the board bounds while its existing FLIP animation makes space, respecting reduced motion.
 
-- Owned Story Pens use one shared sortable control for touch, mouse and keyboard; persist reordered instances in the existing local run so gameplay and shopping share order and bonuses.
 
-- Pen explanations use a shared presentation component backed by the Pen definitions, with live scaling bonuses passed from Pen instances, so every inspector stays consistent without altering scoring.
 - Story mode (singleplayer roguelike) lives in `src/lib/story/` (engine, scoring, boards, pens, upgrades, placement, storage) with routes `src/routes/_authenticated/story.tsx` and `story_.play.tsx`. Run state persists in localStorage (`sibble:story:v1`), never in the database — it's per-device and needs no auth or sync.
-- Story scoring is separate from multiplayer scoring: `src/lib/story/scoring.ts` computes Base × Mult and returns an event list the UI animates step by step, so the animation always matches the maths. Multiplayer `src/lib/scrabble.ts` is untouched by Story mode.
-- Story scoring presentation uses per-device animation mode independent of speed: Normal follows contribution arrivals, Reduced filters to authoritative word/results and counts Base/Mult together before the shared finale; all presentation respects OS reduced motion and never recalculates scores.
-- Reduced Story total counters and their pre-finale wait share the same number-dependent timing helper, so each box finishes independently and the finale never interrupts the longer count.
-- Story Pen purchase flights use the inspected item's live bounds and the destination Pen slot; purchases commit immediately and only their flight/arrival pulse is presentation state, with reduced-motion support.
-- Story boards are size-parameterized (5×5–15×15); don't reuse `SIZE`-bound helpers from `src/lib/scrabble.ts` there — use `src/lib/story/placement.ts`.
-- Story responsive presentation uses one mounted gameplay route and shared board/rack/shop controls, selected by the presentation-only layout helper; this preserves pending placements and discard selections across orientation changes. Compact sizing uses the visual viewport and safe areas, with secondary information in overlays.
-- Large Story desktop UI uses shared capped CSS size tiers in gameplay and Bookstore; enlarged sidebars retain their original flex footprints and the footer retains its original height, so controls grow without changing board geometry. The centre layout has no decorative frame; the actual board supplies its frame. Shop content reserves the enlarged sidebar gutters. Desktop gameplay counters and animated coins render in the left sidebar; compact controls retain their original positions.
-- Story live word inspection uses the existing placement validator and scoring pipeline with no Pens; shared score-display components keep gameplay and Bookstore score presentation consistent without changing committed scoring.
-- Story rack presentation excludes pending tile IDs; placement validation rejects duplicate physical IDs, and whole-word overlays use grid tracks so they stay aligned while zooming. Owned Pen and shop inspectors share the same detail-tile shell to keep their appearance consistent.
-- Any element given the `tile-gloss` shine must also be `relative` (or otherwise positioned): its shine is an absolutely positioned pseudo-element and escapes to the viewport otherwise, painting a sheen over the whole screen.
-- Story completed-page reviews use immutable board, tile, upgrade and scored-word snapshots captured at completion in the per-device run; reviewing a snapshot must never mutate the live page or its pending placements.
-- Story completion letter flights restore the original empty board through presentation-only state, never hiding whole board cells or clearing the saved completed-page snapshot.
-- Story statistics live in `src/lib/story/stats.ts`, persisted per device in localStorage (`sibble:story:stats:v1`) and recorded from the play route after commits — never in the database, never recalculated from presentation state.
 - `/lobby` is the mode chooser; `/story` and `/multiplayer` use the shared centered `ModeMenu`. `AppNav` derives the mode from the path and shows Play/History/Statistics/Settings without a mode toggle; `MenuSettings` reuses existing per-device Story preferences and the shared theme submenu for Multiplayer, keeping settings consistent without changing game or run storage. Play contains mode-specific start/resume actions. The Story Collection modal reads all Pen/upgrade definitions and reuses Bookstore visuals, the detail shell and Pen descriptions without creating or mutating a run.
-- Story word-length starting Mult comes only from `wordLengthMult()` in `src/lib/story/scoring.ts`; UI must never assume Mult equals word length, so balance changes stay in one table.
 - On bun DNSResolveFailed, use `npm install --no-package-lock --no-save --ignore-scripts`; keep the bun lockfile.
 - Stale route chunks get one guarded reload per minute; preserve game/session storage and offer manual Refresh for persistent/offline failures.
-- Story Page completion goes through `finishPage()` in `src/lib/story/engine.ts` (auto on last word or via Finish Page once the target is met); all Page Coins are granted only there so rewards are credited exactly once. Actual excess Ink percentage is presentation-only and independent of reward tiers/caps.
 - Upgrade display names may change without changing their persisted IDs or engine reward fields, so existing per-device runs retain ownership and benefits.

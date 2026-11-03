@@ -24,7 +24,7 @@ function shuffle<T>(items: T[]): T[] {
   return copy;
 }
 
-function buildTiles(): StoryTile[] {
+export function buildTiles(): StoryTile[] {
   const tiles: StoryTile[] = [];
   for (const [letter, count] of Object.entries(DISTRIBUTION)) {
     for (let i = 0; i < count; i++) {

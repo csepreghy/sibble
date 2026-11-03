@@ -22,6 +22,7 @@ import { Route as AuthenticatedGameGameIdRouteImport } from './routes/_authentic
 import { Route as AuthenticatedStoryHistoryRouteImport } from './routes/_authenticated/story_.history'
 import { Route as AuthenticatedStoryPlayRouteImport } from './routes/_authenticated/story_.play'
 import { Route as AuthenticatedStoryStatsRouteImport } from './routes/_authenticated/story_.stats'
+import { Route as AuthenticatedStoryMatchMatchIdRouteImport } from './routes/_authenticated/story_.match.$matchId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -89,6 +90,12 @@ const AuthenticatedStoryStatsRoute = AuthenticatedStoryStatsRouteImport.update({
   path: '/story/stats',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedStoryMatchMatchIdRoute =
+  AuthenticatedStoryMatchMatchIdRouteImport.update({
+    id: '/story_/match/$matchId',
+    path: '/story/match/$matchId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -103,6 +110,7 @@ export interface FileRoutesByFullPath {
   '/story/history': typeof AuthenticatedStoryHistoryRoute
   '/story/play': typeof AuthenticatedStoryPlayRoute
   '/story/stats': typeof AuthenticatedStoryStatsRoute
+  '/story/match/$matchId': typeof AuthenticatedStoryMatchMatchIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -117,6 +125,7 @@ export interface FileRoutesByTo {
   '/story/history': typeof AuthenticatedStoryHistoryRoute
   '/story/play': typeof AuthenticatedStoryPlayRoute
   '/story/stats': typeof AuthenticatedStoryStatsRoute
+  '/story/match/$matchId': typeof AuthenticatedStoryMatchMatchIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -133,6 +142,7 @@ export interface FileRoutesById {
   '/_authenticated/story_/history': typeof AuthenticatedStoryHistoryRoute
   '/_authenticated/story_/play': typeof AuthenticatedStoryPlayRoute
   '/_authenticated/story_/stats': typeof AuthenticatedStoryStatsRoute
+  '/_authenticated/story_/match/$matchId': typeof AuthenticatedStoryMatchMatchIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -149,6 +159,7 @@ export interface FileRouteTypes {
     | '/story/history'
     | '/story/play'
     | '/story/stats'
+    | '/story/match/$matchId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -163,6 +174,7 @@ export interface FileRouteTypes {
     | '/story/history'
     | '/story/play'
     | '/story/stats'
+    | '/story/match/$matchId'
   id:
     | '__root__'
     | '/'
@@ -178,6 +190,7 @@ export interface FileRouteTypes {
     | '/_authenticated/story_/history'
     | '/_authenticated/story_/play'
     | '/_authenticated/story_/stats'
+    | '/_authenticated/story_/match/$matchId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -279,6 +292,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStoryStatsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/story_/match/$matchId': {
+      id: '/_authenticated/story_/match/$matchId'
+      path: '/story/match/$matchId'
+      fullPath: '/story/match/$matchId'
+      preLoaderRoute: typeof AuthenticatedStoryMatchMatchIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -292,6 +312,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedStoryHistoryRoute: typeof AuthenticatedStoryHistoryRoute
   AuthenticatedStoryPlayRoute: typeof AuthenticatedStoryPlayRoute
   AuthenticatedStoryStatsRoute: typeof AuthenticatedStoryStatsRoute
+  AuthenticatedStoryMatchMatchIdRoute: typeof AuthenticatedStoryMatchMatchIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -304,6 +325,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedStoryHistoryRoute: AuthenticatedStoryHistoryRoute,
   AuthenticatedStoryPlayRoute: AuthenticatedStoryPlayRoute,
   AuthenticatedStoryStatsRoute: AuthenticatedStoryStatsRoute,
+  AuthenticatedStoryMatchMatchIdRoute: AuthenticatedStoryMatchMatchIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
