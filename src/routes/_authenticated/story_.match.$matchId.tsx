@@ -10,11 +10,14 @@ import { StoryBoard } from "@/components/story/StoryBoard";
 import { StoryRack } from "@/components/story/StoryRack";
 import { Bookstore } from "@/components/story/Bookstore";
 import { PenSidebar } from "@/components/story/PenSidebar";
-import { getPage } from "@/lib/story/boards";
+import { getPage, TWIST_INFO } from "@/lib/story/boards";
+import { penDef } from "@/lib/story/pens";
+import { PenDescription, PenCurrentBonus } from "@/components/story/PenDescription";
+import { ShopDetailTile } from "@/components/story/ShopDetailTile";
 import { compactNumber } from "@/lib/story/format";
 import { penSlots } from "@/lib/story/upgrades";
 import { useStoryTheme } from "@/hooks/useStoryTheme";
-import type { PendingPlacement, StoryTile } from "@/lib/story/types";
+import type { PenInstance, PendingPlacement, StoryTile } from "@/lib/story/types";
 import {
   actStoryMatch, getStoryMatch, joinStoryMatch, rematchStoryMatch, type MatchAction, type MatchSnapshot,
 } from "@/lib/story/match.functions";
@@ -55,6 +58,7 @@ function MatchPage() {
   const [rackOrder, setRackOrder] = useState<string[] | null>(null);
   const [letterFor, setLetterFor] = useState<{ kind: "blank"; index: number; tileId: string } | { kind: "enh"; offerIndex: number } | null>(null);
   const [seenPage, setSeenPage] = useState<number | null>(null);
+  const [inspect, setInspect] = useState<PenInstance | null>(null);
   const versionRef = useRef(-1);
   const idRef = useRef(matchId);
   // A new match ID (rematch/navigation) starts from a clean slate; answers for the old ID are ignored.
@@ -187,7 +191,8 @@ function MatchPage() {
     <header className="flex items-center gap-2">
       <Button variant="ghost" size="icon" asChild aria-label="Back to menu"><Link to="/story"><ArrowLeft className="h-5 w-5" /></Link></Button>
       <div className="flex-1 text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        Chapter {config.chapter} · Page {config.page}{config.plotTwist ? " · Plot Twist" : ""}{pub.tiebreaks ? ` · Tie-breaker ${pub.tiebreaks}` : ""}
+        Chapter {config.chapter} · Page {config.page}{config.plotTwist ? <> · <span title={TWIST_INFO[config.plotTwist].description} className="text-accent">{TWIST_INFO[config.plotTwist].name}</span></> : ""}{pub.tiebreaks ? ` · Tie-breaker ${pub.tiebreaks}` : ""}
+        {config.plotTwist && <span className="block text-[0.7rem] font-normal normal-case text-muted-foreground">{TWIST_INFO[config.plotTwist].description}</span>}
       </div>
       {!finished && <Button variant="ghost" size="sm" disabled={busy} onClick={() => { if (window.confirm("Abandon this match? It counts as a loss.")) void act({ type: "abandon" }); }}>Abandon</Button>}
     </header>
@@ -229,9 +234,15 @@ function MatchPage() {
         </>}
       </div>}
     </>}
-    <PenSidebar horizontal pens={me.pens} slots={penSlots(me.upgrades)} onInspect={(pen) => pub.phase === "bookstore" && window.confirm("Sell this Pen?") && void act({ type: "sell", penId: pen.penId })}
+    <PenSidebar horizontal pens={me.pens} slots={penSlots(me.upgrades)} onInspect={(pen) => setInspect(pen)}
       onReorder={(a, b) => { const ids = me.pens.map((p) => p.penId); const from = ids.indexOf(a); const to = ids.indexOf(b); ids.splice(to, 0, ids.splice(from, 1)[0]!); void act({ type: "reorder", order: ids }); }} disabled={busy} />
 
+    <Dialog open={!!inspect} onOpenChange={(o) => !o && setInspect(null)}>
+      <DialogContent className="max-w-sm">{inspect && <><DialogHeader><DialogTitle>{penDef(inspect.penId).name}</DialogTitle></DialogHeader>
+        <ShopDetailTile glow="var(--primary)"><PenDescription penId={inspect.penId} /><PenCurrentBonus pen={inspect} /></ShopDetailTile>
+        {pub.phase === "bookstore" && !mine.ready && <Button variant="destructive" disabled={busy} onClick={() => { void act({ type: "sell", penId: inspect.penId }); setInspect(null); }}>Sell</Button>}
+      </>}</DialogContent>
+    </Dialog>
     <Dialog open={!!letterFor} onOpenChange={(o) => !o && setLetterFor(null)}>
       <DialogContent><DialogHeader><DialogTitle>{letterFor?.kind === "blank" ? "Choose a letter for the blank" : "Choose a letter to enhance"}</DialogTitle></DialogHeader>
         <div className="grid grid-cols-7 gap-1.5">{LETTERS.map((l) => <Button key={l} variant="outline" onClick={() => chooseLetter(l)}>{l}</Button>)}</div>
@@ -252,7 +263,7 @@ function MatchPage() {
       <DialogContent className="text-center">
         <DialogHeader><DialogTitle className="flex items-center justify-center gap-2 font-display text-3xl">{pub.winner === seat ? <><Crown className="h-7 w-7 text-gold" />STORY CHAMPION!</> : "The Story ends"}</DialogTitle>
           <DialogDescription>{pub.abandonedBy != null ? (pub.abandonedBy === seat ? "You abandoned this match." : `${theirs?.name} abandoned the match.`)
-            : pub.winner === seat ? "You won five Pages first." : `${theirs?.name} won five Pages first. Well fought!`}</DialogDescription></DialogHeader>
+            : pub.winner === seat ? `${mine.name} won five Pages first — champion!` : `${theirs?.name} won five Pages first. Well fought!`}</DialogDescription></DialogHeader>
         <p className="font-display text-2xl font-black">{mine.wins}–{theirs?.wins ?? 0}</p>
         <p className="text-sm text-muted-foreground">Total Ink — You {compactNumber(mine.totalInk)} · {theirs?.name} {compactNumber(theirs?.totalInk ?? 0)}</p>
         <div className="flex justify-center gap-2">

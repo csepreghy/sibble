@@ -167,3 +167,14 @@ test("win streak follows finish time, not later edits such as a rematch link", (
   const s = mpStats([row(0, "1", "9"), row(0, "2", "2"), row(1, "3", "3")], "u1");
   expect(s.bestStreak).toBe(2);
 });
+test("enhancement purchases stay hidden from the public view until both are Ready", () => {
+  let m = started();
+  m = ok(centreMove(m, m.turn)); m = ok(centreMove(m, m.turn));
+  if (m.phase !== "bookstore") return; // page not over in this seed
+  const before = JSON.stringify(publicView(m).boardTiles);
+  const p = m.players[0]!;
+  const tiles = p.state.tiles.map((t) => ({ ...t, enhancement: "x2" as never }));
+  const bought = { ...m, players: [{ ...p, state: { ...p.state, tiles } }, m.players[1]] } as MatchState;
+  expect(JSON.stringify(publicView(bought).boardTiles)).toBe(before);
+  expect(JSON.stringify(publicView(bought)).includes('"rack"')).toBe(false);
+});
