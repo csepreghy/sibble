@@ -28,23 +28,25 @@ async function load(id: string) {
   return { version: data.version, match: data.state as unknown as MatchState };
 }
 
+// The sanitized public view is written in the same row update; a database trigger
+// mirrors it to the participant feed atomically and never lets an older version win.
+function row(match: MatchState, finishedAt: string | null) {
+  const status = statusOf(match);
+  return {
+    state: match as unknown as Json, public_view: publicView(match) as unknown as Json, status,
+    player2: match.players[1]?.userId ?? null, updated_at: new Date().toISOString(),
+    finished_at: finishedAt ?? (status === "finished" ? new Date().toISOString() : null),
+  };
+}
+
 async function save(id: string, version: number, match: MatchState) {
   const db = await admin();
-  const status = statusOf(match);
+  const { data: cur } = await db.from("story_matches").select("finished_at").eq("id", id).maybeSingle();
   const { data, error } = await db.from("story_matches")
-    .update({ state: match as unknown as Json, version: version + 1, status, player2: match.players[1]?.userId ?? null, updated_at: new Date().toISOString() })
+    .update({ ...row(match, cur?.finished_at ?? null), version: version + 1 })
     .eq("id", id).eq("version", version).select("id");
   if (error) throw new Error("Could not save the move.");
   if (!data?.length) throw new Error("The match changed — refreshing.");
-  await mirror(id, version + 1, match);
-}
-
-async function mirror(id: string, version: number, match: MatchState) {
-  const db = await admin();
-  await db.from("story_match_feed").upsert({
-    match_id: id, player1: match.players[0].userId, player2: match.players[1]?.userId ?? null, status: statusOf(match),
-    version, public: publicView(match) as unknown as Json, updated_at: new Date().toISOString(),
-  });
 }
 
 function snapshot(id: string, version: number, match: MatchState, seat: Seat) {
@@ -52,14 +54,13 @@ function snapshot(id: string, version: number, match: MatchState, seat: Seat) {
 }
 export type MatchSnapshot = ReturnType<typeof snapshot>;
 
-async function insert(match: MatchState) {
+async function insert(match: MatchState, id?: string) {
   const db = await admin();
   const { data, error } = await db.from("story_matches")
-    .insert({ player1: match.players[0].userId, player2: match.players[1]?.userId ?? null, status: statusOf(match), state: match as unknown as Json })
-    .select("id").single();
-  if (error || !data) throw new Error("Could not create the match.");
-  await mirror(data.id, 0, match);
-  return data.id;
+    .upsert({ ...(id ? { id } : {}), player1: match.players[0].userId, ...row(match, null) }, { onConflict: "id", ignoreDuplicates: true })
+    .select("id");
+  if (error) throw new Error("Could not create the match.");
+  return data?.[0]?.id ?? id!;
 }
 
 export const createStoryMatch = createServerFn({ method: "POST" })
@@ -142,13 +143,20 @@ export const rematchStoryMatch = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { id: string }) => ({ id: String(d.id) }))
   .handler(async ({ data, context }) => {
-    const { version, match } = await load(data.id);
-    if (match.rematchId) return { id: match.rematchId };
-    const seat = seatOf(match, context.userId);
-    if (seat === null || match.phase !== "finished" || !match.players[1]) throw new Error("Rematch isn't available.");
-    const me = match.players[seat]!;
-    const them = match.players[(1 - seat) as Seat]!;
-    const id = await insert(rematch({ userId: me.userId, name: me.name }, { userId: them.userId, name: them.name }));
-    await save(data.id, version, { ...match, rematchId: id });
-    return { id };
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const { version, match } = await load(data.id);
+      const seat = seatOf(match, context.userId);
+      if (seat === null || !match.players[1]) throw new Error("Rematch isn't available.");
+      const pa = match.players[0], pb = match.players[1];
+      const child = () => rematch({ userId: pa.userId, name: pa.name }, { userId: pb.userId, name: pb.name });
+      // Existing claim: make sure the child exists (heals a crash between claim and insert).
+      if (match.rematchId) { await insert(child(), match.rematchId); return { id: match.rematchId }; }
+      if (match.phase !== "finished") throw new Error("Rematch isn't available.");
+      // Claim the child id with the versioned parent write first: only one racer wins.
+      const id = crypto.randomUUID();
+      try { await save(data.id, version, { ...match, rematchId: id }); } catch { continue; }
+      await insert(child(), id);
+      return { id };
+    }
+    throw new Error("Rematch is busy — try again.");
   });

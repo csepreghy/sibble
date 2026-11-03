@@ -1,10 +1,10 @@
 // Multiplayer Story statistics, derived from server-recorded finished matches.
 import type { PublicMatch } from "./multiplayer";
 
-export interface MpRow { player1: string; status: string; updated_at: string; public: PublicMatch }
+export interface MpRow { player1: string; status: string; updated_at: string; finished_at?: string | null; public: PublicMatch }
 
 export function mpStats(rows: MpRow[], userId: string) {
-  const done = rows.filter((r) => r.status === "finished" && r.public.winner != null).sort((a, b) => a.updated_at.localeCompare(b.updated_at));
+  const done = rows.filter((r) => r.status === "finished" && r.public.winner != null).sort((a, b) => (a.finished_at ?? a.updated_at).localeCompare(b.finished_at ?? b.updated_at));
   let won = 0, pages = 0, best = 0, streak = 0, bestStreak = 0;
   for (const r of done) {
     const seat = r.player1 === userId ? 0 : 1;

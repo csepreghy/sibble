@@ -242,9 +242,12 @@ export function sell(m: MatchState, seat: Seat, penId: string): Result {
 }
 
 export function reorderPens(m: MatchState, seat: Seat, order: string[]): Result {
-  const me = m.players[seat]!;
+  if (m.phase !== "play" && m.phase !== "bookstore") return { error: "Pens can't be reordered now." };
+  const me = m.players[seat];
+  if (!me) return { error: "Invalid order." };
   const owned = me.state.pens.map((p) => p.penId);
-  if (order.length !== owned.length || order.some((id) => !owned.includes(id))) return { error: "Invalid order." };
+  // Must be an exact permutation: unique IDs, all owned, none missing (no duplicating Pens).
+  if (order.length !== owned.length || new Set(order).size !== order.length || order.some((id) => !owned.includes(id))) return { error: "Invalid order." };
   const pens = order.map((id) => me.state.pens.find((p) => p.penId === id)!);
   return { match: withPlayer(m, seat, { ...me, state: { ...me.state, pens } }) };
 }
