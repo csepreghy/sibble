@@ -169,6 +169,77 @@ export type Database = {
           },
         ]
       }
+      story_match_feed: {
+        Row: {
+          match_id: string
+          player1: string
+          player2: string | null
+          public: Json
+          status: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          match_id: string
+          player1: string
+          player2?: string | null
+          public?: Json
+          status?: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          match_id?: string
+          player1?: string
+          player2?: string | null
+          public?: Json
+          status?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_match_feed_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: true
+            referencedRelation: "story_matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      story_matches: {
+        Row: {
+          created_at: string
+          id: string
+          player1: string
+          player2: string | null
+          state: Json
+          status: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          player1: string
+          player2?: string | null
+          state?: Json
+          status?: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          player1?: string
+          player2?: string | null
+          state?: Json
+          status?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
