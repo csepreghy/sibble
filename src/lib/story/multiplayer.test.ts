@@ -1,4 +1,11 @@
-import { describe, expect, test } from "bun:test";
+import { test } from "node:test";
+import { strict as assert } from "node:assert";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const expect = (a: any) => ({
+  toBe: (b: unknown) => assert.equal(a, b), toEqual: (b: unknown) => assert.deepEqual(a, b),
+  toBeGreaterThan: (b: number) => assert.ok(a > b), not: { toContain: (b: unknown) => assert.ok(!a.includes(b)) },
+});
+const describe = (_: string, fn: () => void) => fn();
 import { getPage } from "./boards";
 import {
   abandon, buy, createMatch, joinMatch, mpOffers, mpPageCoins, passTurn, playMove, privateView, publicView, setReady,
