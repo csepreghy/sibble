@@ -142,10 +142,13 @@ export const rematchStoryMatch = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { id: string }) => ({ id: String(d.id) }))
   .handler(async ({ data, context }) => {
-    const { match } = await load(data.id);
+    const { version, match } = await load(data.id);
+    if (match.rematchId) return { id: match.rematchId };
     const seat = seatOf(match, context.userId);
     if (seat === null || match.phase !== "finished" || !match.players[1]) throw new Error("Rematch isn't available.");
     const me = match.players[seat]!;
     const them = match.players[(1 - seat) as Seat]!;
-    return { id: await insert(rematch({ userId: me.userId, name: me.name }, { userId: them.userId, name: them.name })) };
+    const id = await insert(rematch({ userId: me.userId, name: me.name }, { userId: them.userId, name: them.name }));
+    await save(data.id, version, { ...match, rematchId: id });
+    return { id };
   });

@@ -44,6 +44,7 @@ export interface MatchState {
   lastMove?: { seat: Seat; words: string[]; ink: number; pass?: boolean };
   winner?: Seat;
   abandonedBy?: Seat;
+  rematchId?: string;
 }
 
 type Result = { match: MatchState } | { error: string };
@@ -279,7 +280,7 @@ export function publicView(m: MatchState) {
   return {
     phase: m.phase, pageIndex: m.pageIndex, board: m.board, usedPremiums: m.usedPremiums, boardTiles,
     turn: m.turn, tiebreaks: m.tiebreaks, lastPage: m.lastPage ?? null, lastMove: m.lastMove ?? null,
-    winner: m.winner ?? null, abandonedBy: m.abandonedBy ?? null,
+    winner: m.winner ?? null, abandonedBy: m.abandonedBy ?? null, rematchId: m.rematchId ?? null,
     players: m.players.map((p) => p && { userId: p.userId, name: p.name, ink: p.state.page.ink, wordsLeft: p.state.page.wordsLeft,
       wins: p.wins, totalInk: p.state.totalInk, ready: p.ready, bestPageInk: p.bestPageInk }),
   };
