@@ -41,7 +41,8 @@ export interface MatchState {
   offers: Offer[] | null;
   players: [MatchPlayer, MatchPlayer | null];
   lastPage?: PageResult;
-  lastMove?: { seat: Seat; words: string[]; ink: number; pass?: boolean };
+  /** Public move record; `id` increases per move so clients animate each move once. Events are the visible scoring steps. */
+  lastMove?: { id?: number; seat: Seat; words: string[]; ink: number; pass?: boolean; events?: import("./scoring").PlacementScore["events"] };
   winner?: Seat;
   abandonedBy?: Seat;
   rematchId?: string;
@@ -193,7 +194,7 @@ export function playMove(m: MatchState, seat: Seat, placements: PendingPlacement
   const state: StoryState = { ...me.state, pens: r.state.pens, totalInk: r.state.totalInk, bestWord: r.state.bestWord,
     page: { ...r.state.page }, phase: "play", offers: null };
   const next: MatchState = { ...withPlayer(m, seat, { ...me, state }), board: r.state.page.board, usedPremiums: r.state.page.usedPremiums,
-    lastMove: { seat, words: r.score.words.map((w) => w.word), ink: r.score.totalInk } };
+    lastMove: { id: (m.lastMove?.id ?? 0) + 1, seat, words: r.score.words.map((w) => w.word), ink: r.score.totalInk, events: r.score.events } };
   return { match: advance(next, seat) };
 }
 
@@ -202,7 +203,7 @@ export function passTurn(m: MatchState, seat: Seat): Result {
   if (problem) return { error: problem };
   const me = m.players[seat]!;
   const state = { ...me.state, page: { ...me.state.page, wordsLeft: me.state.page.wordsLeft - 1 } };
-  return { match: advance({ ...withPlayer(m, seat, { ...me, state }), lastMove: { seat, words: [], ink: 0, pass: true } }, seat) };
+  return { match: advance({ ...withPlayer(m, seat, { ...me, state }), lastMove: { id: (m.lastMove?.id ?? 0) + 1, seat, words: [], ink: 0, pass: true } }, seat) };
 }
 
 export function discard(m: MatchState, seat: Seat, tileIds: string[]): Result {

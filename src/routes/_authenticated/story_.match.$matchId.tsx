@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { StoryBoard } from "@/components/story/StoryBoard";
 import { StoryRack } from "@/components/story/StoryRack";
 import { Bookstore } from "@/components/story/Bookstore";
-import { PenSidebar } from "@/components/story/PenSidebar";
+import { StoryPlayScreen, type MpDriver } from "@/components/story/StoryPlayScreen";
 import { getPage, TWIST_INFO } from "@/lib/story/boards";
 import { penDef } from "@/lib/story/pens";
 import { PenDescription, PenCurrentBonus } from "@/components/story/PenDescription";
@@ -17,7 +17,7 @@ import { ShopDetailTile } from "@/components/story/ShopDetailTile";
 import { compactNumber } from "@/lib/story/format";
 import { penSlots } from "@/lib/story/upgrades";
 import { useStoryTheme } from "@/hooks/useStoryTheme";
-import type { PenInstance, PendingPlacement, StoryTile } from "@/lib/story/types";
+import type { PenInstance, PendingPlacement, StoryState, StoryTile } from "@/lib/story/types";
 import {
   actStoryMatch, getStoryMatch, joinStoryMatch, rematchStoryMatch, type MatchAction, type MatchSnapshot,
 } from "@/lib/story/match.functions";
@@ -102,16 +102,8 @@ function MatchPage() {
   }, [matchId, refresh]);
 
   async function act(action: MatchAction) {
-    if (!snap || busy) return;
     setBusy(true);
-    try {
-      const r = await actFn({ data: { id: snap.id, version: snap.version, action } });
-      if ("error" in r && r.error) toast.error(r.error);
-      if ("stale" in r) toast.message("The match was updated.");
-      apply(r.snapshot);
-
-    } catch (e) { toast.error(e instanceof Error ? e.message : "Something went wrong."); void refresh(); }
-    finally { setBusy(false); }
+    try { await send(action); } finally { setBusy(false); }
   }
 
   async function join() {
@@ -120,6 +112,37 @@ function MatchPage() {
     catch (e) { toast.error(e instanceof Error ? e.message : "Could not join."); void refresh(); }
     finally { setBusy(false); }
   }
+
+  const [hold, setHold] = useState(false);
+  const seenMove = useRef<number | null>(null);
+  const snapRef = useRef(snap);
+  snapRef.current = snap;
+  const chain = useRef<Promise<unknown>>(Promise.resolve());
+  // Serialized intents: each one uses the newest version, so quick purchases never collide as stale.
+  function send(action: MatchAction): Promise<MatchSnapshot | null> {
+    const run = async () => {
+      const cur = snapRef.current;
+      if (!cur || cur.id !== idRef.current) return null;
+      try {
+        const r = await actFn({ data: { id: cur.id, version: cur.version, action } });
+        apply(r.snapshot);
+        snapRef.current = r.snapshot;
+        if ("error" in r && r.error) { toast.error(r.error); return null; }
+        if ("stale" in r) { toast.message("The match was updated."); return null; }
+        return r.snapshot;
+      } catch (e) { toast.error(e instanceof Error ? e.message : "Something went wrong."); void refresh(); return null; }
+    };
+    const p = chain.current.then(run, run);
+    chain.current = p;
+    return p;
+  }
+  const view = useMemo<StoryState | null>(() => {
+    if (!snap?.me) return null;
+    const me = snap.me.state, pub = snap.public;
+    const tiles = [...me.tiles, ...pub.boardTiles.filter((t) => !me.tiles.some((m) => m.id === t.id))];
+    const phase = pub.phase === "bookstore" ? "bookstore" : pub.phase === "finished" ? (pub.winner === snap.seat ? "victory" : "defeat") : "play";
+    return { ...me, tiles, phase, page: { ...me.page, board: pub.board, usedPremiums: pub.usedPremiums } } as StoryState;
+  }, [snap]);
 
   if (loadError && !snap) return <Centered><p className="text-muted-foreground">{loadError}</p><Button asChild><Link to="/story">Back to menu</Link></Button></Centered>;
   if (invite) return <Centered>
@@ -139,9 +162,6 @@ function MatchPage() {
   const config = getPage(pub.pageIndex);
   const myTurn = pub.phase === "play" && pub.turn === seat && mine.wordsLeft > 0;
   const allTiles: StoryTile[] = [...me.tiles, ...pub.boardTiles.filter((t) => !me.tiles.some((m) => m.id === t.id))];
-  const pendingIds = new Set(pending.map((p) => p.tileId));
-  const order = rackOrder ?? me.page.rack;
-  const rackTiles = order.filter((id) => me.page.rack.includes(id) && !pendingIds.has(id)).map((id) => me.tiles.find((t) => t.id === id)!).filter(Boolean);
 
   if (pub.phase === "lobby") {
     const link = typeof window !== "undefined" ? `${window.location.origin}/story/match/${matchId}` : "";
@@ -156,100 +176,44 @@ function MatchPage() {
     </Centered>;
   }
 
-  function cellClick(index: number) {
-    if (!myTurn || busy) return;
-    const existing = pending.find((p) => p.index === index);
-    if (existing) { setPending(pending.filter((p) => p !== existing)); return; }
-    if (!selected || pub.board[index]) return;
-    const tile = me.tiles.find((t) => t.id === selected);
-    if (!tile) return;
-    setSelected(null);
-    if (tile.letter === "?") { setLetterFor({ kind: "blank", index, tileId: tile.id }); return; }
-    setPending([...pending, { index, tileId: tile.id, letter: tile.letter, blank: false }]);
-  }
-  function rackSelect(id: string) {
-    if (discardMode) { setDiscardSel(discardSel.includes(id) ? discardSel.filter((x) => x !== id) : [...discardSel, id]); return; }
-    setSelected(selected === id ? null : id);
-  }
-  function chooseLetter(letter: string) {
-    const target = letterFor;
-    setLetterFor(null);
-    if (!target) return;
-    if (target.kind === "blank") setPending([...pending, { index: target.index, tileId: target.tileId, letter, blank: true }]);
-    else void act({ type: "buy", offerIndex: target.offerIndex, letter });
-  }
-
   const finished = pub.phase === "finished";
   const showPageResult = pub.lastPage && pub.phase === "bookstore" && seenPage !== pub.lastPage.pageIndex;
-  const turnBanner = pub.phase === "play"
-    ? myTurn ? <span className="flex items-center gap-2 text-gold"><Sparkles className="h-5 w-5" />YOUR TURN</span>
-      : <span className="flex items-center gap-2 text-muted-foreground"><Hourglass className="h-5 w-5 animate-pulse" />{(theirs?.name ?? "Opponent").toUpperCase()}'S TURN</span>
-    : pub.phase === "bookstore" ? (mine.ready ? <span className="flex items-center gap-2 text-muted-foreground"><Hourglass className="h-5 w-5 animate-pulse" />Waiting for {theirs?.name} to finish shopping</span> : <span>Bookstore — buy, then Ready</span>)
-    : finished ? <span>Story over</span> : null;
+  const status = pub.phase === "play"
+    ? myTurn ? <span className="flex items-center gap-1 text-gold"><Sparkles className="h-4 w-4" />YOUR TURN</span>
+      : <span className="flex items-center gap-1 text-muted-foreground"><Hourglass className="h-4 w-4 animate-pulse" />{(theirs?.name ?? "Opponent").toUpperCase()}'S TURN</span>
+    : pub.phase === "bookstore" ? (mine.ready ? <span className="flex items-center gap-1 text-muted-foreground"><Hourglass className="h-4 w-4 animate-pulse" />Waiting for {theirs?.name}</span> : <span>Shop, then Ready</span>)
+    : <span>Story over</span>;
+  const header = <div className="story-mp-bar flex items-center gap-2 px-3 pt-2 text-xs font-bold" role="status">
+    <Button variant="ghost" size="icon" className="h-7 w-7" asChild aria-label="Back to menu"><Link to="/story"><ArrowLeft className="h-4 w-4" /></Link></Button>
+    <span className="truncate">{mine.name} <span className="font-display text-base tabular-nums">{mine.wins}–{theirs?.wins ?? 0}</span> {theirs?.name}</span>
+    {pub.tiebreaks ? <span className="text-accent">Tie-breaker</span> : null}
+    <span className="ml-auto">{status}</span>
+    {!finished && <Button variant="ghost" size="sm" className="h-7 px-2" disabled={busy} onClick={() => { if (window.confirm("Abandon this match? It counts as a loss.")) void send({ type: "abandon" }); }}>Abandon</Button>}
+  </div>;
+  const driver: MpDriver = {
+    state: view!, canAct: myTurn, isReady: mine.ready, opponentName: theirs?.name ?? "Opponent", opponentInk: theirs?.ink ?? 0, header,
+    play: async (placements) => {
+      const beforePage = pub.pageIndex;
+      setHold(true);
+      const next = await send({ type: "play", placements });
+      if (!next) { setHold(false); return { error: "That word wasn't accepted." }; }
+      const lm = next.public.lastMove;
+      seenMove.current = lm?.id ?? seenMove.current;
+      const done = next.public.phase !== "play" || next.public.pageIndex !== beforePage;
+      return { events: lm?.events ?? [], ink: lm?.ink ?? 0, pageCompleted: done, coins: done ? next.public.lastPage?.coins[seat] ?? 0 : 0 };
+    },
+    discard: async (ids) => !!(await send({ type: "discard", tileIds: ids })),
+    buy: async (i, letter) => !!(await send({ type: "buy", offerIndex: i, ...(letter ? { letter } : {}) })),
+    sell: async (penId) => !!(await send({ type: "sell", penId })),
+    reorder: async (order) => !!(await send({ type: "reorder", order })),
+    ready: async () => !!(await send({ type: "ready" })),
+    pass: () => { if (window.confirm("Pass and give up this word play?")) void send({ type: "pass" }); },
+    settled: () => setHold(false),
+  };
 
-  return <main className="mx-auto flex min-h-[100dvh] max-w-3xl flex-col gap-2 px-2 pb-3 pt-2">
-    <header className="flex items-center gap-2">
-      <Button variant="ghost" size="icon" asChild aria-label="Back to menu"><Link to="/story"><ArrowLeft className="h-5 w-5" /></Link></Button>
-      <div className="flex-1 text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        Chapter {config.chapter} · Page {config.page}{config.plotTwist ? <> · <span title={TWIST_INFO[config.plotTwist].description} className="text-accent">{TWIST_INFO[config.plotTwist].name}</span></> : ""}{pub.tiebreaks ? ` · Tie-breaker ${pub.tiebreaks}` : ""}
-        {config.plotTwist && <span className="block text-[0.7rem] font-normal normal-case text-muted-foreground">{TWIST_INFO[config.plotTwist].description}</span>}
-      </div>
-      {!finished && <Button variant="ghost" size="sm" disabled={busy} onClick={() => { if (window.confirm("Abandon this match? It counts as a loss.")) void act({ type: "abandon" }); }}>Abandon</Button>}
-    </header>
-    <section aria-label="Scores" className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-xl border bg-card p-2">
-      <PlayerPanel name={`${mine.name} (you)`} ink={mine.ink} words={mine.wordsLeft} active={pub.phase === "play" && pub.turn === seat} />
-      <div className="text-center"><div className="text-[10px] uppercase text-muted-foreground">Pages</div><div className="font-display text-2xl font-black tabular-nums">{mine.wins}–{theirs?.wins ?? 0}</div></div>
-      <PlayerPanel name={theirs?.name ?? "Opponent"} ink={theirs?.ink ?? 0} words={theirs?.wordsLeft ?? 0} active={pub.phase === "play" && pub.turn !== seat} right />
-    </section>
-    <div className={`rounded-lg py-2 text-center font-display text-lg font-black ${myTurn ? "bg-gold/15 ring-2 ring-gold" : "bg-muted"}`} role="status">{turnBanner}</div>
-    {pub.lastMove && pub.phase === "play" && <p className="text-center text-xs text-muted-foreground">
-      {pub.lastMove.seat === seat ? "You" : theirs?.name} {pub.lastMove.pass ? "passed" : <>played {pub.lastMove.words.join(", ")} for <strong className="text-base-ink">{compactNumber(pub.lastMove.ink)}</strong> Ink</>}
-    </p>}
-
-    {pub.phase === "bookstore" ? <>
-      <div className="flex items-center justify-center gap-2 font-black text-gold"><Coins className="h-5 w-5" />{me.coins}</div>
-      <Bookstore state={me} compact onBuy={(i) => {
-        const offer = me.offers?.[i];
-        if (offer?.kind === "enhancement") setLetterFor({ kind: "enh", offerIndex: i });
-        else void act({ type: "buy", offerIndex: i });
-      }} />
-      <Button size="lg" disabled={busy || mine.ready} onClick={() => void act({ type: "ready" })}>{mine.ready ? "Ready — waiting…" : "Ready"}</Button>
-    </> : <>
-      <div className="mx-auto w-full max-w-[min(100%,70dvh)]">
-        <StoryBoard compact size={config.size} board={pub.board} tiles={allTiles} premiums={config.premiums} usedPremiums={pub.usedPremiums}
-          pending={pending} letterUpgrades={me.letterUpgrades} disabled={!myTurn || busy} onCellClick={cellClick} />
-      </div>
-      <StoryRack compact capacity={me.upgrades.includes("bigger-rack") ? 8 : 7} tiles={rackTiles} selectedId={selected} discardMode={discardMode}
-        discardSelection={discardSel} letterUpgrades={me.letterUpgrades} onSelect={rackSelect} />
-      {!finished && <div className="flex flex-wrap justify-center gap-2">
-        {discardMode ? <>
-          <Button disabled={!myTurn || busy || !discardSel.length} onClick={() => void act({ type: "discard", tileIds: discardSel })}>Discard {discardSel.length}</Button>
-          <Button variant="ghost" onClick={() => { setDiscardMode(false); setDiscardSel([]); }}>Cancel</Button>
-        </> : <>
-          <Button disabled={!myTurn || busy || !pending.length} onClick={() => void act({ type: "play", placements: pending })}>Play word</Button>
-          <Button variant="outline" size="icon" aria-label="Recall letters" disabled={!pending.length} onClick={() => setPending([])}><Undo2 className="h-4 w-4" /></Button>
-          <Button variant="outline" size="icon" aria-label="Shuffle" onClick={() => setRackOrder([...me.page.rack].sort(() => Math.random() - 0.5))}><Shuffle className="h-4 w-4" /></Button>
-          <Button variant="outline" disabled={!myTurn || busy || me.page.discardsLeft <= 0} onClick={() => { setPending([]); setDiscardMode(true); }}>Discard ({me.page.discardsLeft})</Button>
-          <Button variant="ghost" disabled={!myTurn || busy} onClick={() => { if (window.confirm("Pass and give up this word play?")) void act({ type: "pass" }); }}>Pass</Button>
-        </>}
-      </div>}
-    </>}
-    <PenSidebar horizontal pens={me.pens} slots={penSlots(me.upgrades)} onInspect={(pen) => setInspect(pen)}
-      onReorder={(a, b) => { const ids = me.pens.map((p) => p.penId); const from = ids.indexOf(a); const to = ids.indexOf(b); ids.splice(to, 0, ids.splice(from, 1)[0]!); void act({ type: "reorder", order: ids }); }} disabled={busy} />
-
-    <Dialog open={!!inspect} onOpenChange={(o) => !o && setInspect(null)}>
-      <DialogContent className="max-w-sm">{inspect && <><DialogHeader><DialogTitle>{penDef(inspect.penId).name}</DialogTitle></DialogHeader>
-        <ShopDetailTile glow="var(--primary)"><PenDescription penId={inspect.penId} /><PenCurrentBonus pen={inspect} /></ShopDetailTile>
-        {pub.phase === "bookstore" && !mine.ready && <Button variant="destructive" disabled={busy} onClick={() => { void act({ type: "sell", penId: inspect.penId }); setInspect(null); }}>Sell</Button>}
-      </>}</DialogContent>
-    </Dialog>
-    <Dialog open={!!letterFor} onOpenChange={(o) => !o && setLetterFor(null)}>
-      <DialogContent><DialogHeader><DialogTitle>{letterFor?.kind === "blank" ? "Choose a letter for the blank" : "Choose a letter to enhance"}</DialogTitle></DialogHeader>
-        <div className="grid grid-cols-7 gap-1.5">{LETTERS.map((l) => <Button key={l} variant="outline" onClick={() => chooseLetter(l)}>{l}</Button>)}</div>
-      </DialogContent>
-    </Dialog>
-
-    <Dialog open={!!showPageResult} onOpenChange={(o) => !o && setSeenPage(pub.lastPage?.pageIndex ?? null)}>
+  return <>
+    <StoryPlayScreen key={snap.id} mp={driver} />
+    <Dialog open={!!showPageResult && !hold} onOpenChange={(o) => !o && setSeenPage(pub.lastPage?.pageIndex ?? null)}>
       {pub.lastPage && <DialogContent>
         <DialogHeader><DialogTitle className="font-display text-2xl">PAGE COMPLETE</DialogTitle>
           <DialogDescription>{pub.lastPage.winner === seat ? "You win this Page!" : `${theirs?.name} wins this Page.`}</DialogDescription></DialogHeader>
@@ -259,7 +223,7 @@ function MatchPage() {
       </DialogContent>}
     </Dialog>
 
-    <Dialog open={finished}>
+    <Dialog open={finished && !hold}>
       <DialogContent className="text-center">
         <DialogHeader><DialogTitle className="flex items-center justify-center gap-2 font-display text-3xl">{pub.winner === seat ? <><Crown className="h-7 w-7 text-gold" />STORY CHAMPION!</> : "The Story ends"}</DialogTitle>
           <DialogDescription>{pub.abandonedBy != null ? (pub.abandonedBy === seat ? "You abandoned this match." : `${theirs?.name} abandoned the match.`)
@@ -272,7 +236,7 @@ function MatchPage() {
         </div>
       </DialogContent>
     </Dialog>
-  </main>;
+  </>;
 }
 
 function Centered({ children }: { children: React.ReactNode }) {
