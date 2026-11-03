@@ -148,6 +148,13 @@ export interface MpDriver {
   pass(): void;
   /** Called when a local move's presentation has finished (gates result dialogs). */
   settled?(): void;
+  /** A newly completed Page this client did not finish itself (opponent move or pass). */
+  remotePage?: { key: string; coins: number };
+  /** Claims a remote Page for presentation exactly once. */
+  claimRemote?(key: string): boolean;
+  opponentWordsLeft?: number;
+  /** Server-granted Coins for the last Page. */
+  shopCoins?: number;
 }
 
 export function StoryPlayScreen({ mp }: { mp?: MpDriver } = {}) {
@@ -264,6 +271,19 @@ export function StoryPlayScreen({ mp }: { mp?: MpDriver } = {}) {
   const animatingRef = useRef(false);
   useEffect(() => {
     if (!mp || animatingRef.current) return;
+    const rp = mp.remotePage;
+    if (rp && story && mp.claimRemote?.(rp.key)) {
+      animatingRef.current = true;
+      setPending([]);
+      setAnim({ ...IDLE_ANIM, running: true });
+      void celebratePage(story, { total: rp.coins } as PageRewards, () => {
+        animatingRef.current = false;
+        mpRef.current?.settled?.();
+        setStory(mpRef.current!.state);
+        setAnim(IDLE_ANIM); setLettersExited(false); setCoinBonus(0);
+      }, true);
+      return;
+    }
     const next = mp.state;
     setStory((current) => current && [...current.page.rack].sort().join() === [...next.page.rack].sort().join() && current.pageIndex === next.pageIndex
       ? { ...next, page: { ...next.page, rack: current.page.rack } } : next);
@@ -1015,7 +1035,7 @@ export function StoryPlayScreen({ mp }: { mp?: MpDriver } = {}) {
         {/* Left sidebar — run information */}
         <aside className="story-desktop-sidebar flex w-52 shrink-0 flex-col gap-3 overflow-y-auto rounded-xl border border-border bg-card/60 p-3 sm:w-60">
           {story.phase === "bookstore" ? (
-            <BookstoreSummary state={story} onContinue={() => mp ? void mp.ready() : setStory(continueToNextPage(story))} onOpenRunInfo={() => setDialog({ kind: "run-info" })} />
+            <BookstoreSummary state={story} {...(mp ? { mp: { coins: mp.shopCoins ?? 0, isReady: mp.isReady } } : {})} onContinue={() => mp ? void mp.ready() : setStory(continueToNextPage(story))} onOpenRunInfo={() => setDialog({ kind: "run-info" })} />
           ) : (
           <>
           <h1 className="sr-only">{pageLabel(config)}</h1>
