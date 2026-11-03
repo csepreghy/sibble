@@ -6,6 +6,8 @@ import { AppNav } from "@/components/AppNav";
 import { BrandLogo } from "@/components/BrandLogo";
 import { compactNumber } from "@/lib/story/format";
 import { loadStoryStats, topLetters } from "@/lib/story/stats";
+import { useMatchFeed } from "@/components/story/StoryContinue";
+import { mpStats } from "@/lib/story/mp-stats";
 
 export const Route = createFileRoute("/_authenticated/story_/stats")({
   head: () => ({
@@ -111,6 +113,27 @@ function StoryStats() {
           </section>
         </>
       )}
+      <MultiplayerStats />
     </main>
+  );
+}
+
+function MultiplayerStats() {
+  const { rows, userId } = useMatchFeed(["finished"]);
+  if (!rows || !userId) return null;
+  const s = mpStats(rows, userId);
+  return (
+    <section className="mt-10" aria-label="Multiplayer">
+      <h2 className="text-lg font-bold">Multiplayer</h2>
+      <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <Stat label="Games played" value={s.played} />
+        <Stat label="Won" value={s.won} />
+        <Stat label="Lost" value={s.lost} />
+        <Stat label="Win rate" value={`${s.winRate}%`} />
+        <Stat label="Pages won" value={s.pages} />
+        <Stat label="Best Page Ink" value={compactNumber(s.best)} ink />
+        <Stat label="Best win streak" value={s.bestStreak} />
+      </div>
+    </section>
   );
 }

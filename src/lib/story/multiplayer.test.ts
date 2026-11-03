@@ -124,3 +124,11 @@ describe("multiplayer Story", () => {
     expect(quit.abandonedBy).toBe(0);
   });
 });
+
+import { mpStats } from "./mp-stats";
+test("multiplayer stats count wins, losses, pages and streaks", () => {
+  const row = (winner: 0 | 1, wins: number, at: string, status = "finished") => ({ player1: "u1", status, updated_at: at,
+    public: { winner, players: [{ wins, bestPageInk: wins * 10 }, { wins: 1 }] } as never });
+  const s = mpStats([row(0, 5, "1"), row(0, 5, "2"), row(1, 2, "3"), row(0, 5, "4"), row(1, 0, "5", "cancelled")], "u1");
+  expect(s).toEqual({ played: 4, won: 3, lost: 1, winRate: 75, pages: 17, best: 50, bestStreak: 2 });
+});
