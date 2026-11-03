@@ -149,7 +149,7 @@ export interface MpDriver {
   /** Called when a local move's presentation has finished (gates result dialogs). */
   settled?(): void;
   /** A newly completed Page this client did not finish itself (opponent move or pass). */
-  remotePage?: { key: string; coins: number };
+  remotePage?: { key: string; coins: number } | undefined;
   /** Claims a remote Page for presentation exactly once. */
   claimRemote?(key: string): boolean;
   opponentWordsLeft?: number;

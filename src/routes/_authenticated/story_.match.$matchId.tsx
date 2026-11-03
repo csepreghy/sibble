@@ -209,7 +209,7 @@ function MatchPage() {
       const next = await send({ type: "play", placements });
       if (!next) { setHold(false); return { error: "That word wasn't accepted." }; }
       const lm = next.public.lastMove;
-      if (lm && seenMove.current != null && lm.id <= seenMove.current) { setHold(false); return { error: "That move was already shown." }; }
+      if (lm?.id != null && seenMove.current != null && lm.id <= seenMove.current) { setHold(false); return { error: "That move was already shown." }; }
       seenMove.current = lm?.id ?? seenMove.current;
       const done = next.public.phase !== "play" || next.public.pageIndex !== beforePage;
       // This client presents the completion itself; don't present it again as a remote Page.
