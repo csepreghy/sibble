@@ -139,3 +139,31 @@ test("multiplayer stats count wins, losses, pages and streaks", () => {
   const s = mpStats([row(0, 5, "1"), row(0, 5, "2"), row(1, 2, "3"), row(0, 5, "4"), row(1, 0, "5", "cancelled")], "u1");
   expect(s).toEqual({ played: 4, won: 3, lost: 1, winRate: 75, pages: 17, best: 50, bestStreak: 2 });
 });
+
+import { reorderPens } from "./multiplayer";
+function withPens(m: MatchState, ids: string[]): MatchState {
+  const p = m.players[0]!;
+  const tpl = { penId: ids[0] } as never as MatchState["players"][0]["state"]["pens"][number];
+  const pens = ids.map((penId) => ({ ...(tpl as object), penId })) as typeof p.state.pens;
+  return { ...m, players: [{ ...p, state: { ...p.state, pens } }, m.players[1]] };
+}
+test("reorder rejects duplicated Pen ids (cannot clone a Pen)", () => {
+  const m = withPens(started(), ["the-columnist", "fresh-ink"]);
+  expect(reorderPens(m, 0, ["the-columnist", "the-columnist"])).toEqual({ error: "Invalid order." });
+  expect(reorderPens(m, 0, ["the-columnist"])).toEqual({ error: "Invalid order." });
+  const r = ok(reorderPens(m, 0, ["fresh-ink", "the-columnist"]));
+  expect(r.players[0]!.state.pens.map((p) => p.penId)).toEqual(["fresh-ink", "the-columnist"]);
+});
+test("reorder is refused once a match is finished or cancelled", () => {
+  const m = withPens(started(), ["the-columnist", "fresh-ink"]);
+  const done = ok(abandon(m, 1));
+  expect(reorderPens(done, 0, ["fresh-ink", "the-columnist"])).toEqual({ error: "Pens can't be reordered now." });
+  expect(reorderPens({ ...done, phase: "cancelled" }, 0, ["fresh-ink", "the-columnist"])).toEqual({ error: "Pens can't be reordered now." });
+});
+test("win streak follows finish time, not later edits such as a rematch link", () => {
+  const row = (winner: 0 | 1, finished: string, updated: string) => ({ player1: "u1", status: "finished", updated_at: updated, finished_at: finished,
+    public: { winner, players: [{ wins: 5 }, { wins: 0 }] } as never });
+  // Match "1" was won first but updated last (rematch claim); streak must still be W,W then L.
+  const s = mpStats([row(0, "1", "9"), row(0, "2", "2"), row(1, "3", "3")], "u1");
+  expect(s.bestStreak).toBe(2);
+});
