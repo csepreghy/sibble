@@ -135,7 +135,7 @@ function fmtDelta(diff: number): string {
 export interface MpDriver {
   state: StoryState;
   canAct: boolean;
-  ready: boolean;
+  isReady: boolean;
   opponentName: string;
   opponentInk: number;
   header: ReactNode;
@@ -1006,7 +1006,7 @@ export function StoryPlayScreen({ mp }: { mp?: MpDriver } = {}) {
           </DropdownMenu>
         </div>
         {story.phase !== "bookstore" && <>
-          <RoundScore target={mp ? mp.opponentInk : config.inkTarget} targetLabel={mp ? mp.opponentName : undefined} current={busy && anim.roundScore != null ? anim.roundScore : story.page.ink} running={busy} />
+          <RoundScore target={mp ? mp.opponentInk : config.inkTarget} {...(mp ? { targetLabel: mp.opponentName } : {})} current={busy && anim.roundScore != null ? anim.roundScore : story.page.ink} running={busy} />
           <ScoreBoxes base={busy ? anim.base : 0} mult={busy ? anim.mult : 0} running={busy} baseDelta={anim.baseDelta} multDelta={anim.multDelta} baseHidden={busy && anim.baseHidden} multHidden={busy && anim.multHidden} popKey={busy ? anim.popKey : 0} growToTotal={busy && anim.growToTotal === true} />
           <div className="story-score-caption text-xs text-muted-foreground">{anim.label ?? ""}</div>
         </>}
@@ -1252,7 +1252,7 @@ export function StoryPlayScreen({ mp }: { mp?: MpDriver } = {}) {
         <span className="flex items-center gap-1.5 text-3xl font-black tabular-nums text-gold"><Coins className="h-7 w-7" />{story.coins}</span>
         <div className="flex items-center gap-2">
           <Button variant="outline" className="px-3" onClick={() => setDialog({ kind: "run-info" })}>Info</Button>
-          <Button className="relative tile-gloss px-3" disabled={mp?.ready} onClick={() => mp ? void mp.ready() : setStory(continueToNextPage(story))}>{mp ? (mp.ready ? "Waiting…" : "Ready") : "Continue Story"} <ArrowRight /></Button>
+          <Button className="relative tile-gloss px-3" disabled={mp?.isReady} onClick={() => mp ? void mp.ready() : setStory(continueToNextPage(story))}>{mp ? (mp.isReady ? "Waiting…" : "Ready") : "Continue Story"} <ArrowRight /></Button>
         </div>
       </div>}
       {/* Dialogs */}
@@ -1266,7 +1266,7 @@ export function StoryPlayScreen({ mp }: { mp?: MpDriver } = {}) {
       {dialog?.kind === "pen" ? (
         <PenInspectDialog
           pen={dialog.pen}
-          canSell={story.phase === "bookstore" && !mp?.ready}
+          canSell={story.phase === "bookstore" && !mp?.isReady}
           onSell={() => {
             setStory(sellPen(story, dialog.pen.penId));
             if (mp) void mp.sell(dialog.pen.penId).then((ok) => { if (!ok) setStory(mpRef.current!.state); });

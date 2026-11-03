@@ -17,7 +17,7 @@ import { ShopDetailTile } from "@/components/story/ShopDetailTile";
 import { compactNumber } from "@/lib/story/format";
 import { penSlots } from "@/lib/story/upgrades";
 import { useStoryTheme } from "@/hooks/useStoryTheme";
-import type { StoryState, StoryTile } from "@/lib/story/types";
+import type { PenInstance, PendingPlacement, StoryState, StoryTile } from "@/lib/story/types";
 import {
   actStoryMatch, getStoryMatch, joinStoryMatch, rematchStoryMatch, type MatchAction, type MatchSnapshot,
 } from "@/lib/story/match.functions";
@@ -191,7 +191,7 @@ function MatchPage() {
     {!finished && <Button variant="ghost" size="sm" className="h-7 px-2" disabled={busy} onClick={() => { if (window.confirm("Abandon this match? It counts as a loss.")) void send({ type: "abandon" }); }}>Abandon</Button>}
   </div>;
   const driver: MpDriver = {
-    state: view!, canAct: myTurn, ready: mine.ready, opponentName: theirs?.name ?? "Opponent", opponentInk: theirs?.ink ?? 0, header,
+    state: view!, canAct: myTurn, isReady: mine.ready, opponentName: theirs?.name ?? "Opponent", opponentInk: theirs?.ink ?? 0, header,
     play: async (placements) => {
       const beforePage = pub.pageIndex;
       setHold(true);
@@ -203,7 +203,7 @@ function MatchPage() {
       return { events: lm?.events ?? [], ink: lm?.ink ?? 0, pageCompleted: done, coins: done ? next.public.lastPage?.coins[seat] ?? 0 : 0 };
     },
     discard: async (ids) => !!(await send({ type: "discard", tileIds: ids })),
-    buy: async (i, letter) => !!(await send({ type: "buy", offerIndex: i, letter })),
+    buy: async (i, letter) => !!(await send({ type: "buy", offerIndex: i, ...(letter ? { letter } : {}) })),
     sell: async (penId) => !!(await send({ type: "sell", penId })),
     reorder: async (order) => !!(await send({ type: "reorder", order })),
     ready: async () => !!(await send({ type: "ready" })),
