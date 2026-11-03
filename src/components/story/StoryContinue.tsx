@@ -11,7 +11,7 @@ import { loadStory } from "@/lib/story/storage";
 import { actStoryMatch, createStoryMatch } from "@/lib/story/match.functions";
 import type { PublicMatch } from "@/lib/story/multiplayer";
 
-export interface FeedRow { match_id: string; player1: string; player2: string | null; status: string; version: number; public: PublicMatch; updated_at: string }
+export interface FeedRow { match_id: string; player1: string; player2: string | null; status: string; version: number; public: PublicMatch; updated_at: string; finished_at?: string | null }
 
 export function useMatchFeed(statuses: string[]) {
   const [rows, setRows] = useState<FeedRow[] | null>(null);
