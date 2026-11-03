@@ -56,39 +56,52 @@ function MatchPage() {
   const [letterFor, setLetterFor] = useState<{ kind: "blank"; index: number; tileId: string } | { kind: "enh"; offerIndex: number } | null>(null);
   const [seenPage, setSeenPage] = useState<number | null>(null);
   const versionRef = useRef(-1);
+  const idRef = useRef(matchId);
+  // A new match ID (rematch/navigation) starts from a clean slate; answers for the old ID are ignored.
+  if (idRef.current !== matchId) { idRef.current = matchId; versionRef.current = -1; }
+  useEffect(() => {
+    setSnap(null); setInvite(null); setLoadError(null); setPending([]); setSelected(null);
+    setDiscardSel([]); setDiscardMode(false); setRackOrder(null); setLetterFor(null); setSeenPage(null);
+  }, [matchId]);
 
   const apply = useCallback((s: MatchSnapshot) => {
-    if (s.version < versionRef.current) return;
+    if (s.id !== idRef.current || s.version < versionRef.current) return;
     if (s.version !== versionRef.current) { setPending([]); setSelected(null); setDiscardSel([]); setDiscardMode(false); setRackOrder(null); }
     versionRef.current = s.version;
     setSnap(s);
   }, []);
 
   const refresh = useCallback(async () => {
+    const id = matchId;
     try {
-      const r = await getFn({ data: { id: matchId } });
+      const r = await getFn({ data: { id } });
+      if (id !== idRef.current) return;
+      setLoadError(null);
       if ("snapshot" in r) { apply(r.snapshot); setInvite(null); } else setInvite(r.invite);
-    } catch (e) { setLoadError(e instanceof Error ? e.message : "Could not load this match."); }
+    } catch (e) { if (id === idRef.current) setLoadError(e instanceof Error ? e.message : "Could not load this match."); }
   }, [getFn, matchId, apply]);
 
-  useEffect(() => { void refresh(); }, [refresh]);
   useEffect(() => {
+    // Refresh once subscribed (covers changes made before the channel was live) and on every reconnect.
     const channel = supabase.channel(`story-match-${matchId}-${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "story_match_feed", filter: `match_id=eq.${matchId}` }, (payload) => {
         const v = (payload.new as { version?: number } | null)?.version ?? 0;
         if (v > versionRef.current) void refresh();
       })
-      .subscribe();
+      .subscribe((status) => { if (status === "SUBSCRIBED") void refresh(); });
+    void refresh();
     const onFocus = () => { if (document.visibilityState === "visible") void refresh(); };
+    const onOnline = () => void refresh();
     document.addEventListener("visibilitychange", onFocus);
-    return () => { void supabase.removeChannel(channel); document.removeEventListener("visibilitychange", onFocus); };
+    window.addEventListener("online", onOnline);
+    return () => { void supabase.removeChannel(channel); document.removeEventListener("visibilitychange", onFocus); window.removeEventListener("online", onOnline); };
   }, [matchId, refresh]);
 
   async function act(action: MatchAction) {
     if (!snap || busy) return;
     setBusy(true);
     try {
-      const r = await actFn({ data: { id: matchId, version: snap.version, action } });
+      const r = await actFn({ data: { id: snap.id, version: snap.version, action } });
       if ("error" in r && r.error) toast.error(r.error);
       if ("stale" in r) toast.message("The match was updated.");
       apply(r.snapshot);
@@ -104,7 +117,7 @@ function MatchPage() {
     finally { setBusy(false); }
   }
 
-  if (loadError) return <Centered><p className="text-muted-foreground">{loadError}</p><Button asChild><Link to="/story">Back to menu</Link></Button></Centered>;
+  if (loadError && !snap) return <Centered><p className="text-muted-foreground">{loadError}</p><Button asChild><Link to="/story">Back to menu</Link></Button></Centered>;
   if (invite) return <Centered>
     <h1 className="font-display text-3xl font-black">Multiplayer Story</h1>
     {invite.open ? <><p className="text-muted-foreground"><strong className="text-foreground">{invite.host}</strong> invited you to a SibbleBook duel. First to win five Pages.</p>

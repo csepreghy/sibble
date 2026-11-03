@@ -11,7 +11,7 @@ import { loadStory } from "@/lib/story/storage";
 import { actStoryMatch, createStoryMatch } from "@/lib/story/match.functions";
 import type { PublicMatch } from "@/lib/story/multiplayer";
 
-export interface FeedRow { match_id: string; player1: string; player2: string | null; status: string; version: number; public: PublicMatch; updated_at: string }
+export interface FeedRow { match_id: string; player1: string; player2: string | null; status: string; version: number; public: PublicMatch; updated_at: string; finished_at?: string | null }
 
 export function useMatchFeed(statuses: string[]) {
   const [rows, setRows] = useState<FeedRow[] | null>(null);
@@ -25,8 +25,12 @@ export function useMatchFeed(statuses: string[]) {
     };
     void load();
     const channel = supabase.channel(`story-feed-${Math.random().toString(36).slice(2)}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "story_match_feed" }, () => void load()).subscribe();
-    return () => { alive = false; void supabase.removeChannel(channel); };
+      .on("postgres_changes", { event: "*", schema: "public", table: "story_match_feed" }, () => void load())
+      .subscribe((status) => { if (status === "SUBSCRIBED") void load(); });
+    const onOnline = () => void load();
+    const onVisible = () => { if (document.visibilityState === "visible") void load(); };
+    window.addEventListener("online", onOnline); document.addEventListener("visibilitychange", onVisible);
+    return () => { alive = false; void supabase.removeChannel(channel); window.removeEventListener("online", onOnline); document.removeEventListener("visibilitychange", onVisible); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statuses.join(",")]);
   return { rows, userId };
@@ -58,7 +62,7 @@ export function StoryContinue() {
 
   return <div className="mx-auto mt-6 w-full max-w-md space-y-4">
     <div className="grid grid-cols-2 gap-2">
-      <Button size="lg" asChild><Link to="/story/play"><BookOpen className="h-5 w-5" />Solo Story</Link></Button>
+      <Button size="lg" asChild><Link to="/story/play"><BookOpen className="h-5 w-5" />{soloActive ? "Continue Solo" : "New Solo Story"}</Link></Button>
       <Button size="lg" variant="secondary" disabled={busy} onClick={create}><Users className="h-5 w-5" />Multiplayer</Button>
     </div>
     {(soloActive || (rows && rows.length > 0)) && <section aria-label="Continue Playing" className="space-y-2">
