@@ -44,6 +44,7 @@ import {
   ROYALTY_MAX,
   sellPen,
   type PageRewards,
+  type PlayResult,
 } from "@/lib/story/engine";
 import { compactNumber } from "@/lib/story/format";
 import { inspectPlacement } from "@/lib/story/preview";
@@ -262,7 +263,7 @@ export function StoryPlayScreen({ mp }: { mp?: MpDriver } = {}) {
   useEffect(() => {
     if (!mp || animatingRef.current) return;
     const next = mp.state;
-    setStory((current) => current && current.page.rack.join() === next.page.rack.join() && current.pageIndex === next.pageIndex
+    setStory((current) => current && [...current.page.rack].sort().join() === [...next.page.rack].sort().join() && current.pageIndex === next.pageIndex
       ? { ...next, page: { ...next.page, rack: current.page.rack } } : next);
     // Pending letters the opponent's move just covered go back to the rack.
     setPending((current) => current.filter((p) => !next.page.board[p.index] && next.page.rack.includes(p.tileId)));

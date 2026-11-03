@@ -193,7 +193,7 @@ export function playMove(m: MatchState, seat: Seat, placements: PendingPlacement
   const state: StoryState = { ...me.state, pens: r.state.pens, totalInk: r.state.totalInk, bestWord: r.state.bestWord,
     page: { ...r.state.page }, phase: "play", offers: null };
   const next: MatchState = { ...withPlayer(m, seat, { ...me, state }), board: r.state.page.board, usedPremiums: r.state.page.usedPremiums,
-    lastMove: { seat, words: r.score.words.map((w) => w.word), ink: r.score.totalInk } };
+    lastMove: { id: (m.lastMove?.id ?? 0) + 1, seat, words: r.score.words.map((w) => w.word), ink: r.score.totalInk, events: r.score.events } };
   return { match: advance(next, seat) };
 }
 
