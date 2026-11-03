@@ -1046,6 +1046,7 @@ export function StoryPlayScreen({ mp }: { mp?: MpDriver } = {}) {
           <p className="min-h-4 text-center text-xs text-muted-foreground">{anim.label ?? ""}</p>
           <div className="story-hud-info">
             <div className="story-hud-block"><span>Words left</span><strong className="text-base-ink">{story.page.wordsLeft}</strong></div>
+            {mp ? <div className="story-hud-block"><span>{mp.opponentName} words</span><strong className="text-base-ink">{mp.opponentWordsLeft ?? 0}</strong></div> : null}
             <div className="story-hud-block"><span>Discards left</span><strong className="text-mult-ink">{story.page.discardsLeft}</strong></div>
             <div className="story-hud-block story-hud-wide"><span>Coins</span><span className="story-play-coins flex items-center gap-2 font-black tabular-nums text-gold"><Coins className="h-6 w-6 shrink-0" /><CountNumber value={story.coins + coinBonus} running={coinBonus > 0} growToTotal byDelta /></span></div>
             {royalty && <div className="story-hud-block story-hud-wide story-royalty"><span>Page Bonus</span><RoyaltyText {...royalty} /></div>}
@@ -1110,7 +1111,7 @@ export function StoryPlayScreen({ mp }: { mp?: MpDriver } = {}) {
         {/* Center — board or Bookstore */}
         <main key={story.phase === "bookstore" ? "shop" : "play"} className={cn("story-main flex min-w-0 flex-1 flex-col justify-center overflow-y-auto rounded-xl border border-border bg-card/30 p-3", shopEntering && story.phase === "bookstore" && "story-shop-enter")}>
           {story.phase === "bookstore" ? (
-            <Bookstore state={story} onBuy={handleBuy} compact={compact} entering={shopEntering} />
+            <div className={mp?.isReady ? "pointer-events-none opacity-60" : "contents"} aria-disabled={mp?.isReady || undefined}><Bookstore state={story} onBuy={handleBuy} compact={compact} entering={shopEntering} /></div>
           ) : (
             <StoryBoard
               compact={compact}
